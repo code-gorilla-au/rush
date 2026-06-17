@@ -28,7 +28,6 @@ go.work.sum
 .env
 .env.local
 .idea
-.junie
 .db
 .task
 

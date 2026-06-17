@@ -5,6 +5,11 @@ vars:
   GOLANG_COVERAGE: coverage.out
 
 tasks:
+  dev:
+    desc: Run dev
+    cmds:
+      - go run ./cmd/rush/...
+
   lint:
     desc: Run golangci-lint
     cmds:

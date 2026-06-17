@@ -29,6 +29,8 @@ go.work.sum
 .env.local
 .idea
 .junie
+.db
+.task
 
 # Editor/IDE
 # .idea/

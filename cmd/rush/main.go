@@ -36,7 +36,7 @@ func main() {
 	}
 
 	p := tea.NewProgram(ui.New())
-	if _, err := p.Run(); err != nil {
+	if _, err = p.Run(); err != nil {
 		slog.Error("Failed to run program", "error", err)
 		os.Exit(1)
 	}

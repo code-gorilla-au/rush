@@ -11,11 +11,10 @@ import (
 
 func main() {
 	ctx := context.Background()
-
 	env.LoadEnvFile(".env.local")
-	enUrl := env.GetAsString("DATABASE_URL")
+	config := NewConfig()
 
-	db, err := database.NewSqLiteProvider(enUrl)
+	db, err := database.NewSqLiteProvider(config.DatabaseUrl)
 	if err != nil {
 		slog.Error("Failed to create database provider", "error", err)
 		os.Exit(1)

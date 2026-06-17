@@ -5,8 +5,10 @@ import (
 	"log/slog"
 	"os"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/env"
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/code-gorilla-au/rush/internal/ui"
 )
 
 func main() {
@@ -18,7 +20,6 @@ func main() {
 	if err != nil {
 		slog.Error("Failed to create database provider", "error", err)
 		os.Exit(1)
-
 	}
 
 	defer func() {
@@ -34,5 +35,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.Info("Hello, world!")
+	p := tea.NewProgram(ui.New())
+	if _, err := p.Run(); err != nil {
+		slog.Error("Failed to run program", "error", err)
+		os.Exit(1)
+	}
 }

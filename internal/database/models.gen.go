@@ -9,18 +9,24 @@ import (
 )
 
 type Coach struct {
-	ID   interface{}
-	Name string
+	ID        interface{}
+	Name      string
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }
 
 type Player struct {
-	ID     interface{}
-	Name   string
-	TeamID sql.NullInt64
+	ID        interface{}
+	Name      string
+	TeamID    sql.NullInt64
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }
 
 type Team struct {
-	ID      interface{}
-	Name    string
-	CoachID sql.NullInt64
+	ID        interface{}
+	Name      string
+	CoachID   sql.NullInt64
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }

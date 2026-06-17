@@ -10,19 +10,89 @@ import (
 	"database/sql"
 )
 
+const createCoach = `-- name: CreateCoach :exec
+INSERT INTO coaches (name) VALUES (?) RETURNING id, name, created_at, updated_at
+`
+
+func (q *Queries) CreateCoach(ctx context.Context, name string) error {
+	_, err := q.db.ExecContext(ctx, createCoach, name)
+	return err
+}
+
+const createPlayer = `-- name: CreatePlayer :exec
+INSERT INTO players (name, team_id) VALUES (?,?) RETURNING id, name, team_id, created_at, updated_at
+`
+
+type CreatePlayerParams struct {
+	Name   string
+	TeamID sql.NullInt64
+}
+
+func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) error {
+	_, err := q.db.ExecContext(ctx, createPlayer, arg.Name, arg.TeamID)
+	return err
+}
+
+const createTeam = `-- name: CreateTeam :exec
+INSERT INTO teams (name, coach_id) VALUES (?, ?) RETURNING id, name, coach_id, created_at, updated_at
+`
+
+type CreateTeamParams struct {
+	Name    string
+	CoachID sql.NullInt64
+}
+
+func (q *Queries) CreateTeam(ctx context.Context, arg CreateTeamParams) error {
+	_, err := q.db.ExecContext(ctx, createTeam, arg.Name, arg.CoachID)
+	return err
+}
+
+const deleteCoach = `-- name: DeleteCoach :exec
+DELETE FROM coaches WHERE id = ?
+`
+
+func (q *Queries) DeleteCoach(ctx context.Context, id interface{}) error {
+	_, err := q.db.ExecContext(ctx, deleteCoach, id)
+	return err
+}
+
+const deletePlayer = `-- name: DeletePlayer :exec
+DELETE FROM players WHERE id = ?
+`
+
+func (q *Queries) DeletePlayer(ctx context.Context, id interface{}) error {
+	_, err := q.db.ExecContext(ctx, deletePlayer, id)
+	return err
+}
+
+const deleteTeam = `-- name: DeleteTeam :exec
+DELETE FROM teams WHERE id = ?
+`
+
+func (q *Queries) DeleteTeam(ctx context.Context, id interface{}) error {
+	_, err := q.db.ExecContext(ctx, deleteTeam, id)
+	return err
+}
+
 const getCoach = `-- name: GetCoach :one
-SELECT id, name, coach_id FROM teams WHERE id = ?
+SELECT id, name, coach_id, created_at, updated_at FROM teams WHERE id = ?
 `
 
 func (q *Queries) GetCoach(ctx context.Context, id interface{}) (Team, error) {
 	row := q.db.QueryRowContext(ctx, getCoach, id)
 	var i Team
-	err := row.Scan(&i.ID, &i.Name, &i.CoachID)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CoachID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
 
 const getCoaches = `-- name: GetCoaches :many
-SELECT id, name FROM coaches
+SELECT id, name, created_at, updated_at FROM coaches
 `
 
 func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
@@ -34,7 +104,12 @@ func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
 	var items []Coach
 	for rows.Next() {
 		var i Coach
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -49,18 +124,24 @@ func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
 }
 
 const getTeam = `-- name: GetTeam :one
-SELECT id, name, coach_id FROM teams WHERE id = ?
+SELECT id, name, coach_id, created_at, updated_at FROM teams WHERE id = ?
 `
 
 func (q *Queries) GetTeam(ctx context.Context, id interface{}) (Team, error) {
 	row := q.db.QueryRowContext(ctx, getTeam, id)
 	var i Team
-	err := row.Scan(&i.ID, &i.Name, &i.CoachID)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CoachID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
 
 const getTeamMembers = `-- name: GetTeamMembers :many
-SELECT id, name, team_id FROM players WHERE team_id = ?
+SELECT id, name, team_id, created_at, updated_at FROM players WHERE team_id = ?
 `
 
 func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt64) ([]Player, error) {
@@ -72,7 +153,13 @@ func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt64) ([]P
 	var items []Player
 	for rows.Next() {
 		var i Player
-		if err := rows.Scan(&i.ID, &i.Name, &i.TeamID); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.TeamID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -87,7 +174,7 @@ func (q *Queries) GetTeamMembers(ctx context.Context, teamID sql.NullInt64) ([]P
 }
 
 const getTeams = `-- name: GetTeams :many
-SELECT id, name, coach_id FROM teams
+SELECT id, name, coach_id, created_at, updated_at FROM teams
 `
 
 func (q *Queries) GetTeams(ctx context.Context) ([]Team, error) {
@@ -99,7 +186,13 @@ func (q *Queries) GetTeams(ctx context.Context) ([]Team, error) {
 	var items []Team
 	for rows.Next() {
 		var i Team
-		if err := rows.Scan(&i.ID, &i.Name, &i.CoachID); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CoachID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -2,10 +2,15 @@ module github.com/code-gorilla-au/rush
 
 go 1.26.3
 
-require modernc.org/sqlite v1.52.0
+require (
+	charm.land/bubbletea/v2 v2.0.7
+	charm.land/lipgloss/v2 v2.0.4
+	github.com/code-gorilla-au/env v1.1.1
+	github.com/code-gorilla-au/odize v1.3.5
+	modernc.org/sqlite v1.52.0
+)
 
 require (
-	charm.land/bubbletea/v2 v2.0.7 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260615092913-2399af76d5b1 // indirect
 	github.com/charmbracelet/x/ansi v0.11.7 // indirect
@@ -14,7 +19,6 @@ require (
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/code-gorilla-au/env v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect

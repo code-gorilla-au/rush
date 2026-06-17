@@ -4,16 +4,20 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type model struct {
 	width  int
 	height int
+	theme  IceTheme
 }
 
 // New returns a new UI model.
 func New() model {
-	return model{}
+	return model{
+		theme: NewIceTheme(),
+	}
 }
 
 func (m model) Init() tea.Cmd {
@@ -47,52 +51,26 @@ func (m model) View() tea.View {
 		return tea.NewView("Initializing...")
 	}
 
-	logoLines := strings.Split(strings.Trim(logo, "\n"), "\n")
-	logoWidth := 0
-	for _, line := range logoLines {
-		if len(line) > logoWidth {
-			logoWidth = len(line)
-		}
-	}
-
-	leftPadding := (m.width - logoWidth) / 2
-	topPadding := (m.height - len(logoLines) - 2) / 2 // -2 for spacing and footer
-
-	if leftPadding < 0 {
-		leftPadding = 0
-	}
-	if topPadding < 0 {
-		topPadding = 0
-	}
-
-	var b strings.Builder
-	for range topPadding {
-		b.WriteString("\n")
-	}
-
-	pad := strings.Repeat(" ", leftPadding)
-	for _, line := range logoLines {
-		b.WriteString(pad)
-		b.WriteString(line)
-		b.WriteString("\n")
-	}
-
+	styledLogo := m.theme.Logo.Render(strings.Trim(logo, "\n"))
 	footer := "Press 'q' to quit"
-	footerPadding := (m.width - len(footer)) / 2
-	if footerPadding < 0 {
-		footerPadding = 0
-	}
-	b.WriteString("\n")
-	b.WriteString(strings.Repeat(" ", footerPadding))
-	b.WriteString(footer)
+	styledFooter := m.theme.Footer.Render(footer)
 
-	// Fill the rest of the height to prevent jumping if terminal is small
-	remainingLines := m.height - topPadding - len(logoLines) - 2
-	for range remainingLines {
-		b.WriteString("\n")
-	}
+	content := styledLogo + "\n\n" + styledFooter
 
-	view := tea.NewView(b.String())
+	// Center the content in the terminal
+	centeredContent := lipgloss.Place(
+		m.width, m.height,
+		lipgloss.Center, lipgloss.Center,
+		content,
+	)
+
+	// Apply base theme (black background) to the whole view
+	finalView := m.theme.Base.
+		Width(m.width).
+		Height(m.height).
+		Render(centeredContent)
+
+	view := tea.NewView(finalView)
 	view.AltScreen = true
 	return view
 }

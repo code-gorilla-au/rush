@@ -1,5 +1,9 @@
 version: '3'
 
+vars:
+  GOLANG_WORKSPACES: ./...
+  GOLANG_COVERAGE: coverage.out
+
 tasks:
   lint:
     desc: Run golangci-lint
@@ -34,3 +38,34 @@ tasks:
       - task: generate
       - task: format
       - task: lint
+
+
+  test:
+    desc: Run go tests.
+    deps: [generate]
+    cmds:
+      - go test -cover -coverprofile={{ .GOLANG_COVERAGE }} -failfast {{ .GOLANG_WORKSPACES }}
+
+  watch:
+    desc: Run go tests in watch mode.
+    cmds:
+      - gow test -cover -coverprofile={{ .GOLANG_COVERAGE }} -failfast {{ .GOLANG_WORKSPACES }}
+
+  gen-coverage:
+    desc: Generate go coverage.
+    deps: [test]
+    cmds:
+      - grep -v -E -f ${PWD}/.covignore {{ .GOLANG_COVERAGE }} > coverage.filtered.out
+      - mv coverage.filtered.out {{ .GOLANG_COVERAGE }}
+
+  cover:
+    desc: Run go coverage.
+    deps: [gen-coverage]
+    cmds:
+      - go tool cover -func={{ .GOLANG_COVERAGE }} | grep total
+
+  cover-html:
+    desc: Run go coverage html.
+    deps: [gen-coverage]
+    cmds:
+      - go tool cover -html={{ .GOLANG_COVERAGE }}

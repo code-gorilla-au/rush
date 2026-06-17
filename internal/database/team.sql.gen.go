@@ -51,7 +51,7 @@ const deleteCoach = `-- name: DeleteCoach :exec
 DELETE FROM coaches WHERE id = ?
 `
 
-func (q *Queries) DeleteCoach(ctx context.Context, id interface{}) error {
+func (q *Queries) DeleteCoach(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteCoach, id)
 	return err
 }
@@ -60,7 +60,7 @@ const deletePlayer = `-- name: DeletePlayer :exec
 DELETE FROM players WHERE id = ?
 `
 
-func (q *Queries) DeletePlayer(ctx context.Context, id interface{}) error {
+func (q *Queries) DeletePlayer(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deletePlayer, id)
 	return err
 }
@@ -69,7 +69,7 @@ const deleteTeam = `-- name: DeleteTeam :exec
 DELETE FROM teams WHERE id = ?
 `
 
-func (q *Queries) DeleteTeam(ctx context.Context, id interface{}) error {
+func (q *Queries) DeleteTeam(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteTeam, id)
 	return err
 }
@@ -78,7 +78,7 @@ const getCoach = `-- name: GetCoach :one
 SELECT id, name, coach_id, created_at, updated_at FROM teams WHERE id = ?
 `
 
-func (q *Queries) GetCoach(ctx context.Context, id interface{}) (Team, error) {
+func (q *Queries) GetCoach(ctx context.Context, id int64) (Team, error) {
 	row := q.db.QueryRowContext(ctx, getCoach, id)
 	var i Team
 	err := row.Scan(
@@ -127,7 +127,7 @@ const getTeam = `-- name: GetTeam :one
 SELECT id, name, coach_id, created_at, updated_at FROM teams WHERE id = ?
 `
 
-func (q *Queries) GetTeam(ctx context.Context, id interface{}) (Team, error) {
+func (q *Queries) GetTeam(ctx context.Context, id int64) (Team, error) {
 	row := q.db.QueryRowContext(ctx, getTeam, id)
 	var i Team
 	err := row.Scan(

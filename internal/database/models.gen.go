@@ -9,14 +9,14 @@ import (
 )
 
 type Coach struct {
-	ID        interface{}
+	ID        int64
 	Name      string
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }
 
 type Player struct {
-	ID        interface{}
+	ID        int64
 	Name      string
 	TeamID    sql.NullInt64
 	CreatedAt sql.NullTime
@@ -24,7 +24,7 @@ type Player struct {
 }
 
 type Team struct {
-	ID        interface{}
+	ID        int64
 	Name      string
 	CoachID   sql.NullInt64
 	CreatedAt sql.NullTime

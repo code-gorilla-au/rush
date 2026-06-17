@@ -1,0 +1,45 @@
+version: '3'
+
+tasks:
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  format:
+    desc: Format Go code and tidy modules
+    cmds:
+      - go fmt ./...
+      - go mod tidy
+
+  sqlc:
+    desc: Generate Go code from SQL queries using sqlc
+    sources:
+      - sqlc.yaml
+      - "**/*.sql"
+    generates:
+      - "**/*.gen.go"
+    cmds:
+      - sqlc generate
+
+  # Placeholder for migrations as requested "sqlc for sql lite migrations"
+  # This task assumes you might use a tool like goose or atlas for migrations.
+  # sqlc itself is used to generate Go code from the migration schema/queries.
+  migrate:
+    desc: Run SQLite migrations (adjust command to your migration tool)
+    cmds:
+      - echo "Running migrations..."
+      # Example with goose:
+      # - goose -dir internal/db/migrations sqlite3 ./rush.db up
+
+  generate:
+    desc: Run all code generation
+    cmds:
+      - task: sqlc
+
+  ci:
+    desc: Run ci tasks
+    cmds:
+      - task: generate
+      - task: format
+      - task: lint

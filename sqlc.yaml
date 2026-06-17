@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - schema: "internal/database/schema"
+    queries: "internal/database/queries"
+    engine: "sqlite"
+    gen:
+      go:
+        package: "database"
+        out: "internal/database"
+        output_db_file_name: "db.gen.go"
+        output_models_file_name: "models.gen.go"
+        output_querier_file_name: "querier.gen.go"
+        output_files_suffix: ".gen"

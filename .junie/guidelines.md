@@ -45,6 +45,11 @@ You are an expert in Go, microservices architecture, and clean backend developme
 
 review `taskfile.yaml` for list of commands available in repo.
 
+### UI
+- UI is https://github.com/charmbracelet/bubbletea
+- Use components: https://github.com/charmbracelet/bubbles
+- Use styling: https://github.com/charmbracelet/lipgloss
+
 ### General Responsibilities:
 - Do not add useless comments
 - Guide the development of idiomatic, maintainable, and high-performance Go code.
@@ -205,31 +210,6 @@ func TestService_GetAllOrganisations(t *testing.T) {
 - Provide concise **READMEs** for services and libraries.
 - Maintain a 'CONTRIBUTING.md' and 'ARCHITECTURE.md' to guide team practices.
 - Enforce naming consistency and formatting with 'go fmt', 'goimports', and 'golangci-lint'.
-
-### Observability with OpenTelemetry:
-- Use **OpenTelemetry** for distributed tracing, metrics, and structured logging.
-- Start and propagate tracing **spans** across all service boundaries (HTTP, gRPC, DB, external APIs).
-- Always attach 'context.Context' to spans, logs, and metric exports.
-- Use **otel.Tracer** for creating spans and **otel.Meter** for collecting metrics.
-- Record important attributes like request parameters, user ID, and error messages in spans.
-- Use **log correlation** by injecting trace IDs into structured logs.
-- Export data to **OpenTelemetry Collector**, **Jaeger**, or **Prometheus**.
-
-### Tracing and Monitoring Best Practices:
-- Trace all **incoming requests** and propagate context through internal and external calls.
-- Use **middleware** to instrument HTTP and gRPC endpoints automatically.
-- Annotate slow, critical, or error-prone paths with **custom spans**.
-- Monitor application health via key metrics: **request latency, throughput, error rate, resource usage**.
-- Define **SLIs** (e.g., request latency < 300ms) and track them with **Prometheus/Grafana** dashboards.
-- Alert on key conditions (e.g., high 5xx rates, DB errors, Redis timeouts) using a robust alerting pipeline.
-- Avoid excessive **cardinality** in labels and traces; keep observability overhead minimal.
-- Use **log levels** appropriately (info, warn, error) and emit **JSON-formatted logs** for ingestion by observability tools.
-- Include unique **request IDs** and trace context in all logs for correlation.
-
-### Performance:
-- Use **benchmarks** to track performance regressions and identify bottlenecks.
-- Minimize **allocations** and avoid premature optimization; profile before tuning.
-- Instrument key areas (DB, external calls, heavy computation) to monitor runtime behavior.
 
 ### Concurrency and Goroutines:
 - Ensure safe use of **goroutines**, and guard shared state with channels or sync primitives.

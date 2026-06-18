@@ -28,13 +28,26 @@ func (q *Queries) ClearDefaultTeam(ctx context.Context) error {
 	return err
 }
 
-const createCoach = `-- name: CreateCoach :exec
-INSERT INTO coaches (name) VALUES (?) RETURNING id, name, is_default, created_at, updated_at
+const createCoach = `-- name: CreateCoach :one
+INSERT INTO coaches (name, is_default) VALUES (?, ?) RETURNING id, name, is_default, created_at, updated_at
 `
 
-func (q *Queries) CreateCoach(ctx context.Context, name string) error {
-	_, err := q.db.ExecContext(ctx, createCoach, name)
-	return err
+type CreateCoachParams struct {
+	Name      string
+	IsDefault sql.NullBool
+}
+
+func (q *Queries) CreateCoach(ctx context.Context, arg CreateCoachParams) (Coach, error) {
+	row := q.db.QueryRowContext(ctx, createCoach, arg.Name, arg.IsDefault)
+	var i Coach
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsDefault,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const createPlayer = `-- name: CreatePlayer :exec
@@ -274,7 +287,7 @@ func (q *Queries) SetDefaultCoach(ctx context.Context, id int64) error {
 }
 
 const setDefaultTeam = `-- name: SetDefaultTeam :exec
-UPDATE teams SET is_default = false WHERE id = ?
+UPDATE teams SET is_default = true WHERE id = ?
 `
 
 func (q *Queries) SetDefaultTeam(ctx context.Context, id int64) error {

@@ -13,8 +13,8 @@ UPDATE coaches SET is_default = false WHERE is_default = true;
 -- name: GetCoaches :many
 SELECT * FROM coaches;
 
--- name: CreateCoach :exec
-INSERT INTO coaches (name) VALUES (?) RETURNING *;
+-- name: CreateCoach :one
+INSERT INTO coaches (name, is_default) VALUES (?, ?) RETURNING *;
 
 -- name: DeleteCoach :exec
 DELETE FROM coaches WHERE id = ?;
@@ -32,7 +32,7 @@ SELECT * FROM teams WHERE coach_id = ? AND is_default = true LIMIT 1;
 INSERT INTO teams (name, is_default, coach_id) VALUES (?, ?, ?) RETURNING *;
 
 -- name: SetDefaultTeam :exec
-UPDATE teams SET is_default = false WHERE id = ?;
+UPDATE teams SET is_default = true WHERE id = ?;
 
 -- name: ClearDefaultTeam :exec
 UPDATE teams SET is_default = false WHERE is_default = true;

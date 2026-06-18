@@ -1,0 +1,147 @@
+package teams
+
+import (
+	"database/sql"
+	"testing"
+
+	"github.com/code-gorilla-au/odize"
+	"github.com/code-gorilla-au/rush/internal/database"
+	_ "modernc.org/sqlite"
+)
+
+func setupTestDB(t *testing.T) *sql.DB {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatalf("failed to open database: %v", err)
+	}
+
+	migrator := database.NewMigrator(db, database.SchemaFS)
+	if err := migrator.Migrate(t.Context()); err != nil {
+		t.Fatalf("failed to migrate database: %v", err)
+	}
+
+	return db
+}
+
+func TestService(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	var db *sql.DB
+	var queries *database.Queries
+	var s *Service
+
+	group.BeforeEach(func() {
+		db = setupTestDB(t)
+		queries = database.New(db)
+		s = NewTeamsService(queries)
+	})
+
+	group.AfterEach(func() {
+		if db != nil {
+			db.Close()
+		}
+	})
+
+	err := group.
+		Test("CreateCoach should create a coach and return it", func(t *testing.T) {
+			ctx := t.Context()
+			name := "Coach Carter"
+
+			coach, err := s.CreateCoach(ctx, name, false)
+			odize.AssertNoError(t, err)
+			odize.AssertTrue(t, coach.ID > 0)
+			odize.AssertEqual(t, name, coach.Name)
+			odize.AssertFalse(t, coach.CreatedAt.IsZero())
+			odize.AssertFalse(t, coach.UpdatedAt.IsZero())
+		}).
+		Test("SetDefaultCoach should set the default coach", func(t *testing.T) {
+			ctx := t.Context()
+			name := "Coach Carter"
+
+			coach, err := s.CreateCoach(ctx, name, false)
+			odize.AssertNoError(t, err)
+
+			err = s.SetDefaultCoach(ctx, coach.ID)
+			odize.AssertNoError(t, err)
+
+			// Verify it's set
+			queries := database.New(db)
+			model, err := queries.GetDefaultCoach(ctx)
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, coach.ID, model.ID)
+			odize.AssertTrue(t, model.IsDefault.Bool)
+		}).
+		Test("ClearDefaultCoach should clear the default coach", func(t *testing.T) {
+			ctx := t.Context()
+			name := "Coach Carter"
+
+			_, err := s.CreateCoach(ctx, name, true)
+			odize.AssertNoError(t, err)
+
+			err = s.ClearDefaultCoach(ctx)
+			odize.AssertNoError(t, err)
+
+			// Verify it's cleared
+			queries := database.New(db)
+			_, err = queries.GetDefaultCoach(ctx)
+			odize.AssertError(t, err)
+			odize.AssertTrue(t, err == sql.ErrNoRows)
+		}).
+		Test("SetDefaultTeam should set the default team", func(t *testing.T) {
+			ctx := t.Context()
+			queries := database.New(db)
+			err := queries.CreateTeam(ctx, database.CreateTeamParams{
+				Name: "The Bulls",
+			})
+			odize.AssertNoError(t, err)
+
+			var teamID int64
+			err = db.QueryRowContext(ctx, "SELECT id FROM teams WHERE name = ?", "The Bulls").Scan(&teamID)
+			odize.AssertNoError(t, err)
+
+			err = s.SetDefaultTeam(ctx, teamID)
+			odize.AssertNoError(t, err)
+
+			// Verify it's set
+			var isDefault bool
+			err = db.QueryRowContext(ctx, "SELECT is_default FROM teams WHERE id = ?", teamID).Scan(&isDefault)
+			odize.AssertNoError(t, err)
+			odize.AssertTrue(t, isDefault)
+		}).
+		Test("ClearDefaultTeam should clear the default team", func(t *testing.T) {
+			err := queries.CreateTeam(t.Context(), database.CreateTeamParams{
+				Name:      "The Bulls",
+				IsDefault: sql.NullBool{Bool: true, Valid: true},
+			})
+			odize.AssertNoError(t, err)
+
+			var teamID int64
+			err = db.QueryRowContext(t.Context(), "SELECT id FROM teams WHERE name = ?", "The Bulls").Scan(&teamID)
+			odize.AssertNoError(t, err)
+
+			err = s.ClearDefaultTeam(t.Context())
+			odize.AssertNoError(t, err)
+
+			// Verify it's cleared
+			var isDefault bool
+			err = db.QueryRowContext(t.Context(), "SELECT is_default FROM teams WHERE id = ?", teamID).Scan(&isDefault)
+			odize.AssertNoError(t, err)
+			odize.AssertFalse(t, isDefault)
+		}).
+		Test("GetCoach should return error if no default coach", func(t *testing.T) {
+			_, err := s.GetDefaultCoach(t.Context())
+			odize.AssertError(t, err)
+
+		}).
+		Test("GetTeam should return error if no default coach", func(t *testing.T) {
+			_, err := s.CreateCoach(t.Context(), "Coach Carter", true)
+			odize.AssertNoError(t, err)
+
+			coach, sErr := s.GetDefaultCoach(t.Context())
+			odize.AssertNoError(t, sErr)
+			odize.AssertTrue(t, coach.ID > 0)
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}

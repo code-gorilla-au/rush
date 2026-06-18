@@ -3,13 +3,16 @@ package ui
 import tea "charm.land/bubbletea/v2"
 
 type ModelLockerRoom struct {
-	width  int
-	height int
-	theme  IceTheme
+	width       int
+	height      int
+	theme       IceTheme
+	globalState GlobalState
 }
 
-func NewModelLockerRoom() *ModelLockerRoom {
-	return &ModelLockerRoom{}
+func NewModelLockerRoom(globalState GlobalState) *ModelLockerRoom {
+	return &ModelLockerRoom{
+		globalState: globalState,
+	}
 }
 
 func (m ModelLockerRoom) Init() tea.Cmd {

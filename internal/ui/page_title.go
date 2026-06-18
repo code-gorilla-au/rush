@@ -8,13 +8,16 @@ import (
 )
 
 type ModelTitle struct {
-	width  int
-	height int
-	theme  IceTheme
+	width       int
+	height      int
+	theme       IceTheme
+	globalState GlobalState
 }
 
-func NewModelTitle() *ModelTitle {
-	return &ModelTitle{}
+func NewModelTitle(globalState GlobalState) *ModelTitle {
+	return &ModelTitle{
+		globalState: globalState,
+	}
 }
 
 func (m ModelTitle) Init() tea.Cmd {

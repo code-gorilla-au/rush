@@ -5,13 +5,16 @@ import (
 )
 
 type ModelCreateCoach struct {
-	width  int
-	height int
-	theme  IceTheme
+	width       int
+	height      int
+	theme       IceTheme
+	globalState GlobalState
 }
 
-func NewModelCreateCoach() *ModelCreateCoach {
-	return &ModelCreateCoach{}
+func NewModelCreateCoach(state GlobalState) *ModelCreateCoach {
+	return &ModelCreateCoach{
+		globalState: state,
+	}
 }
 
 func (m ModelCreateCoach) Init() tea.Cmd {

@@ -1,7 +1,10 @@
 package ui
 
 import (
+	"context"
+
 	tea "charm.land/bubbletea/v2"
+	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
 type MsgSwitchPage struct {
@@ -16,6 +19,10 @@ const (
 	PageLockerRoom
 )
 
+type GlobalState struct {
+	Coach *teams.Coach
+}
+
 type RootModel struct {
 	width           int
 	height          int
@@ -24,20 +31,29 @@ type RootModel struct {
 	pageTitle       tea.Model
 	pageCreateCoach tea.Model
 	pageLockerRoom  tea.Model
+	globalState     GlobalState
+	teamsSvc        *teams.Service
 }
 
 // New returns a new UI model.
-func New() RootModel {
+func New(teamsService *teams.Service) RootModel {
+	state := GlobalState{}
+
 	return RootModel{
 		theme:           NewIceTheme(),
 		currentPage:     PageTitle,
-		pageTitle:       NewModelTitle(),
-		pageCreateCoach: NewModelCreateCoach(),
-		pageLockerRoom:  NewModelLockerRoom(),
+		pageTitle:       NewModelTitle(state),
+		pageCreateCoach: NewModelCreateCoach(state),
+		pageLockerRoom:  NewModelLockerRoom(state),
+		globalState:     state,
+		teamsSvc:        teamsService,
 	}
 }
 
 func (m RootModel) Init() tea.Cmd {
+	coach, _ := m.teamsSvc.GetDefaultCoach(context.Background())
+	m.globalState.Coach = &coach
+
 	return nil
 }
 

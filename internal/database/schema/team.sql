@@ -1,6 +1,7 @@
 create table if not exists coaches (
 	id integer primary key autoincrement,
 	name varchar(255) not null,
+    is_default BOOLEAN DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

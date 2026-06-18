@@ -1,6 +1,15 @@
 -- name: GetCoach :one
 SELECT * FROM teams WHERE id = ?;
 
+-- name: GetDefaultCoach :one
+SELECT * FROM coaches WHERE is_default = true LIMIT 1;
+
+-- name: SetDefaultCoach :exec
+UPDATE coaches SET is_default = true WHERE id = ?;
+
+-- name: ClearDefaultCoach :exec
+UPDATE coaches SET is_default = false WHERE is_default = true;
+
 -- name: GetCoaches :many
 SELECT * FROM coaches;
 
@@ -15,6 +24,9 @@ SELECT * FROM teams;
 
 -- name: GetTeam :one
 SELECT * FROM teams WHERE id = ?;
+
+-- name: GetTeamByCoachID :one
+SELECT * FROM teams WHERE coach_id = ? AND is_default = true LIMIT 1;
 
 -- name: CreateTeam :exec
 INSERT INTO teams (name, is_default, coach_id) VALUES (?, ?, ?) RETURNING *;

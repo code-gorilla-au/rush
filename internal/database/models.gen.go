@@ -11,6 +11,7 @@ import (
 type Coach struct {
 	ID        int64
 	Name      string
+	IsDefault sql.NullBool
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }

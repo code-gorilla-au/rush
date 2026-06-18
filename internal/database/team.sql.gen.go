@@ -10,6 +10,15 @@ import (
 	"database/sql"
 )
 
+const clearDefaultCoach = `-- name: ClearDefaultCoach :exec
+UPDATE coaches SET is_default = false WHERE is_default = true
+`
+
+func (q *Queries) ClearDefaultCoach(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, clearDefaultCoach)
+	return err
+}
+
 const clearDefaultTeam = `-- name: ClearDefaultTeam :exec
 UPDATE teams SET is_default = false WHERE is_default = true
 `
@@ -20,7 +29,7 @@ func (q *Queries) ClearDefaultTeam(ctx context.Context) error {
 }
 
 const createCoach = `-- name: CreateCoach :exec
-INSERT INTO coaches (name) VALUES (?) RETURNING id, name, created_at, updated_at
+INSERT INTO coaches (name) VALUES (?) RETURNING id, name, is_default, created_at, updated_at
 `
 
 func (q *Queries) CreateCoach(ctx context.Context, name string) error {
@@ -103,7 +112,7 @@ func (q *Queries) GetCoach(ctx context.Context, id int64) (Team, error) {
 }
 
 const getCoaches = `-- name: GetCoaches :many
-SELECT id, name, created_at, updated_at FROM coaches
+SELECT id, name, is_default, created_at, updated_at FROM coaches
 `
 
 func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
@@ -118,6 +127,7 @@ func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.IsDefault,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -134,12 +144,47 @@ func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
 	return items, nil
 }
 
+const getDefaultCoach = `-- name: GetDefaultCoach :one
+SELECT id, name, is_default, created_at, updated_at FROM coaches WHERE is_default = true LIMIT 1
+`
+
+func (q *Queries) GetDefaultCoach(ctx context.Context) (Coach, error) {
+	row := q.db.QueryRowContext(ctx, getDefaultCoach)
+	var i Coach
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsDefault,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getTeam = `-- name: GetTeam :one
 SELECT id, name, is_default, coach_id, created_at, updated_at FROM teams WHERE id = ?
 `
 
 func (q *Queries) GetTeam(ctx context.Context, id int64) (Team, error) {
 	row := q.db.QueryRowContext(ctx, getTeam, id)
+	var i Team
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsDefault,
+		&i.CoachID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTeamByCoachID = `-- name: GetTeamByCoachID :one
+SELECT id, name, is_default, coach_id, created_at, updated_at FROM teams WHERE coach_id = ? AND is_default = true LIMIT 1
+`
+
+func (q *Queries) GetTeamByCoachID(ctx context.Context, coachID sql.NullInt64) (Team, error) {
+	row := q.db.QueryRowContext(ctx, getTeamByCoachID, coachID)
 	var i Team
 	err := row.Scan(
 		&i.ID,
@@ -217,6 +262,15 @@ func (q *Queries) GetTeams(ctx context.Context) ([]Team, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const setDefaultCoach = `-- name: SetDefaultCoach :exec
+UPDATE coaches SET is_default = true WHERE id = ?
+`
+
+func (q *Queries) SetDefaultCoach(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, setDefaultCoach, id)
+	return err
 }
 
 const setDefaultTeam = `-- name: SetDefaultTeam :exec

@@ -8,6 +8,7 @@ create table if not exists coaches (
 create table if not exists teams (
     id integer primary key autoincrement,
     name varchar(255) not null,
+    is_default BOOLEAN DEFAULT 0,
     coach_id integer references coaches(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

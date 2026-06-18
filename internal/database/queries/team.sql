@@ -17,7 +17,13 @@ SELECT * FROM teams;
 SELECT * FROM teams WHERE id = ?;
 
 -- name: CreateTeam :exec
-INSERT INTO teams (name, coach_id) VALUES (?, ?) RETURNING *;
+INSERT INTO teams (name, is_default, coach_id) VALUES (?, ?, ?) RETURNING *;
+
+-- name: SetDefaultTeam :exec
+UPDATE teams SET is_default = false WHERE id = ?;
+
+-- name: ClearDefaultTeam :exec
+UPDATE teams SET is_default = false WHERE is_default = true;
 
 -- name: DeleteTeam :exec
 DELETE FROM teams WHERE id = ?;

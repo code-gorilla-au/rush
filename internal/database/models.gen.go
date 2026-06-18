@@ -26,6 +26,7 @@ type Player struct {
 type Team struct {
 	ID        int64
 	Name      string
+	IsDefault sql.NullBool
 	CoachID   sql.NullInt64
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime

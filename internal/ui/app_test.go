@@ -48,7 +48,7 @@ func TestNew(t *testing.T) {
 		Test("Update should handle WindowSizeMsg", func(t *testing.T) {
 			m := New()
 			newModel, _ := m.Update(tea.WindowSizeMsg{Width: 100, Height: 50})
-			updatedModel := newModel.(model)
+			updatedModel := newModel.(RootModel)
 			odize.AssertTrue(t, updatedModel.width == 100)
 			odize.AssertTrue(t, updatedModel.height == 50)
 		}).

@@ -11,10 +11,10 @@ type ModelTitle struct {
 	width       int
 	height      int
 	theme       IceTheme
-	globalState GlobalState
+	globalState *GlobalState
 }
 
-func NewModelTitle(globalState GlobalState) *ModelTitle {
+func NewModelTitle(globalState *GlobalState) *ModelTitle {
 	return &ModelTitle{
 		globalState: globalState,
 	}
@@ -30,6 +30,18 @@ func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "c":
+			if m.globalState.Coach == nil {
+				return m, func() tea.Msg {
+					return MsgSwitchPage{NewPage: PageCreateCoach}
+				}
+			}
+		case "l":
+			if m.globalState.Coach != nil {
+				return m, func() tea.Msg {
+					return MsgSwitchPage{NewPage: PageLockerRoom}
+				}
+			}
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -52,10 +64,18 @@ func (m ModelTitle) View() tea.View {
 	}
 
 	styledLogo := m.theme.Logo.Render(strings.Trim(logo, "\n"))
+
+	var navigation string
+	if m.globalState.Coach == nil {
+		navigation = "Press " + m.theme.Hotkey.Render("c") + " to create a coach"
+	} else {
+		navigation = m.theme.Button.Render("Locker Room (l)")
+	}
+
 	footer := "Press 'q' to quit"
 	styledFooter := m.theme.Footer.Render(footer)
 
-	content := styledLogo + "\n\n" + styledFooter
+	content := styledLogo + "\n\n" + navigation + "\n\n" + styledFooter
 
 	centeredContent := lipgloss.Place(
 		m.width, m.height,

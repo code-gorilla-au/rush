@@ -6,10 +6,10 @@ type ModelLockerRoom struct {
 	width       int
 	height      int
 	theme       IceTheme
-	globalState GlobalState
+	globalState *GlobalState
 }
 
-func NewModelLockerRoom(globalState GlobalState) *ModelLockerRoom {
+func NewModelLockerRoom(globalState *GlobalState) *ModelLockerRoom {
 	return &ModelLockerRoom{
 		globalState: globalState,
 	}

@@ -7,6 +7,8 @@ type IceTheme struct {
 	Logo   lipgloss.Style
 	Footer lipgloss.Style
 	Base   lipgloss.Style
+	Button lipgloss.Style
+	Hotkey lipgloss.Style
 }
 
 // NewIceTheme returns a new IceTheme with the "ice" palette.
@@ -27,5 +29,14 @@ func NewIceTheme() IceTheme {
 		Base: lipgloss.NewStyle().
 			Background(black).
 			Foreground(white),
+		Button: lipgloss.NewStyle().
+			Foreground(black).
+			Background(iceBlue).
+			Padding(0, 3).
+			MarginTop(1).
+			Bold(true),
+		Hotkey: lipgloss.NewStyle().
+			Foreground(iceBlue).
+			Bold(true),
 	}
 }

@@ -7,6 +7,10 @@ import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
+type MsgCoachLoaded struct {
+	Coach *teams.Coach
+}
+
 type MsgSwitchPage struct {
 	NewPage Page
 }
@@ -31,13 +35,13 @@ type RootModel struct {
 	pageTitle       tea.Model
 	pageCreateCoach tea.Model
 	pageLockerRoom  tea.Model
-	globalState     GlobalState
+	globalState     *GlobalState
 	teamsSvc        *teams.Service
 }
 
 // New returns a new UI model.
 func New(teamsService *teams.Service) RootModel {
-	state := GlobalState{}
+	state := &GlobalState{}
 
 	return RootModel{
 		theme:           NewIceTheme(),
@@ -51,14 +55,21 @@ func New(teamsService *teams.Service) RootModel {
 }
 
 func (m RootModel) Init() tea.Cmd {
-	coach, _ := m.teamsSvc.GetDefaultCoach(context.Background())
-	m.globalState.Coach = &coach
-
-	return nil
+	return func() tea.Msg {
+		coach, err := m.teamsSvc.GetDefaultCoach(context.Background())
+		if err != nil {
+			return MsgCoachLoaded{Coach: nil}
+		}
+		return MsgCoachLoaded{Coach: &coach}
+	}
 }
 
 func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
+	case MsgCoachLoaded:
+		m.globalState.Coach = msg.Coach
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -69,21 +80,27 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.pageTitle, _ = m.pageTitle.Update(msg)
-		m.pageCreateCoach, _ = m.pageCreateCoach.Update(msg)
-		m.pageLockerRoom, _ = m.pageLockerRoom.Update(msg)
+		var cmd tea.Cmd
+		m.pageTitle, cmd = m.pageTitle.Update(msg)
+		cmds = append(cmds, cmd)
+		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
+		cmds = append(cmds, cmd)
+		m.pageLockerRoom, cmd = m.pageLockerRoom.Update(msg)
+		cmds = append(cmds, cmd)
 	}
 
+	var cmd tea.Cmd
 	switch m.currentPage {
 	case PageTitle:
-		m.pageTitle, _ = m.pageTitle.Update(msg)
+		m.pageTitle, cmd = m.pageTitle.Update(msg)
 	case PageCreateCoach:
-		m.pageCreateCoach, _ = m.pageCreateCoach.Update(msg)
+		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
 	case PageLockerRoom:
-		m.pageLockerRoom, _ = m.pageLockerRoom.Update(msg)
+		m.pageLockerRoom, cmd = m.pageLockerRoom.Update(msg)
 	}
+	cmds = append(cmds, cmd)
 
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
 func (m RootModel) View() tea.View {

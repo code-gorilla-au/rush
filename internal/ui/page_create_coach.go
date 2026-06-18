@@ -8,10 +8,10 @@ type ModelCreateCoach struct {
 	width       int
 	height      int
 	theme       IceTheme
-	globalState GlobalState
+	globalState *GlobalState
 }
 
-func NewModelCreateCoach(state GlobalState) *ModelCreateCoach {
+func NewModelCreateCoach(state *GlobalState) *ModelCreateCoach {
 	return &ModelCreateCoach{
 		globalState: state,
 	}

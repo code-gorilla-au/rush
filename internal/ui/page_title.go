@@ -26,6 +26,9 @@ func (m ModelTitle) Init() tea.Cmd {
 
 func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case MsgStateLoaded:
+		m.globalState.Coach = msg.Coach
+		m.globalState.Team = msg.Team
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -47,6 +50,7 @@ func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 	}
+
 	return m, nil
 }
 

@@ -10,16 +10,17 @@ import (
 
 type lockerRoomKeyMap struct {
 	components.CommonKeys
-	Back key.Binding
+	Back   key.Binding
+	Select key.Binding
 }
 
 func (k lockerRoomKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Back, k.Quit}
+	return []key.Binding{k.Select, k.Back, k.Quit}
 }
 
 func (k lockerRoomKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Back, k.Quit},
+		{k.Select, k.Back, k.Quit},
 	}
 }
 
@@ -29,6 +30,10 @@ func newLockerRoomKeyMap() lockerRoomKeyMap {
 		Back: key.NewBinding(
 			key.WithKeys("esc"),
 			key.WithHelp("esc", "back to title"),
+		),
+		Select: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "select"),
 		),
 	}
 }
@@ -72,6 +77,12 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Back):
 			return m, func() tea.Msg {
 				return MsgSwitchPage{NewPage: PageTitle}
+			}
+		case key.Matches(msg, m.keys.Select):
+			if m.list.SelectedItem() == components.ItemPlayers {
+				return m, func() tea.Msg {
+					return MsgSwitchPage{NewPage: PageLockerPlayers}
+				}
 			}
 		}
 	case tea.WindowSizeMsg:

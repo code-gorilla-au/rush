@@ -105,6 +105,8 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageLockerRoom, cmd = m.pageLockerRoom.Update(msg)
 		cmds = append(cmds, cmd)
+		m.pageLockerPlayers, cmd = m.pageLockerPlayers.Update(msg)
+		cmds = append(cmds, cmd)
 	}
 
 	var cmd tea.Cmd
@@ -115,6 +117,8 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
 	case PageLockerRoom:
 		m.pageLockerRoom, cmd = m.pageLockerRoom.Update(msg)
+	case PageLockerPlayers:
+		m.pageLockerPlayers, cmd = m.pageLockerPlayers.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 
@@ -133,6 +137,8 @@ func (m RootModel) View() tea.View {
 		return m.pageCreateCoach.View()
 	case PageLockerRoom:
 		return m.pageLockerRoom.View()
+	case PageLockerPlayers:
+		return m.pageLockerPlayers.View()
 	}
 
 	return tea.NewView("unknown page")

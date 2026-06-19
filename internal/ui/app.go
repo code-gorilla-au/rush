@@ -22,6 +22,7 @@ const (
 	PageTitle Page = iota + 1
 	PageCreateCoach
 	PageLockerRoom
+	PageLockerPlayers
 )
 
 type GlobalState struct {
@@ -34,16 +35,17 @@ func (m *GlobalState) Context() context.Context {
 }
 
 type RootModel struct {
-	ctx             context.Context
-	width           int
-	height          int
-	theme           IceTheme
-	currentPage     Page
-	pageTitle       tea.Model
-	pageCreateCoach tea.Model
-	pageLockerRoom  tea.Model
-	globalState     *GlobalState
-	teamsSvc        *teams.Service
+	ctx               context.Context
+	width             int
+	height            int
+	theme             IceTheme
+	currentPage       Page
+	pageTitle         tea.Model
+	pageCreateCoach   tea.Model
+	pageLockerRoom    tea.Model
+	pageLockerPlayers tea.Model
+	globalState       *GlobalState
+	teamsSvc          *teams.Service
 }
 
 // New returns a new UI model.
@@ -51,14 +53,15 @@ func New(teamsService *teams.Service) RootModel {
 	state := &GlobalState{}
 
 	return RootModel{
-		ctx:             context.Background(),
-		theme:           NewIceTheme(),
-		currentPage:     PageTitle,
-		pageTitle:       NewModelTitle(state),
-		pageCreateCoach: NewModelCreateCoach(state, teamsService),
-		pageLockerRoom:  NewModelLockerRoom(state),
-		globalState:     state,
-		teamsSvc:        teamsService,
+		ctx:               context.Background(),
+		theme:             NewIceTheme(),
+		currentPage:       PageTitle,
+		pageTitle:         NewModelTitle(state),
+		pageCreateCoach:   NewModelCreateCoach(state, teamsService),
+		pageLockerRoom:    NewModelLockerRoom(state),
+		pageLockerPlayers: NewModelLockerPlayers(state, teamsService),
+		globalState:       state,
+		teamsSvc:          teamsService,
 	}
 }
 

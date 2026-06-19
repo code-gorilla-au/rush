@@ -40,6 +40,7 @@ type ModelLockerRoom struct {
 	globalState *GlobalState
 	keys        lockerRoomKeyMap
 	footer      components.Footer
+	list        components.LockerRoomList
 }
 
 func NewModelLockerRoom(globalState *GlobalState) *ModelLockerRoom {
@@ -49,6 +50,7 @@ func NewModelLockerRoom(globalState *GlobalState) *ModelLockerRoom {
 		keys:        keys,
 		footer:      components.NewFooter(keys),
 		theme:       NewIceTheme(),
+		list:        components.NewLockerRoomList(),
 	}
 }
 
@@ -57,6 +59,8 @@ func (m *ModelLockerRoom) Init() tea.Cmd {
 }
 
 func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m.list.Update(msg)
+
 	switch msg := msg.(type) {
 	case MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
@@ -87,7 +91,7 @@ func (m *ModelLockerRoom) View() tea.View {
 		lipgloss.Center,
 		m.theme.Logo.Render("LOCKER ROOM"),
 		"",
-		"Welcome to the locker room!",
+		m.list.View(m.theme.Base, m.theme.ListSelected),
 		"",
 		m.footer.View(m.theme.Footer),
 	)

@@ -4,11 +4,12 @@ import "charm.land/lipgloss/v2"
 
 // IceTheme defines the "ice" color palette and styles.
 type IceTheme struct {
-	Logo   lipgloss.Style
-	Footer lipgloss.Style
-	Base   lipgloss.Style
-	Button lipgloss.Style
-	Hotkey lipgloss.Style
+	Logo         lipgloss.Style
+	Footer       lipgloss.Style
+	Base         lipgloss.Style
+	Button       lipgloss.Style
+	Hotkey       lipgloss.Style
+	ListSelected lipgloss.Style
 }
 
 // NewIceTheme returns a new IceTheme with the "ice" palette.
@@ -36,6 +37,9 @@ func NewIceTheme() IceTheme {
 			MarginTop(1).
 			Bold(true),
 		Hotkey: lipgloss.NewStyle().
+			Foreground(iceBlue).
+			Bold(true),
+		ListSelected: lipgloss.NewStyle().
 			Foreground(iceBlue).
 			Bold(true),
 	}

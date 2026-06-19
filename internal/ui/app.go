@@ -7,8 +7,9 @@ import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
-type MsgCoachLoaded struct {
+type MsgStateLoaded struct {
 	Coach *teams.Coach
+	Team  *teams.Team
 }
 
 type MsgSwitchPage struct {
@@ -25,9 +26,11 @@ const (
 
 type GlobalState struct {
 	Coach *teams.Coach
+	Team  *teams.Team
 }
 
 type RootModel struct {
+	ctx             context.Context
 	width           int
 	height          int
 	theme           IceTheme
@@ -44,6 +47,7 @@ func New(teamsService *teams.Service) RootModel {
 	state := &GlobalState{}
 
 	return RootModel{
+		ctx:             context.Background(),
 		theme:           NewIceTheme(),
 		currentPage:     PageTitle,
 		pageTitle:       NewModelTitle(state),
@@ -56,11 +60,17 @@ func New(teamsService *teams.Service) RootModel {
 
 func (m RootModel) Init() tea.Cmd {
 	return func() tea.Msg {
-		coach, err := m.teamsSvc.GetDefaultCoach(context.Background())
+		coach, err := m.teamsSvc.GetDefaultCoach(m.ctx)
 		if err != nil {
-			return MsgCoachLoaded{Coach: nil}
+			return MsgStateLoaded{Coach: nil}
 		}
-		return MsgCoachLoaded{Coach: &coach}
+
+		team, err := m.teamsSvc.GetTeamByCoachID(m.ctx, coach.ID)
+		if err != nil {
+			return MsgStateLoaded{Coach: nil}
+		}
+
+		return MsgStateLoaded{Coach: &coach, Team: &team}
 	}
 }
 
@@ -68,8 +78,9 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgCoachLoaded:
+	case MsgStateLoaded:
 		m.globalState.Coach = msg.Coach
+		m.globalState.Team = msg.Team
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":

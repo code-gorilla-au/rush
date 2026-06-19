@@ -12,3 +12,28 @@ func fromCoachModel(m database.Coach) Coach {
 		UpdatedAt: m.UpdatedAt.Time,
 	}
 }
+
+func fromTeamModel(m database.Team, p []database.Player) Team {
+	players := make([]Player, len(p))
+
+	for i, player := range p {
+		players[i] = fromPlayerModel(player)
+	}
+
+	return Team{
+		ID:        m.ID,
+		Name:      m.Name,
+		Players:   players,
+		CreatedAt: m.CreatedAt.Time,
+		UpdatedAt: m.UpdatedAt.Time,
+	}
+}
+
+func fromPlayerModel(m database.Player) Player {
+	return Player{
+		ID:        m.ID,
+		Name:      m.Name,
+		CreatedAt: m.CreatedAt.Time,
+		UpdatedAt: m.UpdatedAt.Time,
+	}
+}

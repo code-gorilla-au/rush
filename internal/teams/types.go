@@ -31,4 +31,5 @@ type Player struct {
 
 var (
 	ErrCoachNotFound = errors.New("coach not found")
+	ErrTeamNotFound  = errors.New("team not found")
 )

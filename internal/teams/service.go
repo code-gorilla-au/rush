@@ -45,6 +45,30 @@ func (s *Service) GetDefaultCoach(ctx context.Context) (Coach, error) {
 	return fromCoachModel(model), nil
 }
 
+func (s *Service) GetTeamByCoachID(ctx context.Context, id int64) (Team, error) {
+	model, err := s.store.GetTeamByCoachID(ctx, sql.NullInt64{
+		Valid: true,
+		Int64: id,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Team{}, ErrTeamNotFound
+		}
+
+		return Team{}, fmt.Errorf("getting team: %w", err)
+	}
+
+	pModel, err := s.store.GetTeamMembers(ctx, sql.NullInt64{
+		Int64: model.ID,
+		Valid: true,
+	})
+	if err != nil {
+		return Team{}, fmt.Errorf("getting team members: %w", err)
+	}
+
+	return fromTeamModel(model, pModel), nil
+}
+
 func (s *Service) SetDefaultTeam(ctx context.Context, id int64) error {
 	return s.store.SetDefaultTeam(ctx, id)
 }

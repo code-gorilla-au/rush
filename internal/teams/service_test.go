@@ -141,6 +141,35 @@ func TestService(t *testing.T) {
 			odize.AssertNoError(t, sErr)
 			odize.AssertTrue(t, coach.ID > 0)
 		}).
+		Test("UpdatePlayer should update player name", func(t *testing.T) {
+			ctx := t.Context()
+			coach, err := s.CreateCoach(ctx, "Coach", true)
+			odize.AssertNoError(t, err)
+
+			team, err := s.CreateTeam(ctx, "Team", coach.ID, true)
+			odize.AssertNoError(t, err)
+			odize.AssertTrue(t, len(team.Players) > 0)
+
+			player := team.Players[0]
+			newName := "Updated Name"
+
+			err = s.UpdatePlayer(ctx, player.ID, newName)
+			odize.AssertNoError(t, err)
+
+			// Verify
+			members, err := queries.GetTeamMembers(ctx, sql.NullInt64{Int64: team.ID, Valid: true})
+			odize.AssertNoError(t, err)
+
+			found := false
+			for _, m := range members {
+				if m.ID == player.ID {
+					odize.AssertEqual(t, newName, m.Name)
+					found = true
+					break
+				}
+			}
+			odize.AssertTrue(t, found)
+		}).
 		Run()
 
 	odize.AssertNoError(t, err)

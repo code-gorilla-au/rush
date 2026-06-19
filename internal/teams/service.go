@@ -126,6 +126,18 @@ func (s *Service) SetDefaultTeam(ctx context.Context, id int64) error {
 	return s.store.SetDefaultTeam(ctx, id)
 }
 
+func (s *Service) UpdatePlayer(ctx context.Context, id int64, name string) error {
+	err := s.store.UpdatePlayer(ctx, database.UpdatePlayerParams{
+		ID:   id,
+		Name: name,
+	})
+	if err != nil {
+		return fmt.Errorf("updating player: %w", err)
+	}
+
+	return nil
+}
+
 func (s *Service) ClearDefaultTeam(ctx context.Context) error {
 	return s.store.ClearDefaultTeam(ctx)
 }

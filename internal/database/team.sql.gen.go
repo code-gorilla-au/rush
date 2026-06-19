@@ -302,3 +302,17 @@ func (q *Queries) SetDefaultTeam(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, setDefaultTeam, id)
 	return err
 }
+
+const updatePlayer = `-- name: UpdatePlayer :exec
+UPDATE players SET name = ? WHERE id = ?
+`
+
+type UpdatePlayerParams struct {
+	Name string
+	ID   int64
+}
+
+func (q *Queries) UpdatePlayer(ctx context.Context, arg UpdatePlayerParams) error {
+	_, err := q.db.ExecContext(ctx, updatePlayer, arg.Name, arg.ID)
+	return err
+}

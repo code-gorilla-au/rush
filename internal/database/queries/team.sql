@@ -46,5 +46,8 @@ SELECT * FROM players WHERE team_id = ?;
 -- name: CreatePlayer :one
 INSERT INTO players (name, team_id) VALUES (?,?) RETURNING *;
 
+-- name: UpdatePlayer :exec
+UPDATE players SET name = ? WHERE id = ?;
+
 -- name: DeletePlayer :exec
 DELETE FROM players WHERE id = ?;

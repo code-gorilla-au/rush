@@ -17,7 +17,7 @@ func TestModelTitle(t *testing.T) {
 			m.width = 100
 			m.height = 50
 
-			_, cmd := m.Update(tea.KeyPressMsg{Text: "c"})
+			_, cmd := m.Update(tea.KeyPressMsg{Text: m.keys.CreateCoach.Keys()[0]})
 			odize.AssertTrue(t, cmd != nil)
 
 			msg := cmd()
@@ -33,7 +33,7 @@ func TestModelTitle(t *testing.T) {
 			m.width = 100
 			m.height = 50
 
-			_, cmd := m.Update(tea.KeyPressMsg{Text: "l"})
+			_, cmd := m.Update(tea.KeyPressMsg{Text: m.keys.LockerRoom.Keys()[0]})
 			odize.AssertTrue(t, cmd != nil)
 
 			msg := cmd()

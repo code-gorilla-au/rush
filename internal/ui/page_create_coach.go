@@ -1,11 +1,65 @@
 package ui
 
 import (
+	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/components"
 )
+
+type createCoachKeyMap struct {
+	components.CommonKeys
+	Back     key.Binding
+	Enter    key.Binding
+	Up       key.Binding
+	Down     key.Binding
+	Tab      key.Binding
+	ShiftTab key.Binding
+}
+
+func (k createCoachKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Enter, k.Back, k.Quit}
+}
+
+func (k createCoachKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Enter, k.Back},
+		{k.Up, k.Down, k.Tab, k.ShiftTab},
+		{k.Quit},
+	}
+}
+
+func newCreateCoachKeyMap() createCoachKeyMap {
+	return createCoachKeyMap{
+		CommonKeys: components.NewCommonKeys(),
+		Back: key.NewBinding(
+			key.WithKeys("esc"),
+			key.WithHelp("esc", "back"),
+		),
+		Enter: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "continue"),
+		),
+		Up: key.NewBinding(
+			key.WithKeys("up"),
+			key.WithHelp("↑", "up"),
+		),
+		Down: key.NewBinding(
+			key.WithKeys("down"),
+			key.WithHelp("↓", "down"),
+		),
+		Tab: key.NewBinding(
+			key.WithKeys("tab"),
+			key.WithHelp("tab", "next"),
+		),
+		ShiftTab: key.NewBinding(
+			key.WithKeys("shift+tab"),
+			key.WithHelp("shift+tab", "prev"),
+		),
+	}
+}
 
 type ModelCreateCoach struct {
 	width       int
@@ -18,6 +72,8 @@ type ModelCreateCoach struct {
 	teamInput  textinput.Model
 	focusIndex int
 	err        error
+	keys       createCoachKeyMap
+	footer     components.Footer
 }
 
 func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service) *ModelCreateCoach {
@@ -32,12 +88,16 @@ func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service) *ModelCrea
 	t.CharLimit = 156
 	c.SetWidth(20)
 
+	keys := newCreateCoachKeyMap()
+
 	return &ModelCreateCoach{
 		globalState: state,
 		teamsSvc:    teamsSvc,
 		coachInput:  c,
 		teamInput:   t,
 		theme:       NewIceTheme(),
+		keys:        keys,
+		footer:      components.NewFooter(keys),
 	}
 }
 
@@ -52,34 +112,35 @@ func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.footer.Update(msg)
 
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "tab", "shift+tab", "up", "down":
-			s := msg.String()
+		switch {
+		case key.Matches(msg, m.keys.Quit):
+			return m, tea.Quit
 
-			if s == "up" || s == "shift+tab" {
-				m.focusIndex--
-			} else {
-				m.focusIndex++
-			}
-
-			if m.focusIndex > 1 {
-				m.focusIndex = 0
-			} else if m.focusIndex < 0 {
+		case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.ShiftTab):
+			m.focusIndex--
+			if m.focusIndex < 0 {
 				m.focusIndex = 1
 			}
-
 			m.updateFocus()
 
-		case "enter":
+		case key.Matches(msg, m.keys.Down), key.Matches(msg, m.keys.Tab):
+			m.focusIndex++
+			if m.focusIndex > 1 {
+				m.focusIndex = 0
+			}
+			m.updateFocus()
+
+		case key.Matches(msg, m.keys.Enter):
 			if m.focusIndex == 1 {
 				return m, m.submit()
 			}
 			m.focusIndex++
 			m.updateFocus()
 
-		case "esc":
+		case key.Matches(msg, m.keys.Back):
 			return m, func() tea.Msg {
 				return MsgSwitchPage{NewPage: PageTitle}
 			}
@@ -138,11 +199,6 @@ func (m *ModelCreateCoach) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
 
-	s := lipgloss.NewStyle().
-		Width(m.width).
-		Height(m.height).
-		Align(lipgloss.Center, lipgloss.Center)
-
 	form := lipgloss.JoinVertical(
 		lipgloss.Left,
 		m.theme.Logo.Render("RUSH - NEW CAREER"),
@@ -153,9 +209,19 @@ func (m *ModelCreateCoach) View() tea.View {
 		"Team Details",
 		m.teamInput.View(),
 		"",
-		m.theme.Hotkey.Render("enter")+" continue • "+m.theme.Hotkey.Render("esc")+" back",
+		m.footer.View(m.theme.Footer),
 	)
 
-	view.Content = s.Render(form)
+	centeredContent := lipgloss.Place(
+		m.width, m.height,
+		lipgloss.Center, lipgloss.Center,
+		form,
+	)
+
+	view.Content = m.theme.Base.
+		Width(m.width).
+		Height(m.height).
+		Render(centeredContent)
+
 	return view
 }

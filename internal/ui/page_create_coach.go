@@ -106,8 +106,6 @@ func (m *ModelCreateCoach) Init() tea.Cmd {
 }
 
 func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
-
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -115,47 +113,68 @@ func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.footer.Update(msg)
 
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-
-		case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.ShiftTab):
-			m.focusIndex--
-			if m.focusIndex < 0 {
-				m.focusIndex = 1
-			}
-			m.updateFocus()
-
-		case key.Matches(msg, m.keys.Down), key.Matches(msg, m.keys.Tab):
-			m.focusIndex++
-			if m.focusIndex > 1 {
-				m.focusIndex = 0
-			}
-			m.updateFocus()
-
-		case key.Matches(msg, m.keys.Enter):
-			if m.focusIndex == 1 {
-				return m, m.submit()
-			}
-			m.focusIndex++
-			m.updateFocus()
-
-		case key.Matches(msg, m.keys.Back):
-			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageTitle}
-			}
+		if cmd, done := m.handleKeyMsg(msg); done {
+			return m, cmd
 		}
 
 	case MsgStateUpdated:
-		m.globalState.Coach = msg.Coach
-		m.globalState.Team = msg.Team
-
-		return m, func() tea.Msg {
-			return MsgSwitchPage{NewPage: PageLockerRoom}
-		}
+		return m.handleStateUpdated(msg)
 	}
 
+	return m.updateInputs(msg)
+}
+
+func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return tea.Quit, true
+
+	case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.ShiftTab):
+		m.focusIndex--
+		if m.focusIndex < 0 {
+			m.focusIndex = 1
+		}
+		m.updateFocus()
+		return nil, false
+
+	case key.Matches(msg, m.keys.Down), key.Matches(msg, m.keys.Tab):
+		m.focusIndex++
+		if m.focusIndex > 1 {
+			m.focusIndex = 0
+		}
+		m.updateFocus()
+		return nil, false
+
+	case key.Matches(msg, m.keys.Enter):
+		if m.focusIndex == 1 {
+			return m.submit(), true
+		}
+		m.focusIndex++
+		m.updateFocus()
+		return nil, false
+
+	case key.Matches(msg, m.keys.Back):
+		return func() tea.Msg {
+			return MsgSwitchPage{NewPage: PageTitle}
+		}, true
+	}
+
+	return nil, false
+}
+
+func (m *ModelCreateCoach) handleStateUpdated(msg MsgStateUpdated) (tea.Model, tea.Cmd) {
+	m.globalState.Coach = msg.Coach
+	m.globalState.Team = msg.Team
+
+	return m, func() tea.Msg {
+		return MsgSwitchPage{NewPage: PageLockerRoom}
+	}
+}
+
+func (m *ModelCreateCoach) updateInputs(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
 	var cmd tea.Cmd
+
 	m.coachInput, cmd = m.coachInput.Update(msg)
 	cmds = append(cmds, cmd)
 

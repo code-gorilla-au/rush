@@ -10,6 +10,8 @@ type IceTheme struct {
 	Button       lipgloss.Style
 	Hotkey       lipgloss.Style
 	ListSelected lipgloss.Style
+	CoachTeam    lipgloss.Style
+	CoachName    lipgloss.Style
 }
 
 // NewIceTheme returns a new IceTheme with the "ice" palette.
@@ -42,5 +44,12 @@ func NewIceTheme() IceTheme {
 		ListSelected: lipgloss.NewStyle().
 			Foreground(iceBlue).
 			Bold(true),
+		CoachTeam: lipgloss.NewStyle().
+			Foreground(iceBlue).
+			Bold(true),
+		CoachName: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#555555")).
+			Italic(true).
+			Faint(true),
 	}
 }

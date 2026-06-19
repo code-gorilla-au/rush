@@ -3,6 +3,7 @@ module github.com/code-gorilla-au/rush
 go 1.26.3
 
 require (
+	charm.land/bubbles/v2 v2.1.0
 	charm.land/bubbletea/v2 v2.0.7
 	charm.land/lipgloss/v2 v2.0.4
 	github.com/code-gorilla-au/env v1.1.1
@@ -11,6 +12,7 @@ require (
 )
 
 require (
+	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260615092913-2399af76d5b1 // indirect
 	github.com/charmbracelet/x/ansi v0.11.7 // indirect

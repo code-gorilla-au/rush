@@ -69,6 +69,33 @@ func (s *Service) GetTeamByCoachID(ctx context.Context, id int64) (Team, error) 
 	return fromTeamModel(model, pModel), nil
 }
 
+func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
+	err := s.store.CreateTeam(ctx, database.CreateTeamParams{
+		Name: name,
+		IsDefault: sql.NullBool{
+			Bool:  isDefault,
+			Valid: true,
+		},
+		CoachID: sql.NullInt64{
+			Int64: coachID,
+			Valid: true,
+		},
+	})
+	if err != nil {
+		return Team{}, fmt.Errorf("creating team: %w", err)
+	}
+
+	model, err := s.store.GetTeamByCoachID(ctx, sql.NullInt64{
+		Int64: coachID,
+		Valid: true,
+	})
+	if err != nil {
+		return Team{}, fmt.Errorf("getting created team: %w", err)
+	}
+
+	return fromTeamModel(model, nil), nil
+}
+
 func (s *Service) SetDefaultTeam(ctx context.Context, id int64) error {
 	return s.store.SetDefaultTeam(ctx, id)
 }

@@ -29,6 +29,10 @@ type GlobalState struct {
 	Team  *teams.Team
 }
 
+func (m *GlobalState) Context() context.Context {
+	return context.Background()
+}
+
 type RootModel struct {
 	ctx             context.Context
 	width           int
@@ -51,7 +55,7 @@ func New(teamsService *teams.Service) RootModel {
 		theme:           NewIceTheme(),
 		currentPage:     PageTitle,
 		pageTitle:       NewModelTitle(state),
-		pageCreateCoach: NewModelCreateCoach(state),
+		pageCreateCoach: NewModelCreateCoach(state, teamsService),
 		pageLockerRoom:  NewModelLockerRoom(state),
 		globalState:     state,
 		teamsSvc:        teamsService,

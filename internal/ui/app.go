@@ -7,7 +7,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
-type MsgStateLoaded struct {
+type MsgStateUpdated struct {
 	Coach *teams.Coach
 	Team  *teams.Team
 }
@@ -66,15 +66,15 @@ func (m RootModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		coach, err := m.teamsSvc.GetDefaultCoach(m.ctx)
 		if err != nil {
-			return MsgStateLoaded{Coach: nil}
+			return MsgStateUpdated{Coach: nil}
 		}
 
 		team, err := m.teamsSvc.GetTeamByCoachID(m.ctx, coach.ID)
 		if err != nil {
-			return MsgStateLoaded{Coach: nil}
+			return MsgStateUpdated{Coach: nil}
 		}
 
-		return MsgStateLoaded{Coach: &coach, Team: &team}
+		return MsgStateUpdated{Coach: &coach, Team: &team}
 	}
 }
 
@@ -82,7 +82,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateLoaded:
+	case MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case tea.KeyMsg:

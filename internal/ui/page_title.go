@@ -26,7 +26,7 @@ func (m ModelTitle) Init() tea.Cmd {
 
 func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case MsgStateLoaded:
+	case MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case tea.KeyMsg:

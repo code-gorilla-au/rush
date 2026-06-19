@@ -7,11 +7,6 @@ import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
-type MsgCoachCreated struct {
-	Coach teams.Coach
-	Team  teams.Team
-}
-
 type ModelCreateCoach struct {
 	width       int
 	height      int
@@ -90,9 +85,10 @@ func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-	case MsgCoachCreated:
-		m.globalState.Coach = &msg.Coach
-		m.globalState.Team = &msg.Team
+	case MsgStateUpdated:
+		m.globalState.Coach = msg.Coach
+		m.globalState.Team = msg.Team
+
 		return m, func() tea.Msg {
 			return MsgSwitchPage{NewPage: PageLockerRoom}
 		}
@@ -131,9 +127,9 @@ func (m *ModelCreateCoach) submit() tea.Cmd {
 			return err
 		}
 
-		return MsgCoachCreated{
-			Coach: coach,
-			Team:  team,
+		return MsgStateUpdated{
+			Coach: &coach,
+			Team:  &team,
 		}
 	}
 }

@@ -15,13 +15,13 @@ func NewModelLockerRoom(globalState *GlobalState) *ModelLockerRoom {
 	}
 }
 
-func (m ModelLockerRoom) Init() tea.Cmd {
+func (m *ModelLockerRoom) Init() tea.Cmd {
 	return nil
 }
 
-func (m ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case MsgStateLoaded:
+	case MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case tea.KeyMsg:
@@ -37,6 +37,6 @@ func (m ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m ModelLockerRoom) View() tea.View {
+func (m *ModelLockerRoom) View() tea.View {
 	return tea.NewView("locker room")
 }

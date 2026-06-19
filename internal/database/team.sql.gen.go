@@ -50,7 +50,7 @@ func (q *Queries) CreateCoach(ctx context.Context, arg CreateCoachParams) (Coach
 	return i, err
 }
 
-const createPlayer = `-- name: CreatePlayer :exec
+const createPlayer = `-- name: CreatePlayer :one
 INSERT INTO players (name, team_id) VALUES (?,?) RETURNING id, name, team_id, created_at, updated_at
 `
 
@@ -59,9 +59,17 @@ type CreatePlayerParams struct {
 	TeamID sql.NullInt64
 }
 
-func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) error {
-	_, err := q.db.ExecContext(ctx, createPlayer, arg.Name, arg.TeamID)
-	return err
+func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error) {
+	row := q.db.QueryRowContext(ctx, createPlayer, arg.Name, arg.TeamID)
+	var i Player
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.TeamID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const createTeam = `-- name: CreateTeam :exec

@@ -23,7 +23,7 @@ type CoachStore interface {
 }
 
 type PlayerStore interface {
-	CreatePlayer(ctx context.Context, arg database.CreatePlayerParams) error
+	CreatePlayer(ctx context.Context, arg database.CreatePlayerParams) (database.Player, error)
 	GetTeamMembers(ctx context.Context, teamID sql.NullInt64) ([]database.Player, error)
 }
 

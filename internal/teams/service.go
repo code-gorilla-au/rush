@@ -93,7 +93,33 @@ func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, is
 		return Team{}, fmt.Errorf("getting created team: %w", err)
 	}
 
-	return fromTeamModel(model, nil), nil
+	playersModel, err := s.createPlayers(ctx, model.ID)
+	if err != nil {
+		return Team{}, fmt.Errorf("creating players: %w", err)
+	}
+
+	return fromTeamModel(model, playersModel), nil
+}
+
+func (s *Service) createPlayers(ctx context.Context, teamID int64) ([]database.Player, error) {
+	modelPlayers := make([]database.Player, 5)
+
+	for i := 0; i < 5; i++ {
+		model, err := s.store.CreatePlayer(ctx, database.CreatePlayerParams{
+			Name: "Player " + fmt.Sprint(i+1),
+			TeamID: sql.NullInt64{
+				Int64: teamID,
+				Valid: true,
+			},
+		})
+		if err != nil {
+			return modelPlayers, fmt.Errorf("creating player: %w", err)
+		}
+
+		modelPlayers[i] = model
+	}
+
+	return modelPlayers, nil
 }
 
 func (s *Service) SetDefaultTeam(ctx context.Context, id int64) error {

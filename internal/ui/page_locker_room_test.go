@@ -31,6 +31,27 @@ func TestModelLockerRoom_Selection(t *testing.T) {
 		}
 	})
 
+	group.Test("should route to locker playbooks when playbooks item is selected", func(t *testing.T) {
+		state := &GlobalState{}
+		m := NewModelLockerRoom(state)
+
+		// Select Playbooks (it's the second item)
+		m.Update(tea.KeyPressMsg{Text: "down"})
+		odize.AssertEqual(t, components.ItemPlaybooks, m.list.SelectedItem())
+
+		// Simulate Enter key press
+		_, cmd := m.Update(tea.KeyPressMsg{Text: "enter"})
+
+		odize.AssertTrue(t, cmd != nil)
+		msg := cmd()
+		switch v := msg.(type) {
+		case MsgSwitchPage:
+			odize.AssertEqual(t, PageLockerPlaybooks, v.NewPage)
+		default:
+			t.Fatalf("expected MsgSwitchPage, got %T", msg)
+		}
+	})
+
 	err := group.Run()
 	odize.AssertNoError(t, err)
 }

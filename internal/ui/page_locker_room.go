@@ -79,9 +79,14 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return MsgSwitchPage{NewPage: PageTitle}
 			}
 		case key.Matches(msg, m.keys.Select):
-			if m.list.SelectedItem() == components.ItemPlayers {
+			switch m.list.SelectedItem() {
+			case components.ItemPlayers:
 				return m, func() tea.Msg {
 					return MsgSwitchPage{NewPage: PageLockerPlayers}
+				}
+			case components.ItemPlaybooks:
+				return m, func() tea.Msg {
+					return MsgSwitchPage{NewPage: PageLockerPlaybooks}
 				}
 			}
 		}

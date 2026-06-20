@@ -88,6 +88,58 @@ func TestService(t *testing.T) {
 			odize.AssertEqual(t, 1, len(playbooks))
 			odize.AssertEqual(t, "Team Playbook", playbooks[0].Name)
 		}).
+		Test("DeletePlaybook should delete a playbook", func(t *testing.T) {
+			ctx := t.Context()
+			params := PlaybookParams{
+				TeamID:     1,
+				Name:       "To Be Deleted",
+				Formations: []Formation{{Name: "F1"}},
+			}
+
+			pb, err := s.CreatePlaybook(ctx, params)
+			odize.AssertNoError(t, err)
+
+			err = s.DeletePlaybook(ctx, pb.ID)
+			odize.AssertNoError(t, err)
+
+			// Verify it is deleted
+			playbooks, err := s.GetTeamPlaybooks(ctx, 1)
+			odize.AssertNoError(t, err)
+
+			found := false
+			for _, p := range playbooks {
+				if p.ID == pb.ID {
+					found = true
+					break
+				}
+			}
+			odize.AssertFalse(t, found)
+		}).
+		Test("UpdatePlaybookFormations should update formations", func(t *testing.T) {
+			ctx := t.Context()
+			params := PlaybookParams{
+				TeamID:     1,
+				Name:       "To Be Updated",
+				Formations: []Formation{{Name: "F1"}},
+			}
+
+			pb, err := s.CreatePlaybook(ctx, params)
+			odize.AssertNoError(t, err)
+
+			newFormations := []Formation{
+				{
+					Name:  "New Formation",
+					Lane1: 5,
+				},
+			}
+
+			updatedPb, err := s.UpdatePlaybookFormations(ctx, pb.ID, newFormations)
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, pb.ID, updatedPb.ID)
+			odize.AssertEqual(t, 1, len(updatedPb.Formations))
+			odize.AssertEqual(t, "New Formation", updatedPb.Formations[0].Name)
+			odize.AssertEqual(t, 5, updatedPb.Formations[0].Lane1)
+		}).
 		Run()
 
 	odize.AssertNoError(t, err)

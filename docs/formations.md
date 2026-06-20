@@ -97,7 +97,7 @@ Description: Players are stacked on the outside lanes, leaving the centre open, 
 |---|---|---|
 | x |   | x |
 | x |   | x |
-| x |   |   |
+|   |   | x |
 
 ```
 
@@ -110,7 +110,7 @@ Description: Players are stacked on the outside lanes, leaving the centre open, 
 |---|---|---|
 | x |   | x |
 | x |   | x |
-|   |   | x |
+| x |   |   |
 
 ```
 
@@ -166,5 +166,52 @@ Description: Heavy presence in the centre and right, leaving the left open.
 |   | x | x |
 |   | x | x |
 |   | x |   |
+
+```
+
+### Single Lane
+
+#### Single Lane Left
+
+name: single-lane-left
+Description: All players are concentrated in the left lane.
+
+```markdown
+|---|---|---|
+| x |   |   |
+| x |   |   |
+| x |   |   |
+| x |   |   |
+| x |   |   |
+
+```
+
+#### Single Lane Center
+
+name: single-lane-centre
+Description: All players are concentrated in the center lane.
+
+```markdown
+|---|---|---|
+|   | x |   |
+|   | x |   |
+|   | x |   |
+|   | x |   |
+|   | x |   |
+
+```
+
+#### Single Lane Right
+
+name: single-lane-right
+Description: All players are concentrated in the right lane.
+
+```markdown
+|---|---|---|
+|   |   | x |
+|   |   | x |
+|   |   | x |
+|   |   | x |
+|   |   | x |
 
 ```

@@ -74,3 +74,13 @@ tasks:
     deps: [gen-coverage]
     cmds:
       - go tool cover -html={{ .GOLANG_COVERAGE }}
+
+  db-clean:
+    desc: Run db clean
+    cmds:
+      - rm -f ./db/rush.db
+  db-reset:
+    desc: Run db clean and migrate
+    deps: [db-clean]
+    cmds:
+      - go run ./cmd/local/...

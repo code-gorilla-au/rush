@@ -78,7 +78,8 @@ tasks:
   db-clean:
     desc: Run db clean
     cmds:
-      - rm -f ./db/rush.db
+      - rm -rf ./.db
+      - mkdir ./.db
   db-reset:
     desc: Run db clean and migrate
     deps: [db-clean]

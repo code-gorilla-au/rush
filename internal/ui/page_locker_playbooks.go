@@ -111,6 +111,9 @@ func (m *ModelLockerPlaybooks) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case MsgStateUpdated:
+		m.globalState.Coach = msg.Coach
+		m.globalState.Team = msg.Team
 	case MsgPlaybooksLoaded:
 		m.playbooksLoaded = true
 		m.playbookList = components.NewPlaybookList(msg.Playbooks)
@@ -189,7 +192,7 @@ func (m *ModelLockerPlaybooks) updateCreateName(msg tea.Msg) tea.Cmd {
 func (m *ModelLockerPlaybooks) updateAddFormations(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "enter" {
+		if key.Matches(msg, m.keys.Enter) {
 			if len(m.newFormations) < 10 {
 				m.newFormations = append(m.newFormations, m.formationList.SelectedItem())
 			}

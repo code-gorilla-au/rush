@@ -29,7 +29,7 @@ func (q *Queries) ClearDefaultTeam(ctx context.Context) error {
 }
 
 const createCoach = `-- name: CreateCoach :one
-INSERT INTO coaches (name, is_default) VALUES (?, ?) RETURNING id, name, is_default, created_at, updated_at
+INSERT INTO coaches (name, is_default) VALUES (?, ?) RETURNING id, name, is_default, is_human, created_at, updated_at
 `
 
 type CreateCoachParams struct {
@@ -44,6 +44,7 @@ func (q *Queries) CreateCoach(ctx context.Context, arg CreateCoachParams) (Coach
 		&i.ID,
 		&i.Name,
 		&i.IsDefault,
+		&i.IsHuman,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -133,7 +134,7 @@ func (q *Queries) GetCoach(ctx context.Context, id int64) (Team, error) {
 }
 
 const getCoaches = `-- name: GetCoaches :many
-SELECT id, name, is_default, created_at, updated_at FROM coaches
+SELECT id, name, is_default, is_human, created_at, updated_at FROM coaches
 `
 
 func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
@@ -149,6 +150,7 @@ func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
 			&i.ID,
 			&i.Name,
 			&i.IsDefault,
+			&i.IsHuman,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -166,7 +168,7 @@ func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
 }
 
 const getDefaultCoach = `-- name: GetDefaultCoach :one
-SELECT id, name, is_default, created_at, updated_at FROM coaches WHERE is_default = true LIMIT 1
+SELECT id, name, is_default, is_human, created_at, updated_at FROM coaches WHERE is_default = true LIMIT 1
 `
 
 func (q *Queries) GetDefaultCoach(ctx context.Context) (Coach, error) {
@@ -176,6 +178,7 @@ func (q *Queries) GetDefaultCoach(ctx context.Context) (Coach, error) {
 		&i.ID,
 		&i.Name,
 		&i.IsDefault,
+		&i.IsHuman,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

@@ -12,8 +12,19 @@ type Coach struct {
 	ID        int64
 	Name      string
 	IsDefault sql.NullBool
+	IsHuman   sql.NullBool
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
+}
+
+type Playbook struct {
+	ID          int64
+	Name        string
+	TeamID      sql.NullInt64
+	Description sql.NullString
+	Formations  interface{}
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
 }
 
 type Player struct {

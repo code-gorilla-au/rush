@@ -1,5 +1,5 @@
 create table if not exists playbooks (
-	id serial primary key,
+    id integer primary key autoincrement,
 	name varchar(255) not null,
     team_id integer references teams(id),
 	description text,

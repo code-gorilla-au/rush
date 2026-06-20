@@ -8,6 +8,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/env"
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui"
 )
@@ -37,10 +38,10 @@ func main() {
 	}
 
 	queries := database.New(db)
-
 	teamsSvc := teams.NewTeamsService(queries)
+	playbooksSvc := playbooks.NewPlaybooksService(queries)
 
-	p := tea.NewProgram(ui.New(teamsSvc))
+	p := tea.NewProgram(ui.New(teamsSvc, playbooksSvc))
 	if _, err = p.Run(); err != nil {
 		slog.Error("Failed to run program", "error", err)
 		os.Exit(1)

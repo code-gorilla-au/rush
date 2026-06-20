@@ -7,10 +7,11 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
-func setupTeamsService(t *testing.T) *teams.Service {
+func setupServices(t *testing.T) (*teams.Service, *playbooks.Service) {
 	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		t.Fatalf("failed to open database: %v", err)
@@ -21,7 +22,8 @@ func setupTeamsService(t *testing.T) *teams.Service {
 		t.Fatalf("failed to migrate database: %v", err)
 	}
 
-	return teams.NewTeamsService(database.New(db))
+	queries := database.New(db)
+	return teams.NewTeamsService(queries), playbooks.NewPlaybooksService(queries)
 }
 
 func TestTheme(t *testing.T) {
@@ -46,19 +48,19 @@ func TestNew(t *testing.T) {
 
 	err := group.
 		Test("New should initialize model with IceTheme", func(t *testing.T) {
-			s := setupTeamsService(t)
-			m := New(s)
+			s, ps := setupServices(t)
+			m := New(s, ps)
 			odize.AssertTrue(t, m.theme.Logo.GetForeground() != nil)
 		}).
 		Test("Init should return a command", func(t *testing.T) {
-			s := setupTeamsService(t)
-			m := New(s)
+			s, ps := setupServices(t)
+			m := New(s, ps)
 			cmd := m.Init()
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle Quit keys", func(t *testing.T) {
-			s := setupTeamsService(t)
-			m := New(s)
+			s, ps := setupServices(t)
+			m := New(s, ps)
 			_, cmd := m.Update(tea.KeyPressMsg{Text: "q"})
 			odize.AssertTrue(t, cmd != nil)
 
@@ -66,8 +68,8 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle WindowSizeMsg", func(t *testing.T) {
-			s := setupTeamsService(t)
-			m := New(s)
+			s, ps := setupServices(t)
+			m := New(s, ps)
 			newModel, _ := m.Update(tea.WindowSizeMsg{Width: 100, Height: 50})
 			updatedModel := newModel.(RootModel)
 			odize.AssertTrue(t, updatedModel.width == 100)

@@ -88,6 +88,32 @@ Description: Players are split to stack team members on the outside lanes.
 
 ```
 
+#### Split right
+
+name: split-right
+Description: Players are stacked on the outside lanes, leaving the centre open, with a strong presence on the right flank.
+
+```markdown
+|---|---|---|
+| x |   | x |
+| x |   | x |
+| x |   |   |
+
+```
+
+#### Split left
+
+name: split-left
+Description: Players are stacked on the outside lanes, leaving the centre open, with a strong presence on the left flank.
+
+```markdown
+|---|---|---|
+| x |   | x |
+| x |   | x |
+|   |   | x |
+
+```
+
 
 ### Overload
 
@@ -140,18 +166,5 @@ Description: Heavy presence in the centre and right, leaving the left open.
 |   | x | x |
 |   | x | x |
 |   | x |   |
-
-```
-
-#### Overload Wide
-
-name: overload-wide
-Description: Maximum pressure on the outside lanes, leaving the centre open.
-
-```markdown
-|---|---|---|
-| x |   | x |
-| x |   | x |
-| x |   |   |
 
 ```

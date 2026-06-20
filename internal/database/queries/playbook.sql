@@ -1,8 +1,10 @@
 -- name: CreatePlaybook :one
 insert into playbooks (name,
                        description,
-                       formations)
+                       formations,
+                       team_id)
 VALUES (?,
+        ?,
         ?,
         ?)
 RETURNING *;

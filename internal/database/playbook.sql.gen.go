@@ -13,8 +13,10 @@ import (
 const createPlaybook = `-- name: CreatePlaybook :one
 insert into playbooks (name,
                        description,
-                       formations)
+                       formations,
+                       team_id)
 VALUES (?,
+        ?,
         ?,
         ?)
 RETURNING id, name, team_id, description, formations, created_at, updated_at
@@ -24,10 +26,16 @@ type CreatePlaybookParams struct {
 	Name        string
 	Description sql.NullString
 	Formations  interface{}
+	TeamID      sql.NullInt64
 }
 
 func (q *Queries) CreatePlaybook(ctx context.Context, arg CreatePlaybookParams) (Playbook, error) {
-	row := q.db.QueryRowContext(ctx, createPlaybook, arg.Name, arg.Description, arg.Formations)
+	row := q.db.QueryRowContext(ctx, createPlaybook,
+		arg.Name,
+		arg.Description,
+		arg.Formations,
+		arg.TeamID,
+	)
 	var i Playbook
 	err := row.Scan(
 		&i.ID,

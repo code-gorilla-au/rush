@@ -93,7 +93,7 @@ review `taskfile.yaml` for list of commands available in repo.
 - **Mock external interfaces** cleanly using generated ([Moq](https://github.com/matryer/moq)) or handwritten mocks.
 - Separate **fast unit tests** from slower integration and E2E tests.
 - Ensure **test coverage** for every exported function, with behavioural checks.
-- Test command with coverage is: `task go-cover`.
+- Test command with coverage is: `task cover`.
 
 
 #### Example odize framework

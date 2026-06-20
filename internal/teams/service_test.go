@@ -2,6 +2,7 @@ package teams
 
 import (
 	"database/sql"
+	"errors"
 	"testing"
 
 	"github.com/code-gorilla-au/odize"
@@ -128,18 +129,20 @@ func TestService(t *testing.T) {
 			odize.AssertNoError(t, err)
 			odize.AssertFalse(t, isDefault)
 		}).
-		Test("GetCoach should return error if no default coach", func(t *testing.T) {
-			_, err := s.GetDefaultCoach(t.Context())
-			odize.AssertError(t, err)
-
-		}).
-		Test("GetTeam should return error if no default coach", func(t *testing.T) {
-			_, err := s.CreateCoach(t.Context(), "Coach Carter", true)
+		Test("GetDefaultCoach should return the default coach", func(t *testing.T) {
+			ctx := t.Context()
+			name := "Coach Carter"
+			_, err := s.CreateCoach(ctx, name, true)
 			odize.AssertNoError(t, err)
 
-			coach, sErr := s.GetDefaultCoach(t.Context())
-			odize.AssertNoError(t, sErr)
-			odize.AssertTrue(t, coach.ID > 0)
+			coach, err := s.GetDefaultCoach(ctx)
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, name, coach.Name)
+		}).
+		Test("GetDefaultCoach should return error if no default coach", func(t *testing.T) {
+			_, err := s.GetDefaultCoach(t.Context())
+			odize.AssertError(t, err)
+			odize.AssertTrue(t, errors.Is(err, ErrCoachNotFound))
 		}).
 		Test("UpdatePlayer should update player name", func(t *testing.T) {
 			ctx := t.Context()
@@ -169,6 +172,35 @@ func TestService(t *testing.T) {
 				}
 			}
 			odize.AssertTrue(t, found)
+		}).
+		Test("GetTeamByCoachID should return team and players", func(t *testing.T) {
+			ctx := t.Context()
+			coach, err := s.CreateCoach(ctx, "Coach", true)
+			odize.AssertNoError(t, err)
+
+			_, err = s.CreateTeam(ctx, "The Bulls", coach.ID, true)
+			odize.AssertNoError(t, err)
+
+			team, err := s.GetTeamByCoachID(ctx, coach.ID)
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, "The Bulls", team.Name)
+			odize.AssertEqual(t, 5, len(team.Players))
+		}).
+		Test("GetTeamByCoachID should return error if team not found", func(t *testing.T) {
+			_, err := s.GetTeamByCoachID(t.Context(), 999)
+			odize.AssertError(t, err)
+			odize.AssertTrue(t, errors.Is(err, ErrTeamNotFound))
+		}).
+		Test("CreateTeam should create a team with default players", func(t *testing.T) {
+			ctx := t.Context()
+			coach, err := s.CreateCoach(ctx, "Coach", false)
+			odize.AssertNoError(t, err)
+
+			team, err := s.CreateTeam(ctx, "Lakers", coach.ID, true)
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, "Lakers", team.Name)
+			odize.AssertEqual(t, 5, len(team.Players))
+			odize.AssertEqual(t, "Player 1", team.Players[0].Name)
 		}).
 		Run()
 

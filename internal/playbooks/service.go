@@ -18,6 +18,7 @@ func NewPlaybooksService(store Store) *Service {
 }
 
 type PlaybookParams struct {
+	TeamID      int64
 	Name        string
 	Description string
 	Formations  []Formation
@@ -37,6 +38,10 @@ func (s *Service) CreatePlaybook(ctx context.Context, params PlaybookParams) (Pl
 			Valid:  true,
 		},
 		Formations: data,
+		TeamID: sql.NullInt64{
+			Int64: params.TeamID,
+			Valid: true,
+		},
 	})
 	if err != nil {
 		return Playbook{}, err

@@ -64,7 +64,7 @@ type ModelLockerPlaybooks struct {
 	footer                components.Footer
 	playbookList          components.PlaybookList
 	formationList         components.FormationList
-	selectedFormationList components.SelectedFormationList
+	selectedFormationList components.FormationList
 	mode                  playbooksViewMode
 	activeList            int // 0 for formationList, 1 for selectedFormationList
 	// Create flow state
@@ -80,14 +80,24 @@ func NewModelLockerPlaybooks(state *GlobalState, playbookSvc *playbooks.Service)
 	ti.Focus()
 
 	return &ModelLockerPlaybooks{
-		theme:                 NewIceTheme(),
-		globalState:           state,
-		playbookSvc:           playbookSvc,
-		keys:                  newLockerPlaybooksKeyMap(),
-		footer:                components.NewFooter(newLockerPlaybooksKeyMap()),
-		newPlaybookName:       ti,
-		formationList:         components.NewFormationList(),
-		selectedFormationList: components.NewSelectedFormationList(),
+		theme:           NewIceTheme(),
+		globalState:     state,
+		playbookSvc:     playbookSvc,
+		keys:            newLockerPlaybooksKeyMap(),
+		footer:          components.NewFooter(newLockerPlaybooksKeyMap()),
+		newPlaybookName: ti,
+		formationList: components.NewFormationList(components.FormationListConfig{
+			Title:           "Available Formations",
+			Items:           playbooks.Formations(),
+			EnableFiltering: true,
+			ShowDescription: true,
+		}),
+		selectedFormationList: components.NewFormationList(components.FormationListConfig{
+			Title:           "Selected Formations (Max 10)",
+			Items:           []playbooks.Formation{},
+			EnableFiltering: false,
+			ShowDescription: false,
+		}),
 	}
 }
 

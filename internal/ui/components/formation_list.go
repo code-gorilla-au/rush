@@ -10,13 +10,19 @@ import (
 )
 
 type FormationItem struct {
-	formation playbooks.Formation
+	formation       playbooks.Formation
+	showDescription bool
 }
 
 func (i FormationItem) Title() string {
 	return fmt.Sprintf("%s (%d-%d-%d)", i.formation.Name, i.formation.Lane1, i.formation.Lane2, i.formation.Lane3)
 }
-func (i FormationItem) Description() string { return i.formation.Description }
+func (i FormationItem) Description() string {
+	if i.showDescription {
+		return i.formation.Description
+	}
+	return ""
+}
 func (i FormationItem) FilterValue() string { return i.formation.Name }
 
 type FormationList struct {
@@ -24,11 +30,20 @@ type FormationList struct {
 	active bool
 }
 
-func NewFormationList() FormationList {
-	formations := playbooks.Formations()
-	items := make([]list.Item, len(formations))
-	for i, f := range formations {
-		items[i] = FormationItem{formation: f}
+type FormationListConfig struct {
+	Title           string
+	Items           []playbooks.Formation
+	EnableFiltering bool
+	ShowDescription bool
+}
+
+func NewFormationList(config FormationListConfig) FormationList {
+	items := make([]list.Item, len(config.Items))
+	for i, f := range config.Items {
+		items[i] = FormationItem{
+			formation:       f,
+			showDescription: config.ShowDescription,
+		}
 	}
 
 	delegate := list.NewDefaultDelegate()
@@ -37,9 +52,9 @@ func NewFormationList() FormationList {
 	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#87CEEB")).BorderForeground(lipgloss.Color("#A5F2F3"))
 
 	l := list.New(items, delegate, 0, 0)
-	l.Title = "Available Formations"
+	l.Title = config.Title
 	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(true)
+	l.SetFilteringEnabled(config.EnableFiltering)
 	l.Styles.Title = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color("#A5F2F3")).Bold(true)
 
 	return FormationList{
@@ -77,6 +92,33 @@ func (l *FormationList) SetSize(width, height int) {
 
 func (l *FormationList) SetActive(active bool) {
 	l.active = active
+}
+
+func (l *FormationList) SetItems(formations []playbooks.Formation) tea.Cmd {
+	items := make([]list.Item, len(formations))
+
+	showDescription := false
+	if len(l.list.Items()) > 0 {
+		if first, ok := l.list.Items()[0].(FormationItem); ok {
+			showDescription = first.showDescription
+		}
+	}
+
+	for i, f := range formations {
+		items[i] = FormationItem{
+			formation:       f,
+			showDescription: showDescription,
+		}
+	}
+	return l.list.SetItems(items)
+}
+
+func (l *FormationList) SelectedIndex() int {
+	return l.list.Index()
+}
+
+func (l *FormationList) Len() int {
+	return len(l.list.Items())
 }
 
 func (l *FormationList) IsFiltering() bool {

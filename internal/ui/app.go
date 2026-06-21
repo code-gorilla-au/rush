@@ -120,6 +120,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageLockerPlaybooksList, cmd = m.pageLockerPlaybooksList.Update(msg)
 		cmds = append(cmds, cmd)
 		m.pageLockerPlaybooksEdit, cmd = m.pageLockerPlaybooksEdit.Update(msg)
+		cmds = append(cmds, cmd)
 	}
 
 	var cmd tea.Cmd

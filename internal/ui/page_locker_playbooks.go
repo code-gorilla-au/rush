@@ -55,16 +55,18 @@ func newLockerPlaybooksKeyMap() lockerPlaybooksKeyMap {
 }
 
 type ModelLockerPlaybooks struct {
-	width         int
-	height        int
-	theme         IceTheme
-	globalState   *GlobalState
-	playbookSvc   *playbooks.Service
-	keys          lockerPlaybooksKeyMap
-	footer        components.Footer
-	playbookList  components.PlaybookList
-	formationList components.FormationList
-	mode          playbooksViewMode
+	width                 int
+	height                int
+	theme                 IceTheme
+	globalState           *GlobalState
+	playbookSvc           *playbooks.Service
+	keys                  lockerPlaybooksKeyMap
+	footer                components.Footer
+	playbookList          components.PlaybookList
+	formationList         components.FormationList
+	selectedFormationList components.SelectedFormationList
+	mode                  playbooksViewMode
+	activeList            int // 0 for formationList, 1 for selectedFormationList
 	// Create flow state
 	newPlaybookName textinput.Model
 	newFormations   []playbooks.Formation
@@ -78,13 +80,14 @@ func NewModelLockerPlaybooks(state *GlobalState, playbookSvc *playbooks.Service)
 	ti.Focus()
 
 	return &ModelLockerPlaybooks{
-		theme:           NewIceTheme(),
-		globalState:     state,
-		playbookSvc:     playbookSvc,
-		keys:            newLockerPlaybooksKeyMap(),
-		footer:          components.NewFooter(newLockerPlaybooksKeyMap()),
-		newPlaybookName: ti,
-		formationList:   components.NewFormationList(),
+		theme:                 NewIceTheme(),
+		globalState:           state,
+		playbookSvc:           playbookSvc,
+		keys:                  newLockerPlaybooksKeyMap(),
+		footer:                components.NewFooter(newLockerPlaybooksKeyMap()),
+		newPlaybookName:       ti,
+		formationList:         components.NewFormationList(),
+		selectedFormationList: components.NewSelectedFormationList(),
 	}
 }
 
@@ -117,6 +120,7 @@ func (m *ModelLockerPlaybooks) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case MsgPlaybooksLoaded:
 		m.playbooksLoaded = true
 		m.playbookList = components.NewPlaybookList(msg.Playbooks)
+		m.playbookList.SetSize(m.width, m.height-10) // Set initial size
 		m.mode = modeList
 	case MsgSwitchPage:
 		if msg.NewPage == PageLockerPlaybooks {
@@ -130,8 +134,16 @@ func (m *ModelLockerPlaybooks) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Back):
 			if m.mode == modeList {
+				if m.playbookList.IsFiltering() {
+					break
+				}
 				return m, func() tea.Msg {
 					return MsgSwitchPage{NewPage: PageLockerRoom}
+				}
+			}
+			if m.mode == modeAddFormations {
+				if m.formationList.IsFiltering() {
+					break
 				}
 			}
 			m.mode = modeList
@@ -140,6 +152,11 @@ func (m *ModelLockerPlaybooks) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		if m.playbooksLoaded {
+			m.playbookList.SetSize(msg.Width, msg.Height-10)
+		}
+		m.formationList.SetSize(msg.Width/2-4, msg.Height-15)
+		m.selectedFormationList.SetSize(msg.Width/2-4, msg.Height-15)
 		m.footer.Update(msg)
 	}
 
@@ -162,6 +179,9 @@ func (m *ModelLockerPlaybooks) updateList(msg tea.Msg) tea.Cmd {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if m.playbookList.IsFiltering() {
+			break
+		}
 		switch msg.String() {
 		case "n": // New playbook
 			m.mode = modeCreateName
@@ -172,8 +192,9 @@ func (m *ModelLockerPlaybooks) updateList(msg tea.Msg) tea.Cmd {
 		}
 	}
 
-	m.playbookList.Update(msg)
-	return nil
+	var cmd tea.Cmd
+	m.playbookList, cmd = m.playbookList.Update(msg)
+	return cmd
 }
 
 func (m *ModelLockerPlaybooks) updateCreateName(msg tea.Msg) tea.Cmd {
@@ -190,20 +211,54 @@ func (m *ModelLockerPlaybooks) updateCreateName(msg tea.Msg) tea.Cmd {
 }
 
 func (m *ModelLockerPlaybooks) updateAddFormations(msg tea.Msg) tea.Cmd {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if key.Matches(msg, m.keys.Enter) {
-			if len(m.newFormations) < 10 {
-				m.newFormations = append(m.newFormations, m.formationList.SelectedItem())
+		if m.formationList.IsFiltering() {
+			break
+		}
+		switch msg.String() {
+		case "tab":
+			m.activeList = (m.activeList + 1) % 2
+			return nil
+		case "enter":
+			if m.activeList == 0 {
+				if len(m.newFormations) < 10 {
+					f := m.formationList.SelectedItem()
+					m.newFormations = append(m.newFormations, f)
+					cmds = append(cmds, m.selectedFormationList.SetItems(m.newFormations))
+				}
+			} else {
+				// Remove from selected
+				if len(m.newFormations) > 0 {
+					idx := m.selectedFormationList.SelectedIndex()
+					if idx >= 0 && idx < len(m.newFormations) {
+						m.newFormations = append(m.newFormations[:idx], m.newFormations[idx+1:]...)
+						cmds = append(cmds, m.selectedFormationList.SetItems(m.newFormations))
+					}
+				}
 			}
-		} else if msg.String() == "s" { // Save
+			return tea.Batch(cmds...)
+		case "s": // Save
 			if len(m.newFormations) > 0 {
 				return m.savePlaybook
 			}
 		}
 	}
-	m.formationList.Update(msg)
-	return nil
+
+	m.formationList.SetActive(m.activeList == 0)
+	m.selectedFormationList.SetActive(m.activeList == 1)
+
+	var cmd tea.Cmd
+	if m.activeList == 0 {
+		m.formationList, cmd = m.formationList.Update(msg)
+	} else {
+		m.selectedFormationList, cmd = m.selectedFormationList.Update(msg)
+	}
+	cmds = append(cmds, cmd)
+
+	return tea.Batch(cmds...)
 }
 
 func (m *ModelLockerPlaybooks) savePlaybook() tea.Msg {
@@ -235,21 +290,26 @@ func (m *ModelLockerPlaybooks) View() tea.View {
 			if m.playbookList.Len() == 0 {
 				content = "No playbooks yet. Press 'n' to create one."
 			} else {
-				content = m.playbookList.View(lipgloss.NewStyle(), m.theme.ListSelected)
-				content += "\n\nPress 'n' to create new playbook"
+				content = m.playbookList.View()
+				if !m.playbookList.IsFiltering() {
+					content += "\n\nPress 'n' to create new playbook"
+				}
 			}
 		case modeCreateName:
 			title = "CREATE PLAYBOOK"
 			content = "Enter playbook name:\n\n" + m.newPlaybookName.View()
 		case modeAddFormations:
 			title = "ADD FORMATIONS"
-			content = fmt.Sprintf("Formations (%d/10):\n", len(m.newFormations))
-			for _, f := range m.newFormations {
-				content += m.theme.ListSelected.Render(" + "+f.Name) + "\n"
-			}
-			content += "\nAvailable Formations:\n"
-			content += m.formationList.View(lipgloss.NewStyle(), m.theme.ListSelected)
-			content += "\n\nPress 'enter' to add, 's' to save"
+			m.formationList.SetSize(m.width/2-4, m.height-15)
+			m.selectedFormationList.SetSize(m.width/2-4, m.height-15)
+
+			content = lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				m.formationList.View(),
+				lipgloss.NewStyle().Width(2).Render(""),
+				m.selectedFormationList.View(),
+			)
+			content += "\n\n" + m.theme.Footer.Render("Tab to switch lists • Enter to add/remove • 's' to save")
 		}
 	}
 

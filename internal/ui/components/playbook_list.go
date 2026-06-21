@@ -1,65 +1,78 @@
 package components
 
 import (
+	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 )
 
+type PlaybookItem struct {
+	playbook playbooks.Playbook
+}
+
+func (i PlaybookItem) Title() string       { return i.playbook.Name }
+func (i PlaybookItem) Description() string { return i.playbook.Description }
+func (i PlaybookItem) FilterValue() string { return i.playbook.Name }
+
 type PlaybookList struct {
-	cursor int
-	items  []playbooks.Playbook
+	list list.Model
 }
 
 func NewPlaybookList(items []playbooks.Playbook) PlaybookList {
+	listItems := make([]list.Item, len(items))
+	for i, item := range items {
+		listItems[i] = PlaybookItem{playbook: item}
+	}
+
+	delegate := list.NewDefaultDelegate()
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("#A5F2F3")).BorderForeground(lipgloss.Color("#A5F2F3"))
+	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#87CEEB")).BorderForeground(lipgloss.Color("#A5F2F3"))
+
+	l := list.New(listItems, delegate, 0, 0)
+	l.Title = "Playbooks"
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(true)
+	l.Styles.Title = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color("#A5F2F3")).Bold(true)
+
 	return PlaybookList{
-		items: items,
+		list: l,
 	}
 }
 
-func (l *PlaybookList) Update(msg tea.Msg) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "up", "k":
-			if l.cursor > 0 {
-				l.cursor--
-			}
-		case "down", "j":
-			if l.cursor < len(l.items)-1 {
-				l.cursor++
-			}
-		}
-	}
+func (l *PlaybookList) Update(msg tea.Msg) (PlaybookList, tea.Cmd) {
+	var cmd tea.Cmd
+	l.list, cmd = l.list.Update(msg)
+	return *l, cmd
 }
 
-func (l *PlaybookList) View(itemStyle lipgloss.Style, selectedStyle lipgloss.Style) string {
-	if len(l.items) == 0 {
-		return "No playbooks found."
-	}
-
-	var s string
-	for i, item := range l.items {
-		content := item.Name
-		if i == l.cursor {
-			s += selectedStyle.Render("> " + content)
-		} else {
-			s += itemStyle.Render("  " + content)
-		}
-		if i < len(l.items)-1 {
-			s += "\n"
-		}
-	}
-	return s
+func (l *PlaybookList) View() string {
+	return l.list.View()
 }
 
 func (l *PlaybookList) SelectedItem() *playbooks.Playbook {
-	if len(l.items) == 0 {
-		return nil
+	if item, ok := l.list.SelectedItem().(PlaybookItem); ok {
+		return &item.playbook
 	}
-	return &l.items[l.cursor]
+	return nil
+}
+
+func (l *PlaybookList) SetSize(width, height int) {
+	l.list.SetSize(width, height)
+}
+
+func (l *PlaybookList) SetItems(items []playbooks.Playbook) tea.Cmd {
+	listItems := make([]list.Item, len(items))
+	for i, item := range items {
+		listItems[i] = PlaybookItem{playbook: item}
+	}
+	return l.list.SetItems(listItems)
 }
 
 func (l *PlaybookList) Len() int {
-	return len(l.items)
+	return len(l.list.Items())
+}
+
+func (l *PlaybookList) IsFiltering() bool {
+	return l.list.FilterState() == list.Filtering
 }

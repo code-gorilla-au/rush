@@ -37,7 +37,11 @@ func (s *AITeamService) GenerateTeams(ctx context.Context) error {
 }
 
 func (s *AITeamService) generateTeam(ctx context.Context, team AITeam) error {
-	coach, err := s.teamsSvc.CreateCoach(ctx, team.CoachName, false)
+	coach, err := s.teamsSvc.CreateCoach(ctx, teams.CreateCoachParams{
+		Name:      team.CoachName,
+		IsHuman:   false,
+		IsDefault: false,
+	})
 	if err != nil {
 		return fmt.Errorf("creating AI coach: %w", err)
 	}

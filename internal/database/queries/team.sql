@@ -14,7 +14,7 @@ UPDATE coaches SET is_default = false WHERE is_default = true;
 SELECT * FROM coaches;
 
 -- name: CreateCoach :one
-INSERT INTO coaches (name, is_default) VALUES (?, ?) RETURNING *;
+INSERT INTO coaches (name, is_human, is_default) VALUES (?, ?, ?) RETURNING *;
 
 -- name: DeleteCoach :exec
 DELETE FROM coaches WHERE id = ?;

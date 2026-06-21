@@ -17,11 +17,21 @@ func NewTeamsService(store Store) *Service {
 	return &Service{store: store}
 }
 
-func (s *Service) CreateCoach(ctx context.Context, name string, isDefault bool) (Coach, error) {
+type CreateCoachParams struct {
+	Name      string
+	IsHuman   bool
+	IsDefault bool
+}
+
+func (s *Service) CreateCoach(ctx context.Context, params CreateCoachParams) (Coach, error) {
 	model, err := s.store.CreateCoach(ctx, database.CreateCoachParams{
-		Name: name,
+		Name: params.Name,
+		IsHuman: sql.NullBool{
+			Bool:  params.IsHuman,
+			Valid: true,
+		},
 		IsDefault: sql.NullBool{
-			Bool:  isDefault,
+			Bool:  params.IsDefault,
 			Valid: true,
 		},
 	})

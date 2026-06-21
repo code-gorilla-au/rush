@@ -29,16 +29,17 @@ func (q *Queries) ClearDefaultTeam(ctx context.Context) error {
 }
 
 const createCoach = `-- name: CreateCoach :one
-INSERT INTO coaches (name, is_default) VALUES (?, ?) RETURNING id, name, is_default, is_human, created_at, updated_at
+INSERT INTO coaches (name, is_human, is_default) VALUES (?, ?, ?) RETURNING id, name, is_default, is_human, created_at, updated_at
 `
 
 type CreateCoachParams struct {
 	Name      string
+	IsHuman   sql.NullBool
 	IsDefault sql.NullBool
 }
 
 func (q *Queries) CreateCoach(ctx context.Context, arg CreateCoachParams) (Coach, error) {
-	row := q.db.QueryRowContext(ctx, createCoach, arg.Name, arg.IsDefault)
+	row := q.db.QueryRowContext(ctx, createCoach, arg.Name, arg.IsHuman, arg.IsDefault)
 	var i Coach
 	err := row.Scan(
 		&i.ID,

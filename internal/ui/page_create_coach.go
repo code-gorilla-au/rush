@@ -197,7 +197,11 @@ func (m *ModelCreateCoach) updateFocus() {
 func (m *ModelCreateCoach) submit() tea.Cmd {
 	return func() tea.Msg {
 		ctx := m.globalState.Context()
-		coach, err := m.teamsSvc.CreateCoach(ctx, m.coachInput.Value(), true)
+		coach, err := m.teamsSvc.CreateCoach(ctx, teams.CreateCoachParams{
+			Name:      m.coachInput.Value(),
+			IsHuman:   true,
+			IsDefault: true,
+		})
 		if err != nil {
 			return err
 		}

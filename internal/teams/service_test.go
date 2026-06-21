@@ -48,7 +48,10 @@ func TestService(t *testing.T) {
 			ctx := t.Context()
 			name := "Coach Carter"
 
-			coach, err := s.CreateCoach(ctx, name, false)
+			coach, err := s.CreateCoach(ctx, CreateCoachParams{
+				Name:    name,
+				IsHuman: false,
+			})
 			odize.AssertNoError(t, err)
 			odize.AssertTrue(t, coach.ID > 0)
 			odize.AssertEqual(t, name, coach.Name)
@@ -59,7 +62,10 @@ func TestService(t *testing.T) {
 			ctx := t.Context()
 			name := "Coach Carter"
 
-			coach, err := s.CreateCoach(ctx, name, false)
+			coach, err := s.CreateCoach(ctx, CreateCoachParams{
+				Name:    name,
+				IsHuman: false,
+			})
 			odize.AssertNoError(t, err)
 
 			err = s.SetDefaultCoach(ctx, coach.ID)
@@ -76,7 +82,10 @@ func TestService(t *testing.T) {
 			ctx := t.Context()
 			name := "Coach Carter"
 
-			_, err := s.CreateCoach(ctx, name, true)
+			_, err := s.CreateCoach(ctx, CreateCoachParams{
+				Name:      name,
+				IsDefault: true,
+			})
 			odize.AssertNoError(t, err)
 
 			err = s.ClearDefaultCoach(ctx)
@@ -132,7 +141,10 @@ func TestService(t *testing.T) {
 		Test("GetDefaultCoach should return the default coach", func(t *testing.T) {
 			ctx := t.Context()
 			name := "Coach Carter"
-			_, err := s.CreateCoach(ctx, name, true)
+			_, err := s.CreateCoach(ctx, CreateCoachParams{
+				Name:      name,
+				IsDefault: true,
+			})
 			odize.AssertNoError(t, err)
 
 			coach, err := s.GetDefaultCoach(ctx)
@@ -146,7 +158,10 @@ func TestService(t *testing.T) {
 		}).
 		Test("UpdatePlayer should update player name", func(t *testing.T) {
 			ctx := t.Context()
-			coach, err := s.CreateCoach(ctx, "Coach", true)
+			coach, err := s.CreateCoach(ctx, CreateCoachParams{
+				Name:      "Coach",
+				IsDefault: true,
+			})
 			odize.AssertNoError(t, err)
 
 			team, err := s.CreateTeam(ctx, "Team", coach.ID, true)
@@ -175,7 +190,10 @@ func TestService(t *testing.T) {
 		}).
 		Test("GetTeamByCoachID should return team and players", func(t *testing.T) {
 			ctx := t.Context()
-			coach, err := s.CreateCoach(ctx, "Coach", true)
+			coach, err := s.CreateCoach(ctx, CreateCoachParams{
+				Name:      "Coach",
+				IsDefault: true,
+			})
 			odize.AssertNoError(t, err)
 
 			_, err = s.CreateTeam(ctx, "The Bulls", coach.ID, true)
@@ -193,7 +211,10 @@ func TestService(t *testing.T) {
 		}).
 		Test("CreateTeam should create a team with default players", func(t *testing.T) {
 			ctx := t.Context()
-			coach, err := s.CreateCoach(ctx, "Coach", false)
+			coach, err := s.CreateCoach(ctx, CreateCoachParams{
+				Name:    "Coach",
+				IsHuman: false,
+			})
 			odize.AssertNoError(t, err)
 
 			team, err := s.CreateTeam(ctx, "Lakers", coach.ID, true)

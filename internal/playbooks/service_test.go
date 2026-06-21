@@ -133,7 +133,10 @@ func TestService(t *testing.T) {
 				},
 			}
 
-			updatedPb, err := s.UpdatePlaybookFormations(ctx, pb.ID, newFormations)
+			updatedPb, err := s.UpdatePlaybook(ctx, pb.ID, PlaybookParams{
+				Name:       pb.Name,
+				Formations: newFormations,
+			})
 			odize.AssertNoError(t, err)
 			odize.AssertEqual(t, pb.ID, updatedPb.ID)
 			odize.AssertEqual(t, 1, len(updatedPb.Formations))

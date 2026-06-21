@@ -12,9 +12,10 @@ import (
 
 type lockerPlaybooksListKeyMap struct {
 	components.CommonKeys
-	Back  key.Binding
-	Enter key.Binding
-	New   key.Binding
+	Back   key.Binding
+	Enter  key.Binding
+	New    key.Binding
+	Delete key.Binding
 }
 
 func (k lockerPlaybooksListKeyMap) ShortHelp() []key.Binding {
@@ -23,7 +24,7 @@ func (k lockerPlaybooksListKeyMap) ShortHelp() []key.Binding {
 
 func (k lockerPlaybooksListKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Enter, k.New, k.Back, k.Quit},
+		{k.Enter, k.New, k.Delete, k.Back, k.Quit},
 	}
 }
 
@@ -42,6 +43,9 @@ func newLockerPlaybooksListKeyMap() lockerPlaybooksListKeyMap {
 			key.WithKeys("n"),
 			key.WithHelp("n", "new playbook"),
 		),
+		Delete: key.NewBinding(
+			key.WithKeys("d"),
+			key.WithHelp("d", "delete")),
 	}
 }
 
@@ -116,17 +120,9 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return MsgSwitchPage{NewPage: PageLockerRoom}
 			}
 		case key.Matches(msg, m.keys.Enter):
-			if m.playbookList.IsFiltering() {
-				break
-			}
-			selected := m.playbookList.SelectedItem()
-			if selected != nil {
-				return m, func() tea.Msg {
-					return MsgSwitchPage{
-						NewPage:  PageLockerPlaybooksEdit,
-						Playbook: selected,
-					}
-				}
+			model, cmd, done := m.handleRouteEditPlaybook()
+			if done {
+				return model, cmd
 			}
 		case key.Matches(msg, m.keys.New):
 			if !m.playbookList.IsFiltering() {
@@ -134,6 +130,8 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return MsgSwitchPage{NewPage: PageLockerPlaybooksEdit}
 				}
 			}
+		case key.Matches(msg, m.keys.Delete):
+			m.handleDeletePlaybook()
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -151,6 +149,35 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *ModelLockerPlaybooksList) handleRouteEditPlaybook() (tea.Model, tea.Cmd, bool) {
+	if m.playbookList.IsFiltering() {
+		return nil, nil, false
+	}
+
+	selected := m.playbookList.SelectedItem()
+	if selected != nil {
+		return m, func() tea.Msg {
+			return MsgSwitchPage{
+				NewPage:  PageLockerPlaybooksEdit,
+				Playbook: selected,
+			}
+		}, true
+	}
+
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlaybooksList) handleDeletePlaybook() {
+	if m.playbookList.IsFiltering() {
+		return
+	}
+
+	selected := m.playbookList.SelectedItem()
+	if err := m.playbookSvc.DeletePlaybook(m.globalState.Context(), selected.ID); err != nil {
+		m.err = err
+	}
 }
 
 func (m *ModelLockerPlaybooksList) View() tea.View {

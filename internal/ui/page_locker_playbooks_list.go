@@ -115,6 +115,19 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, func() tea.Msg {
 				return MsgSwitchPage{NewPage: PageLockerRoom}
 			}
+		case key.Matches(msg, m.keys.Enter):
+			if m.playbookList.IsFiltering() {
+				break
+			}
+			selected := m.playbookList.SelectedItem()
+			if selected != nil {
+				return m, func() tea.Msg {
+					return MsgSwitchPage{
+						NewPage:  PageLockerPlaybooksEdit,
+						Playbook: selected,
+					}
+				}
+			}
 		case key.Matches(msg, m.keys.New):
 			if !m.playbookList.IsFiltering() {
 				return m, func() tea.Msg {

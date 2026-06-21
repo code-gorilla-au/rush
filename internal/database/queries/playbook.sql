@@ -9,9 +9,11 @@ VALUES (?,
         ?)
 RETURNING *;
 
--- name: UpdatePlaybookFormations :one
+-- name: UpdatePlaybook :one
 update playbooks
-set formations = ?
+set name = ?,
+    description = ?,
+    formations = ?
 where id = ?
 returning *;
 

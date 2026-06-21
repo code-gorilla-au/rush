@@ -66,19 +66,22 @@ func (s *Service) DeletePlaybook(ctx context.Context, id int64) error {
 	return s.store.DeletePlaybook(ctx, id)
 }
 
-func (s *Service) UpdatePlaybookFormations(ctx context.Context, id int64, formations []Formation) (Playbook, error) {
-	data, err := json.Marshal(formations)
+func (s *Service) UpdatePlaybook(ctx context.Context, id int64, params PlaybookParams) (Playbook, error) {
+	data, err := json.Marshal(params.Formations)
 	if err != nil {
 		return Playbook{}, fmt.Errorf("failed to marshal formations: %w", err)
 	}
-
-	model, err := s.store.UpdatePlaybookFormations(ctx, database.UpdatePlaybookFormationsParams{
-		ID:         id,
+	model, err := s.store.UpdatePlaybook(ctx, database.UpdatePlaybookParams{
+		ID:   id,
+		Name: params.Name,
+		Description: sql.NullString{
+			String: params.Description,
+			Valid:  true,
+		},
 		Formations: data,
 	})
 	if err != nil {
 		return Playbook{}, err
 	}
-
 	return fromPlaybookModel(model)
 }

@@ -14,7 +14,8 @@ type MsgStateUpdated struct {
 }
 
 type MsgSwitchPage struct {
-	NewPage Page
+	NewPage  Page
+	Playbook *playbooks.Playbook
 }
 
 type Page int

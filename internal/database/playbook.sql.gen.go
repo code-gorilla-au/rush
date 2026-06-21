@@ -93,20 +93,29 @@ func (q *Queries) GetPlaybooksByTeam(ctx context.Context, teamID sql.NullInt64) 
 	return items, nil
 }
 
-const updatePlaybookFormations = `-- name: UpdatePlaybookFormations :one
+const updatePlaybook = `-- name: UpdatePlaybook :one
 update playbooks
-set formations = ?
+set name = ?,
+    description = ?,
+    formations = ?
 where id = ?
 returning id, name, team_id, description, formations, created_at, updated_at
 `
 
-type UpdatePlaybookFormationsParams struct {
-	Formations interface{}
-	ID         int64
+type UpdatePlaybookParams struct {
+	Name        string
+	Description sql.NullString
+	Formations  interface{}
+	ID          int64
 }
 
-func (q *Queries) UpdatePlaybookFormations(ctx context.Context, arg UpdatePlaybookFormationsParams) (Playbook, error) {
-	row := q.db.QueryRowContext(ctx, updatePlaybookFormations, arg.Formations, arg.ID)
+func (q *Queries) UpdatePlaybook(ctx context.Context, arg UpdatePlaybookParams) (Playbook, error) {
+	row := q.db.QueryRowContext(ctx, updatePlaybook,
+		arg.Name,
+		arg.Description,
+		arg.Formations,
+		arg.ID,
+	)
 	var i Playbook
 	err := row.Scan(
 		&i.ID,

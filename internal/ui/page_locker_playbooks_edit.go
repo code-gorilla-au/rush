@@ -65,6 +65,7 @@ type ModelLockerPlaybooksEdit struct {
 	selectedFormationList components.FormationList
 	mode                  editPlaybookMode
 	activeList            int // 0 for formationList, 1 for selectedFormationList
+	playbookID            int64
 	newPlaybookName       textinput.Model
 	newFormations         []playbooks.Formation
 	err                   error
@@ -110,7 +111,11 @@ func (m *ModelLockerPlaybooksEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.globalState.Team = msg.Team
 	case MsgSwitchPage:
 		if msg.NewPage == PageLockerPlaybooksEdit {
-			m.reset()
+			if msg.Playbook != nil {
+				m.load(msg.Playbook)
+			} else {
+				m.reset()
+			}
 		}
 	case error:
 		m.err = msg
@@ -154,8 +159,19 @@ func (m *ModelLockerPlaybooksEdit) reset() {
 	m.newPlaybookName.Reset()
 	m.newPlaybookName.Focus()
 	m.newFormations = nil
+	m.playbookID = 0
 	m.mode = modeCreateName
 	m.selectedFormationList.SetItems(nil)
+	m.err = nil
+}
+
+func (m *ModelLockerPlaybooksEdit) load(p *playbooks.Playbook) {
+	m.newPlaybookName.SetValue(p.Name)
+	m.newPlaybookName.Focus()
+	m.newFormations = p.Formations
+	m.playbookID = p.ID
+	m.mode = modeCreateName
+	m.selectedFormationList.SetItems(m.newFormations)
 	m.err = nil
 }
 
@@ -226,11 +242,20 @@ func (m *ModelLockerPlaybooksEdit) updateAddFormations(msg tea.Msg) tea.Cmd {
 }
 
 func (m *ModelLockerPlaybooksEdit) savePlaybook() tea.Msg {
-	_, err := m.playbookSvc.CreatePlaybook(m.globalState.Context(), playbooks.PlaybookParams{
-		TeamID:     m.globalState.Team.ID,
-		Name:       m.newPlaybookName.Value(),
-		Formations: m.newFormations,
-	})
+	var err error
+	if m.playbookID != 0 {
+		_, err = m.playbookSvc.UpdatePlaybook(m.globalState.Context(), m.playbookID, playbooks.PlaybookParams{
+			TeamID:     m.globalState.Team.ID,
+			Name:       m.newPlaybookName.Value(),
+			Formations: m.newFormations,
+		})
+	} else {
+		_, err = m.playbookSvc.CreatePlaybook(m.globalState.Context(), playbooks.PlaybookParams{
+			TeamID:     m.globalState.Team.ID,
+			Name:       m.newPlaybookName.Value(),
+			Formations: m.newFormations,
+		})
+	}
 	if err != nil {
 		return err
 	}
@@ -249,7 +274,11 @@ func (m *ModelLockerPlaybooksEdit) View() tea.View {
 	} else {
 		switch m.mode {
 		case modeCreateName:
-			title = "CREATE PLAYBOOK"
+			if m.playbookID != 0 {
+				title = "EDIT PLAYBOOK"
+			} else {
+				title = "CREATE PLAYBOOK"
+			}
 			content = "Enter playbook name:\n\n" + m.newPlaybookName.View()
 		case modeAddFormations:
 			title = "ADD FORMATIONS"

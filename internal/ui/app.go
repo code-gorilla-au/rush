@@ -24,7 +24,8 @@ const (
 	PageCreateCoach
 	PageLockerRoom
 	PageLockerPlayers
-	PageLockerPlaybooks
+	PageLockerPlaybooksList
+	PageLockerPlaybooksEdit
 )
 
 type GlobalState struct {
@@ -37,19 +38,20 @@ func (m *GlobalState) Context() context.Context {
 }
 
 type RootModel struct {
-	ctx                 context.Context
-	width               int
-	height              int
-	theme               IceTheme
-	currentPage         Page
-	pageTitle           tea.Model
-	pageCreateCoach     tea.Model
-	pageLockerRoom      tea.Model
-	pageLockerPlayers   tea.Model
-	pageLockerPlaybooks tea.Model
-	globalState         *GlobalState
-	teamsSvc            *teams.Service
-	playbookSvc         *playbooks.Service
+	ctx                     context.Context
+	width                   int
+	height                  int
+	theme                   IceTheme
+	currentPage             Page
+	pageTitle               tea.Model
+	pageCreateCoach         tea.Model
+	pageLockerRoom          tea.Model
+	pageLockerPlayers       tea.Model
+	pageLockerPlaybooksList tea.Model
+	pageLockerPlaybooksEdit tea.Model
+	globalState             *GlobalState
+	teamsSvc                *teams.Service
+	playbookSvc             *playbooks.Service
 }
 
 // New returns a new UI model.
@@ -57,17 +59,18 @@ func New(teamsService *teams.Service, playbookService *playbooks.Service) RootMo
 	state := &GlobalState{}
 
 	return RootModel{
-		ctx:                 context.Background(),
-		theme:               NewIceTheme(),
-		currentPage:         PageTitle,
-		pageTitle:           NewModelTitle(state),
-		pageCreateCoach:     NewModelCreateCoach(state, teamsService),
-		pageLockerRoom:      NewModelLockerRoom(state),
-		pageLockerPlayers:   NewModelLockerPlayers(state, teamsService),
-		pageLockerPlaybooks: NewModelLockerPlaybooks(state, playbookService),
-		globalState:         state,
-		teamsSvc:            teamsService,
-		playbookSvc:         playbookService,
+		ctx:                     context.Background(),
+		theme:                   NewIceTheme(),
+		currentPage:             PageTitle,
+		pageTitle:               NewModelTitle(state),
+		pageCreateCoach:         NewModelCreateCoach(state, teamsService),
+		pageLockerRoom:          NewModelLockerRoom(state),
+		pageLockerPlayers:       NewModelLockerPlayers(state, teamsService),
+		pageLockerPlaybooksList: NewModelLockerPlaybooksList(state, playbookService),
+		pageLockerPlaybooksEdit: NewModelLockerPlaybooksEdit(state, playbookService),
+		globalState:             state,
+		teamsSvc:                teamsService,
+		playbookSvc:             playbookService,
 	}
 }
 
@@ -113,7 +116,9 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageLockerPlayers, cmd = m.pageLockerPlayers.Update(msg)
 		cmds = append(cmds, cmd)
-		m.pageLockerPlaybooks, cmd = m.pageLockerPlaybooks.Update(msg)
+		m.pageLockerPlaybooksList, cmd = m.pageLockerPlaybooksList.Update(msg)
+		cmds = append(cmds, cmd)
+		m.pageLockerPlaybooksEdit, cmd = m.pageLockerPlaybooksEdit.Update(msg)
 	}
 
 	var cmd tea.Cmd
@@ -126,8 +131,10 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageLockerRoom, cmd = m.pageLockerRoom.Update(msg)
 	case PageLockerPlayers:
 		m.pageLockerPlayers, cmd = m.pageLockerPlayers.Update(msg)
-	case PageLockerPlaybooks:
-		m.pageLockerPlaybooks, cmd = m.pageLockerPlaybooks.Update(msg)
+	case PageLockerPlaybooksList:
+		m.pageLockerPlaybooksList, cmd = m.pageLockerPlaybooksList.Update(msg)
+	case PageLockerPlaybooksEdit:
+		m.pageLockerPlaybooksEdit, cmd = m.pageLockerPlaybooksEdit.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 
@@ -148,8 +155,10 @@ func (m RootModel) View() tea.View {
 		return m.pageLockerRoom.View()
 	case PageLockerPlayers:
 		return m.pageLockerPlayers.View()
-	case PageLockerPlaybooks:
-		return m.pageLockerPlaybooks.View()
+	case PageLockerPlaybooksList:
+		return m.pageLockerPlaybooksList.View()
+	case PageLockerPlaybooksEdit:
+		return m.pageLockerPlaybooksEdit.View()
 	}
 
 	return tea.NewView("unknown page")

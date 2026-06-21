@@ -11,33 +11,32 @@ import (
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 )
 
-type playbooksViewMode int
+type editPlaybookMode int
 
 const (
-	modeList playbooksViewMode = iota
-	modeCreateName
+	modeCreateName editPlaybookMode = iota
 	modeAddFormations
 )
 
-type lockerPlaybooksKeyMap struct {
+type lockerPlaybooksEditKeyMap struct {
 	components.CommonKeys
 	Back   key.Binding
 	Enter  key.Binding
 	Select key.Binding
 }
 
-func (k lockerPlaybooksKeyMap) ShortHelp() []key.Binding {
+func (k lockerPlaybooksEditKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{k.Enter, k.Back, k.Quit}
 }
 
-func (k lockerPlaybooksKeyMap) FullHelp() [][]key.Binding {
+func (k lockerPlaybooksEditKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Enter, k.Select, k.Back, k.Quit},
 	}
 }
 
-func newLockerPlaybooksKeyMap() lockerPlaybooksKeyMap {
-	return lockerPlaybooksKeyMap{
+func newLockerPlaybooksEditKeyMap() lockerPlaybooksEditKeyMap {
+	return lockerPlaybooksEditKeyMap{
 		CommonKeys: components.NewCommonKeys(),
 		Back: key.NewBinding(
 			key.WithKeys("esc"),
@@ -54,37 +53,34 @@ func newLockerPlaybooksKeyMap() lockerPlaybooksKeyMap {
 	}
 }
 
-type ModelLockerPlaybooks struct {
+type ModelLockerPlaybooksEdit struct {
 	width                 int
 	height                int
 	theme                 IceTheme
 	globalState           *GlobalState
 	playbookSvc           *playbooks.Service
-	keys                  lockerPlaybooksKeyMap
+	keys                  lockerPlaybooksEditKeyMap
 	footer                components.Footer
-	playbookList          components.PlaybookList
 	formationList         components.FormationList
 	selectedFormationList components.FormationList
-	mode                  playbooksViewMode
+	mode                  editPlaybookMode
 	activeList            int // 0 for formationList, 1 for selectedFormationList
-	// Create flow state
-	newPlaybookName textinput.Model
-	newFormations   []playbooks.Formation
-	playbooksLoaded bool
-	err             error
+	newPlaybookName       textinput.Model
+	newFormations         []playbooks.Formation
+	err                   error
 }
 
-func NewModelLockerPlaybooks(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooks {
+func NewModelLockerPlaybooksEdit(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooksEdit {
 	ti := textinput.New()
 	ti.Placeholder = "Playbook Name"
 	ti.Focus()
 
-	return &ModelLockerPlaybooks{
+	return &ModelLockerPlaybooksEdit{
 		theme:           NewIceTheme(),
 		globalState:     state,
 		playbookSvc:     playbookSvc,
-		keys:            newLockerPlaybooksKeyMap(),
-		footer:          components.NewFooter(newLockerPlaybooksKeyMap()),
+		keys:            newLockerPlaybooksEditKeyMap(),
+		footer:          components.NewFooter(newLockerPlaybooksEditKeyMap()),
 		newPlaybookName: ti,
 		formationList: components.NewFormationList(components.FormationListConfig{
 			Title:           "Available Formations",
@@ -101,40 +97,20 @@ func NewModelLockerPlaybooks(state *GlobalState, playbookSvc *playbooks.Service)
 	}
 }
 
-func (m *ModelLockerPlaybooks) Init() tea.Cmd {
-	return m.loadPlaybooks
+func (m *ModelLockerPlaybooksEdit) Init() tea.Cmd {
+	return nil
 }
 
-func (m *ModelLockerPlaybooks) loadPlaybooks() tea.Msg {
-	if m.globalState.Team == nil {
-		return nil
-	}
-	items, err := m.playbookSvc.GetTeamPlaybooks(m.globalState.Context(), m.globalState.Team.ID)
-	if err != nil {
-		return err
-	}
-	return MsgPlaybooksLoaded{Playbooks: items}
-}
-
-type MsgPlaybooksLoaded struct {
-	Playbooks []playbooks.Playbook
-}
-
-func (m *ModelLockerPlaybooks) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *ModelLockerPlaybooksEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
-	case MsgPlaybooksLoaded:
-		m.playbooksLoaded = true
-		m.playbookList = components.NewPlaybookList(msg.Playbooks)
-		m.playbookList.SetSize(m.width, m.height-10) // Set initial size
-		m.mode = modeList
 	case MsgSwitchPage:
-		if msg.NewPage == PageLockerPlaybooks {
-			cmds = append(cmds, m.loadPlaybooks)
+		if msg.NewPage == PageLockerPlaybooksEdit {
+			m.reset()
 		}
 	case error:
 		m.err = msg
@@ -143,36 +119,28 @@ func (m *ModelLockerPlaybooks) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Back):
-			if m.mode == modeList {
-				if m.playbookList.IsFiltering() {
-					break
-				}
+			if m.mode == modeCreateName {
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerRoom}
+					return MsgSwitchPage{NewPage: PageLockerPlaybooksList}
 				}
 			}
 			if m.mode == modeAddFormations {
 				if m.formationList.IsFiltering() {
 					break
 				}
+				m.mode = modeCreateName
+				return m, nil
 			}
-			m.mode = modeList
-			return m, nil
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		if m.playbooksLoaded {
-			m.playbookList.SetSize(msg.Width, msg.Height-10)
-		}
 		m.formationList.SetSize(msg.Width/2-4, msg.Height-15)
 		m.selectedFormationList.SetSize(msg.Width/2-4, msg.Height-15)
 		m.footer.Update(msg)
 	}
 
 	switch m.mode {
-	case modeList:
-		cmds = append(cmds, m.updateList(msg))
 	case modeCreateName:
 		cmds = append(cmds, m.updateCreateName(msg))
 	case modeAddFormations:
@@ -182,32 +150,16 @@ func (m *ModelLockerPlaybooks) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m *ModelLockerPlaybooks) updateList(msg tea.Msg) tea.Cmd {
-	if !m.playbooksLoaded {
-		return nil
-	}
-
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if m.playbookList.IsFiltering() {
-			break
-		}
-		switch msg.String() {
-		case "n": // New playbook
-			m.mode = modeCreateName
-			m.newPlaybookName.Reset()
-			m.newPlaybookName.Focus()
-			m.newFormations = nil
-			return nil
-		}
-	}
-
-	var cmd tea.Cmd
-	m.playbookList, cmd = m.playbookList.Update(msg)
-	return cmd
+func (m *ModelLockerPlaybooksEdit) reset() {
+	m.newPlaybookName.Reset()
+	m.newPlaybookName.Focus()
+	m.newFormations = nil
+	m.mode = modeCreateName
+	m.selectedFormationList.SetItems(nil)
+	m.err = nil
 }
 
-func (m *ModelLockerPlaybooks) updateCreateName(msg tea.Msg) tea.Cmd {
+func (m *ModelLockerPlaybooksEdit) updateCreateName(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.String() == "enter" && m.newPlaybookName.Value() != "" {
@@ -220,7 +172,7 @@ func (m *ModelLockerPlaybooks) updateCreateName(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (m *ModelLockerPlaybooks) updateAddFormations(msg tea.Msg) tea.Cmd {
+func (m *ModelLockerPlaybooksEdit) updateAddFormations(msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -244,7 +196,6 @@ func (m *ModelLockerPlaybooks) updateAddFormations(msg tea.Msg) tea.Cmd {
 					}
 				}
 			} else {
-				// Remove from selected
 				if len(m.newFormations) > 0 {
 					idx := m.selectedFormationList.SelectedIndex()
 					if idx >= 0 && idx < len(m.newFormations) {
@@ -274,7 +225,7 @@ func (m *ModelLockerPlaybooks) updateAddFormations(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m *ModelLockerPlaybooks) savePlaybook() tea.Msg {
+func (m *ModelLockerPlaybooksEdit) savePlaybook() tea.Msg {
 	_, err := m.playbookSvc.CreatePlaybook(m.globalState.Context(), playbooks.PlaybookParams{
 		TeamID:     m.globalState.Team.ID,
 		Name:       m.newPlaybookName.Value(),
@@ -283,10 +234,10 @@ func (m *ModelLockerPlaybooks) savePlaybook() tea.Msg {
 	if err != nil {
 		return err
 	}
-	return m.loadPlaybooks()
+	return MsgSwitchPage{NewPage: PageLockerPlaybooksList}
 }
 
-func (m *ModelLockerPlaybooks) View() tea.View {
+func (m *ModelLockerPlaybooksEdit) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
 
@@ -295,25 +246,13 @@ func (m *ModelLockerPlaybooks) View() tea.View {
 
 	if m.err != nil {
 		content = m.theme.Logo.Render(fmt.Sprintf("Error: %v", m.err))
-	} else if !m.playbooksLoaded {
-		content = "Loading..."
 	} else {
 		switch m.mode {
-		case modeList:
-			if m.playbookList.Len() == 0 {
-				content = "No playbooks yet. Press 'n' to create one."
-			} else {
-				content = m.playbookList.View()
-				if !m.playbookList.IsFiltering() {
-					content += "\n\nPress 'n' to create new playbook"
-				}
-			}
 		case modeCreateName:
 			title = "CREATE PLAYBOOK"
 			content = "Enter playbook name:\n\n" + m.newPlaybookName.View()
 		case modeAddFormations:
 			title = "ADD FORMATIONS"
-			// The SetSize will be handled by WindowSizeMsg, but we ensure it here too for the split
 			m.formationList.SetSize(m.width/2-4, m.height-15)
 			m.selectedFormationList.SetSize(m.width/2-4, m.height-15)
 

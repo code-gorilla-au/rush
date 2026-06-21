@@ -86,7 +86,7 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			case components.ItemPlaybooks:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerPlaybooks}
+					return MsgSwitchPage{NewPage: PageLockerPlaybooksList}
 				}
 			}
 		}

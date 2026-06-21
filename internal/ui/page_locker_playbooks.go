@@ -221,13 +221,17 @@ func (m *ModelLockerPlaybooks) updateAddFormations(msg tea.Msg) tea.Cmd {
 		switch msg.String() {
 		case "tab":
 			m.activeList = (m.activeList + 1) % 2
+			m.formationList.SetActive(m.activeList == 0)
+			m.selectedFormationList.SetActive(m.activeList == 1)
 			return nil
 		case "enter":
 			if m.activeList == 0 {
 				if len(m.newFormations) < 10 {
 					f := m.formationList.SelectedItem()
-					m.newFormations = append(m.newFormations, f)
-					cmds = append(cmds, m.selectedFormationList.SetItems(m.newFormations))
+					if f.Name != "" {
+						m.newFormations = append(m.newFormations, f)
+						cmds = append(cmds, m.selectedFormationList.SetItems(m.newFormations))
+					}
 				}
 			} else {
 				// Remove from selected
@@ -251,11 +255,10 @@ func (m *ModelLockerPlaybooks) updateAddFormations(msg tea.Msg) tea.Cmd {
 	m.selectedFormationList.SetActive(m.activeList == 1)
 
 	var cmd tea.Cmd
-	if m.activeList == 0 {
-		m.formationList, cmd = m.formationList.Update(msg)
-	} else {
-		m.selectedFormationList, cmd = m.selectedFormationList.Update(msg)
-	}
+	m.formationList, cmd = m.formationList.Update(msg)
+	cmds = append(cmds, cmd)
+
+	m.selectedFormationList, cmd = m.selectedFormationList.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return tea.Batch(cmds...)
@@ -300,6 +303,7 @@ func (m *ModelLockerPlaybooks) View() tea.View {
 			content = "Enter playbook name:\n\n" + m.newPlaybookName.View()
 		case modeAddFormations:
 			title = "ADD FORMATIONS"
+			// The SetSize will be handled by WindowSizeMsg, but we ensure it here too for the split
 			m.formationList.SetSize(m.width/2-4, m.height-15)
 			m.selectedFormationList.SetSize(m.width/2-4, m.height-15)
 
@@ -309,7 +313,7 @@ func (m *ModelLockerPlaybooks) View() tea.View {
 				lipgloss.NewStyle().Width(2).Render(""),
 				m.selectedFormationList.View(),
 			)
-			content += "\n\n" + m.theme.Footer.Render("Tab to switch lists • Enter to add/remove • 's' to save")
+			content += "\n\n" + m.theme.Footer.Render(fmt.Sprintf("%d/10 formations • Tab: switch • Enter: add/remove • 's': save", len(m.newFormations)))
 		}
 	}
 

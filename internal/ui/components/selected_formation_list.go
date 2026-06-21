@@ -9,45 +9,38 @@ import (
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 )
 
-type FormationItem struct {
+type SelectedFormationItem struct {
 	formation playbooks.Formation
 }
 
-func (i FormationItem) Title() string {
+func (i SelectedFormationItem) Title() string {
 	return fmt.Sprintf("%s (%d-%d-%d)", i.formation.Name, i.formation.Lane1, i.formation.Lane2, i.formation.Lane3)
 }
-func (i FormationItem) Description() string { return i.formation.Description }
-func (i FormationItem) FilterValue() string { return i.formation.Name }
+func (i SelectedFormationItem) Description() string { return "" }
+func (i SelectedFormationItem) FilterValue() string { return i.formation.Name }
 
-type FormationList struct {
+type SelectedFormationList struct {
 	list   list.Model
 	active bool
 }
 
-func NewFormationList() FormationList {
-	formations := playbooks.Formations()
-	items := make([]list.Item, len(formations))
-	for i, f := range formations {
-		items[i] = FormationItem{formation: f}
-	}
-
+func NewSelectedFormationList() SelectedFormationList {
 	delegate := list.NewDefaultDelegate()
-	// Match PlaybookList styling
 	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("#A5F2F3")).BorderForeground(lipgloss.Color("#A5F2F3"))
 	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#87CEEB")).BorderForeground(lipgloss.Color("#A5F2F3"))
 
-	l := list.New(items, delegate, 0, 0)
-	l.Title = "Available Formations"
+	l := list.New([]list.Item{}, delegate, 0, 0)
+	l.Title = "Selected Formations (Max 10)"
 	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(true)
+	l.SetFilteringEnabled(false)
 	l.Styles.Title = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color("#A5F2F3")).Bold(true)
 
-	return FormationList{
+	return SelectedFormationList{
 		list: l,
 	}
 }
 
-func (l *FormationList) Update(msg tea.Msg) (FormationList, tea.Cmd) {
+func (l *SelectedFormationList) Update(msg tea.Msg) (SelectedFormationList, tea.Cmd) {
 	if !l.active {
 		return *l, nil
 	}
@@ -56,7 +49,7 @@ func (l *FormationList) Update(msg tea.Msg) (FormationList, tea.Cmd) {
 	return *l, cmd
 }
 
-func (l *FormationList) View() string {
+func (l *SelectedFormationList) View() string {
 	style := lipgloss.NewStyle().Padding(1).Border(lipgloss.RoundedBorder())
 	if l.active {
 		style = style.BorderForeground(lipgloss.Color("#A5F2F3"))
@@ -64,21 +57,26 @@ func (l *FormationList) View() string {
 	return style.Render(l.list.View())
 }
 
-func (l *FormationList) SelectedItem() playbooks.Formation {
-	if item, ok := l.list.SelectedItem().(FormationItem); ok {
-		return item.formation
+func (l *SelectedFormationList) SetItems(formations []playbooks.Formation) tea.Cmd {
+	items := make([]list.Item, len(formations))
+	for i, f := range formations {
+		items[i] = SelectedFormationItem{formation: f}
 	}
-	return playbooks.Formation{}
+	return l.list.SetItems(items)
 }
 
-func (l *FormationList) SetSize(width, height int) {
+func (l *SelectedFormationList) SelectedIndex() int {
+	return l.list.Index()
+}
+
+func (l *SelectedFormationList) SetSize(width, height int) {
 	l.list.SetSize(width, height)
 }
 
-func (l *FormationList) SetActive(active bool) {
+func (l *SelectedFormationList) SetActive(active bool) {
 	l.active = active
 }
 
-func (l *FormationList) IsFiltering() bool {
-	return l.list.FilterState() == list.Filtering
+func (l *SelectedFormationList) Len() int {
+	return len(l.list.Items())
 }

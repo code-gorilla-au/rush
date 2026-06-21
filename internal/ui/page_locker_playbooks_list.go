@@ -131,7 +131,10 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		case key.Matches(msg, m.keys.Delete):
-			m.handleDeletePlaybook()
+			model, cmd, done := m.handleDeletePlaybook()
+			if done {
+				return model, cmd
+			}
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -169,15 +172,21 @@ func (m *ModelLockerPlaybooksList) handleRouteEditPlaybook() (tea.Model, tea.Cmd
 	return nil, nil, false
 }
 
-func (m *ModelLockerPlaybooksList) handleDeletePlaybook() {
+func (m *ModelLockerPlaybooksList) handleDeletePlaybook() (tea.Model, tea.Cmd, bool) {
 	if m.playbookList.IsFiltering() {
-		return
+		return nil, nil, false
 	}
 
 	selected := m.playbookList.SelectedItem()
+	if selected == nil {
+		return nil, nil, false
+	}
+
 	if err := m.playbookSvc.DeletePlaybook(m.globalState.Context(), selected.ID); err != nil {
 		m.err = err
 	}
+
+	return m, m.loadPlaybooks, true
 }
 
 func (m *ModelLockerPlaybooksList) View() tea.View {

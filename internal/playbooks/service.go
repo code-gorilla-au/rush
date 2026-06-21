@@ -83,5 +83,6 @@ func (s *Service) UpdatePlaybook(ctx context.Context, id int64, params PlaybookP
 	if err != nil {
 		return Playbook{}, err
 	}
+
 	return fromPlaybookModel(model)
 }

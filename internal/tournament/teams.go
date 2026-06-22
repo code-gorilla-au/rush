@@ -121,8 +121,8 @@ var personas = []struct {
 }
 
 type AITeamService struct {
-	teamsSvc     *teams.Service
-	playbooksSvc *playbooks.Service
+	teamsSvc     TeamCreator
+	playbooksSvc PlaybookCreator
 }
 
 func (s *AITeamService) GenerateTeams(ctx context.Context) error {
@@ -191,6 +191,7 @@ func generateAITeams() ([]AITeam, error) {
 				teamFormations = append(teamFormations, f)
 			}
 		}
+
 		tmpTeam.Formations = teamFormations
 
 		aiTeams[i] = tmpTeam

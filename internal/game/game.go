@@ -25,6 +25,20 @@ func NewGame(teamAPlaybook playbooks.Playbook, teamBPlaybook playbooks.Playbook)
 	}
 
 	return Game{
-		Rounds: rounds,
+		rounds:       rounds,
+		currentRound: 0,
+		results:      []Result{},
 	}
+}
+
+func (g *Game) ResolveRound(roll RollFn) (Result, error) {
+	if g.currentRound >= len(g.rounds) {
+		return Result{}, ErrNoRounds
+	}
+
+	round := g.rounds[g.currentRound]
+	result := round.ResolveLanes(roll)
+	g.results = append(g.results, result)
+	g.currentRound++
+	return result, nil
 }

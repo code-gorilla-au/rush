@@ -2,8 +2,14 @@ package game
 
 import "errors"
 
+const (
+	MaxRounds = 10
+)
+
 type Game struct {
-	Rounds [10]Round
+	rounds       [10]Round
+	currentRound int
+	results      []Result
 }
 
 type Round struct {
@@ -27,6 +33,9 @@ type Result struct {
 	RemainingPlayers int
 }
 
+type RollFn func() int
+
 var (
 	ErrNoPlayer = errors.New("no player left in lane")
+	ErrNoRounds = errors.New("no rounds left")
 )

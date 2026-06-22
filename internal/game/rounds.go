@@ -14,7 +14,7 @@ func (r *Round) FillTeams(a SquadLanes, b SquadLanes) {
 	r.TeamB.FillSquad(b)
 }
 
-func (r *Round) ResolveLanes(rollFn func() int) Result {
+func (r *Round) ResolveLanes(rollFn RollFn) Result {
 	var result []Result
 
 	for lane := 0; lane < len(r.TeamA.Lanes); lane++ {
@@ -54,7 +54,7 @@ func (r *Round) ResolveLanes(rollFn func() int) Result {
 
 }
 
-func (r *Round) ResolveLane(lane int, rollFn func() int) Result {
+func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {
 	for r.TeamA.LaneHasPlayers(lane) && r.TeamB.LaneHasPlayers(lane) {
 		aRoll := rollFn()
 		bRoll := rollFn()

@@ -17,6 +17,19 @@ type Coach struct {
 	UpdatedAt sql.NullTime
 }
 
+type Game struct {
+	ID           int64
+	Name         string
+	TournamentID sql.NullInt64
+	TeamA        sql.NullInt64
+	TeamB        sql.NullInt64
+	Winner       sql.NullInt64
+	Status       sql.NullString
+	ResultsLog   interface{}
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+}
+
 type Playbook struct {
 	ID          int64
 	Name        string
@@ -40,6 +53,13 @@ type Team struct {
 	Name      string
 	IsDefault sql.NullBool
 	CoachID   sql.NullInt64
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
+type Tournament struct {
+	ID        int64
+	Name      string
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }

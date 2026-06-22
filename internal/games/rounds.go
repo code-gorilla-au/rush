@@ -1,4 +1,4 @@
-package game
+package games
 
 import "errors"
 
@@ -9,7 +9,7 @@ func NewRound() Round {
 	}
 }
 
-func (r *Round) FillTeams(a SquadLanes, b SquadLanes) {
+func (r *Round) FillSquad(a SquadConfig, b SquadConfig) {
 	r.TeamA.FillSquad(a)
 	r.TeamB.FillSquad(b)
 }
@@ -109,7 +109,9 @@ func (s *Squad) LanePop(lane int) (int, error) {
 	return 1, nil
 }
 
-func (s *Squad) FillSquad(f SquadLanes) {
+func (s *Squad) FillSquad(f SquadConfig) {
+	s.TeamID = f.TeamID
+
 	s.LaneFill(0, f.Lane1)
 	s.LaneFill(1, f.Lane2)
 	s.LaneFill(2, f.Lane3)

@@ -1,4 +1,4 @@
-package game
+package games
 
 import "errors"
 
@@ -6,7 +6,12 @@ const (
 	MaxRounds = 10
 )
 
+type Service struct {
+	Store Store
+}
+
 type Game struct {
+	id           int64
 	rounds       [10]Round
 	currentRound int
 	results      []Result
@@ -18,13 +23,15 @@ type Round struct {
 }
 
 type Squad struct {
-	Lanes [3][]int
+	TeamID int64
+	Lanes  [3][]int
 }
 
-type SquadLanes struct {
-	Lane1 int
-	Lane2 int
-	Lane3 int
+type SquadConfig struct {
+	TeamID int64
+	Lane1  int
+	Lane2  int
+	Lane3  int
 }
 
 type Result struct {

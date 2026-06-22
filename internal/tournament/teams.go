@@ -150,7 +150,7 @@ func (s *AITeamService) generateTeam(ctx context.Context, team AITeam) error {
 		return fmt.Errorf("creating AI coach: %w", err)
 	}
 
-	aiTeam, err := s.teamsSvc.CreateTeam(nil, team.TeamName, coach.ID, false)
+	aiTeam, err := s.teamsSvc.CreateTeam(ctx, team.TeamName, coach.ID, false)
 	if err != nil {
 		return fmt.Errorf("creating team: %w", err)
 	}

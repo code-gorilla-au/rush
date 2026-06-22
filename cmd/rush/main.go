@@ -46,7 +46,7 @@ func main() {
 	go func() {
 		hasAICoaches, tErr := tournamentSvc.HasAICoaches(ctx)
 		if tErr != nil {
-			slog.Error("Failed to check for AI coaches", "error", err)
+			slog.Error("Failed to check for AI coaches", "error", tErr)
 			return
 		}
 
@@ -54,8 +54,8 @@ func main() {
 			return
 		}
 
-		if tErr = tournamentSvc.GenerateTeams(ctx); err != nil {
-			slog.Error("Failed to generate teams", "error", err)
+		if tErr = tournamentSvc.GenerateTeams(ctx); tErr != nil {
+			slog.Error("Failed to generate teams", "error", tErr)
 		}
 	}()
 

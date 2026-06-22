@@ -71,6 +71,7 @@ func (s *Service) UpdatePlaybook(ctx context.Context, id int64, params PlaybookP
 	if err != nil {
 		return Playbook{}, fmt.Errorf("failed to marshal formations: %w", err)
 	}
+
 	model, err := s.store.UpdatePlaybook(ctx, database.UpdatePlaybookParams{
 		ID:   id,
 		Name: params.Name,

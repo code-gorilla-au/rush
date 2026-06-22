@@ -1,0 +1,64 @@
+package game
+
+import "errors"
+
+func (r *Round) ResolveLane(lane int, rollFn func() int) Result {
+	for r.TeamA.LaneHasPlayers(lane) && r.TeamB.LaneHasPlayers(lane) {
+		aRoll := rollFn()
+		bRoll := rollFn()
+
+		if aRoll > bRoll {
+			_, err := r.TeamB.LanePop(lane)
+			if errors.Is(err, ErrNoPlayer) {
+				break
+			}
+
+		} else if bRoll > aRoll {
+			_, err := r.TeamA.LanePop(lane)
+			if errors.Is(err, ErrNoPlayer) {
+				break
+			}
+		}
+
+	}
+
+	if r.TeamA.LaneHasPlayers(lane) {
+		return Result{
+			TeamA:            true,
+			TeamB:            false,
+			RemainingPlayers: r.TeamA.LaneCount(lane),
+		}
+	}
+
+	return Result{
+		TeamA:            false,
+		TeamB:            true,
+		RemainingPlayers: r.TeamB.LaneCount(lane),
+	}
+
+}
+
+func (s *Squad) LaneCount(lane int) int {
+	return len(s.Lanes[lane])
+}
+
+func (s *Squad) LaneHasPlayers(lane int) bool {
+	return len(s.Lanes[lane]) > 0
+}
+
+func (s *Squad) LanePop(lane int) (int, error) {
+	tmpLane := s.Lanes[lane]
+	if len(tmpLane) == 0 {
+		return 0, ErrNoPlayer
+	}
+
+	s.Lanes[lane] = tmpLane[:len(tmpLane)-1]
+
+	return 1, nil
+}
+
+func (s *Squad) LaneFill(lane int, players int) {
+	for i := 0; i < players; i++ {
+		s.Lanes[lane] = append(s.Lanes[lane], i)
+	}
+}

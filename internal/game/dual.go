@@ -2,6 +2,46 @@ package game
 
 import "errors"
 
+func (r *Round) ResolveLanes(rollFn func() int) Result {
+	var result []Result
+
+	for lane := 0; lane < len(r.TeamA.Lanes); lane++ {
+		laneResult := r.ResolveLane(lane, rollFn)
+		result = append(result, laneResult)
+	}
+
+	teamA := 0
+	teamAPlayers := 0
+
+	teamB := 0
+	teamBPlayers := 0
+
+	for _, laneResult := range result {
+		if laneResult.TeamA {
+			teamA++
+			teamAPlayers += laneResult.RemainingPlayers
+		} else {
+			teamB++
+			teamBPlayers += laneResult.RemainingPlayers
+		}
+	}
+
+	if teamAPlayers > teamBPlayers {
+		return Result{
+			TeamA:            true,
+			TeamB:            false,
+			RemainingPlayers: teamAPlayers,
+		}
+	}
+
+	return Result{
+		TeamA:            false,
+		TeamB:            true,
+		RemainingPlayers: teamBPlayers,
+	}
+
+}
+
 func (r *Round) ResolveLane(lane int, rollFn func() int) Result {
 	for r.TeamA.LaneHasPlayers(lane) && r.TeamB.LaneHasPlayers(lane) {
 		aRoll := rollFn()

@@ -123,3 +123,111 @@ func TestResolveLane(t *testing.T) {
 	err := group.Run()
 	odize.AssertNoError(t, err)
 }
+
+func TestResolveLanes(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	group.Test("Team A should win the round if they have more remaining players across all lanes", func(t *testing.T) {
+		r := &Round{
+			TeamA: Squad{},
+			TeamB: Squad{},
+		}
+		// Lane 0: Team A wins (2 remaining)
+		r.TeamA.LaneFill(0, 2)
+		r.TeamB.LaneFill(0, 1)
+
+		// Lane 1: Team B wins (1 remaining)
+		r.TeamA.LaneFill(1, 1)
+		r.TeamB.LaneFill(1, 2)
+
+		// Lane 2: Team A wins (3 remaining)
+		r.TeamA.LaneFill(2, 3)
+		r.TeamB.LaneFill(2, 0)
+
+		// Rolls for Lane 0: A(6), B(1) -> B loses 1
+		// Rolls for Lane 1: A(1), B(6) -> A loses 1
+		// Lane 2: No rolls needed as B has 0 players
+		rolls := []int{6, 1, 1, 6}
+		idx := 0
+		rollFn := func() int {
+			val := rolls[idx]
+			idx++
+			return val
+		}
+
+		res := r.ResolveLanes(rollFn)
+
+		// Team A players: Lane 0 (2), Lane 1 (0), Lane 2 (3) = 5
+		// Team B players: Lane 0 (0), Lane 1 (2), Lane 2 (0) = 2
+		// Total A (5) > Total B (2) -> Team A wins
+		odize.AssertTrue(t, res.TeamA)
+		odize.AssertFalse(t, res.TeamB)
+		odize.AssertEqual(t, 5, res.RemainingPlayers)
+	})
+
+	group.Test("Team B should win the round if they have more remaining players across all lanes", func(t *testing.T) {
+		r := &Round{
+			TeamA: Squad{},
+			TeamB: Squad{},
+		}
+		// Lane 0: Team B wins (3 remaining)
+		r.TeamA.LaneFill(0, 0)
+		r.TeamB.LaneFill(0, 3)
+
+		// Lane 1: Team B wins (2 remaining)
+		r.TeamA.LaneFill(1, 1)
+		r.TeamB.LaneFill(1, 2)
+
+		// Lane 2: Team A wins (1 remaining)
+		r.TeamA.LaneFill(2, 1)
+		r.TeamB.LaneFill(2, 0)
+
+		// Rolls for Lane 1: A(1), B(6) -> A loses 1
+		rolls := []int{1, 6}
+		idx := 0
+		rollFn := func() int {
+			val := rolls[idx]
+			idx++
+			return val
+		}
+
+		res := r.ResolveLanes(rollFn)
+
+		// Team A players: Lane 0 (0), Lane 1 (0), Lane 2 (1) = 1
+		// Team B players: Lane 0 (3), Lane 1 (2), Lane 2 (0) = 5
+		// Total B (5) > Total A (1) -> Team B wins
+		odize.AssertFalse(t, res.TeamA)
+		odize.AssertTrue(t, res.TeamB)
+		odize.AssertEqual(t, 5, res.RemainingPlayers)
+	})
+
+	group.Test("A tie in total remaining players should default to Team B win (or current logic)", func(t *testing.T) {
+		r := &Round{
+			TeamA: Squad{},
+			TeamB: Squad{},
+		}
+		// Lane 0: Team A wins (1 remaining)
+		r.TeamA.LaneFill(0, 1)
+		r.TeamB.LaneFill(0, 0)
+
+		// Lane 1: Team B wins (1 remaining)
+		r.TeamA.LaneFill(1, 0)
+		r.TeamB.LaneFill(1, 1)
+
+		// Lane 2: Both empty
+		r.TeamA.LaneFill(2, 0)
+		r.TeamB.LaneFill(2, 0)
+
+		res := r.ResolveLanes(func() int { return 1 })
+
+		// Total A (1) == Total B (1)
+		// Current logic: if teamAPlayers > teamBPlayers { A wins } else { B wins }
+		// So it should be Team B win.
+		odize.AssertFalse(t, res.TeamA)
+		odize.AssertTrue(t, res.TeamB)
+		odize.AssertEqual(t, 1, res.RemainingPlayers)
+	})
+
+	err := group.Run()
+	odize.AssertNoError(t, err)
+}

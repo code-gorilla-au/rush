@@ -3,6 +3,7 @@ package tournament
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
@@ -123,6 +124,26 @@ var personas = []struct {
 type AITeamService struct {
 	teamsSvc     TeamCreator
 	playbooksSvc PlaybookCreator
+}
+
+func NewAITeamService(teamsSvc TeamCreator, playbooksSvc PlaybookCreator) *AITeamService {
+	return &AITeamService{
+		teamsSvc:     teamsSvc,
+		playbooksSvc: playbooksSvc,
+	}
+}
+
+func (s *AITeamService) HasAICoaches(ctx context.Context) (bool, error) {
+	coaches, err := s.teamsSvc.ListCoaches(ctx)
+	if err != nil {
+		return false, fmt.Errorf("listing coaches: %w", err)
+	}
+
+	aiCoaches := slices.DeleteFunc(coaches, func(c teams.Coach) bool {
+		return c.IsHuman == false
+	})
+
+	return len(aiCoaches) > 0, nil
 }
 
 func (s *AITeamService) GenerateTeams(ctx context.Context) error {

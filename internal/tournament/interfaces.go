@@ -9,6 +9,7 @@ import (
 
 type TeamCreator interface {
 	CreateCoach(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error)
+	ListCoaches(ctx context.Context) ([]teams.Coach, error)
 	CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error)
 }
 

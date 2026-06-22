@@ -28,7 +28,7 @@ SELECT * FROM teams WHERE id = ?;
 -- name: GetTeamByCoachID :one
 SELECT * FROM teams WHERE coach_id = ? AND is_default = true LIMIT 1;
 
--- name: CreateTeam :exec
+-- name: CreateTeam :one
 INSERT INTO teams (name, is_default, coach_id) VALUES (?, ?, ?) RETURNING *;
 
 -- name: SetDefaultTeam :exec

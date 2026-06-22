@@ -13,6 +13,16 @@ func fromCoachModel(m database.Coach) Coach {
 	}
 }
 
+func fromCoachesModel(m []database.Coach) []Coach {
+	coaches := make([]Coach, len(m))
+
+	for i, coach := range m {
+		coaches[i] = fromCoachModel(coach)
+	}
+
+	return coaches
+}
+
 func fromTeamModel(m database.Team, p []database.Player) Team {
 	players := make([]Player, len(p))
 

@@ -42,6 +42,15 @@ func (s *Service) CreateCoach(ctx context.Context, params CreateCoachParams) (Co
 	return fromCoachModel(model), nil
 }
 
+func (s *Service) ListCoaches(ctx context.Context) ([]Coach, error) {
+	models, err := s.store.GetCoaches(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("listing coaches: %w", err)
+	}
+
+	return fromCoachesModel(models), nil
+}
+
 func (s *Service) GetDefaultCoach(ctx context.Context) (Coach, error) {
 	model, err := s.store.GetDefaultCoach(ctx)
 	if err != nil {
@@ -80,7 +89,7 @@ func (s *Service) GetTeamByCoachID(ctx context.Context, id int64) (Team, error) 
 }
 
 func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
-	err := s.store.CreateTeam(ctx, database.CreateTeamParams{
+	model, err := s.store.CreateTeam(ctx, database.CreateTeamParams{
 		Name: name,
 		IsDefault: sql.NullBool{
 			Bool:  isDefault,
@@ -92,15 +101,7 @@ func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, is
 		},
 	})
 	if err != nil {
-		return Team{}, fmt.Errorf("creating team: %w", err)
-	}
-
-	model, err := s.store.GetTeamByCoachID(ctx, sql.NullInt64{
-		Int64: coachID,
-		Valid: true,
-	})
-	if err != nil {
-		return Team{}, fmt.Errorf("getting created team: %w", err)
+		return Team{}, fmt.Errorf("creating team %s: %w", name, err)
 	}
 
 	playersModel, err := s.createPlayers(ctx, model.ID)

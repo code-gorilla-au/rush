@@ -29,7 +29,7 @@ type PlayerStore interface {
 }
 
 type TeamStore interface {
-	CreateTeam(ctx context.Context, arg database.CreateTeamParams) error
+	CreateTeam(ctx context.Context, arg database.CreateTeamParams) (database.Team, error)
 	GetTeamByCoachID(ctx context.Context, coachID sql.NullInt64) (database.Team, error)
 	DeleteTeam(ctx context.Context, id int64) error
 	SetDefaultTeam(ctx context.Context, id int64) error

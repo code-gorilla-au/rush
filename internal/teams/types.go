@@ -17,6 +17,8 @@ type Team struct {
 type Coach struct {
 	ID        int64     `json:"id,omitzero"`
 	Name      string    `json:"name,omitzero"`
+	IsDefault bool      `json:"is_default,omitzero"`
+	IsHuman   bool      `json:"is_human,omitzero"`
 	CreatedAt time.Time `json:"created_at,omitzero"`
 	UpdatedAt time.Time `json:"updated_at,omitzero"`
 }

@@ -100,7 +100,7 @@ func TestService(t *testing.T) {
 		Test("SetDefaultTeam should set the default team", func(t *testing.T) {
 			ctx := t.Context()
 			queries := database.New(db)
-			err := queries.CreateTeam(ctx, database.CreateTeamParams{
+			_, err := queries.CreateTeam(ctx, database.CreateTeamParams{
 				Name: "The Bulls",
 			})
 			odize.AssertNoError(t, err)
@@ -119,7 +119,7 @@ func TestService(t *testing.T) {
 			odize.AssertTrue(t, isDefault)
 		}).
 		Test("ClearDefaultTeam should clear the default team", func(t *testing.T) {
-			err := queries.CreateTeam(t.Context(), database.CreateTeamParams{
+			_, err := queries.CreateTeam(t.Context(), database.CreateTeamParams{
 				Name:      "The Bulls",
 				IsDefault: sql.NullBool{Bool: true, Valid: true},
 			})

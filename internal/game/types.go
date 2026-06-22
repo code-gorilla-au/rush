@@ -15,6 +15,12 @@ type Squad struct {
 	Lanes [3][]int
 }
 
+type SquadLanes struct {
+	Lane1 int
+	Lane2 int
+	Lane3 int
+}
+
 type Result struct {
 	TeamA            bool
 	TeamB            bool

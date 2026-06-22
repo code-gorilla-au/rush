@@ -2,6 +2,18 @@ package game
 
 import "errors"
 
+func NewRound() Round {
+	return Round{
+		TeamA: Squad{Lanes: [3][]int{}},
+		TeamB: Squad{Lanes: [3][]int{}},
+	}
+}
+
+func (r *Round) FillTeams(a SquadLanes, b SquadLanes) {
+	r.TeamA.FillSquad(a)
+	r.TeamB.FillSquad(b)
+}
+
 func (r *Round) ResolveLanes(rollFn func() int) Result {
 	var result []Result
 
@@ -95,6 +107,12 @@ func (s *Squad) LanePop(lane int) (int, error) {
 	s.Lanes[lane] = tmpLane[:len(tmpLane)-1]
 
 	return 1, nil
+}
+
+func (s *Squad) FillSquad(f SquadLanes) {
+	s.LaneFill(0, f.Lane1)
+	s.LaneFill(1, f.Lane2)
+	s.LaneFill(2, f.Lane3)
 }
 
 func (s *Squad) LaneFill(lane int, players int) {

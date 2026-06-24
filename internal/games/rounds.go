@@ -4,14 +4,14 @@ import "errors"
 
 func NewRound() Round {
 	return Round{
-		TeamA: Squad{Lanes: [3][]int{}},
-		TeamB: Squad{Lanes: [3][]int{}},
+		TeamA: TeamFormation{Lanes: [3][]int{}},
+		TeamB: TeamFormation{Lanes: [3][]int{}},
 	}
 }
 
-func (r *Round) FillSquad(a SquadConfig, b SquadConfig) {
-	r.TeamA.FillSquad(a)
-	r.TeamB.FillSquad(b)
+func (r *Round) FillSquad(a LanesConfig, b LanesConfig) {
+	r.TeamA.FillLanes(a)
+	r.TeamB.FillLanes(b)
 }
 
 func (r *Round) ResolveLanes(rollFn RollFn) Result {
@@ -90,15 +90,15 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {
 
 }
 
-func (s *Squad) LaneCount(lane int) int {
+func (s *TeamFormation) LaneCount(lane int) int {
 	return len(s.Lanes[lane])
 }
 
-func (s *Squad) LaneHasPlayers(lane int) bool {
+func (s *TeamFormation) LaneHasPlayers(lane int) bool {
 	return len(s.Lanes[lane]) > 0
 }
 
-func (s *Squad) LanePop(lane int) (int, error) {
+func (s *TeamFormation) LanePop(lane int) (int, error) {
 	tmpLane := s.Lanes[lane]
 	if len(tmpLane) == 0 {
 		return 0, ErrNoPlayer
@@ -109,7 +109,7 @@ func (s *Squad) LanePop(lane int) (int, error) {
 	return 1, nil
 }
 
-func (s *Squad) FillSquad(f SquadConfig) {
+func (s *TeamFormation) FillLanes(f LanesConfig) {
 	s.TeamID = f.TeamID
 
 	s.LaneFill(0, f.Lane1)
@@ -117,7 +117,7 @@ func (s *Squad) FillSquad(f SquadConfig) {
 	s.LaneFill(2, f.Lane3)
 }
 
-func (s *Squad) LaneFill(lane int, players int) {
+func (s *TeamFormation) LaneFill(lane int, players int) {
 	for i := 0; i < players; i++ {
 		s.Lanes[lane] = append(s.Lanes[lane], i)
 	}

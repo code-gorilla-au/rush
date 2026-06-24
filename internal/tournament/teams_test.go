@@ -12,11 +12,16 @@ import (
 
 type mockTeamCreator struct {
 	createCoachFunc func(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error)
+	listCoachesFunc func(ctx context.Context) ([]teams.Coach, error)
 	createTeamFunc  func(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error)
 }
 
 func (m *mockTeamCreator) CreateCoach(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error) {
 	return m.createCoachFunc(ctx, params)
+}
+
+func (m *mockTeamCreator) ListCoaches(ctx context.Context) ([]teams.Coach, error) {
+	return m.listCoachesFunc(ctx)
 }
 
 func (m *mockTeamCreator) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error) {

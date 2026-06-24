@@ -1,6 +1,10 @@
 package games
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/code-gorilla-au/rush/internal/playbooks"
+)
 
 const (
 	MaxRounds = 10
@@ -18,16 +22,22 @@ type Game struct {
 }
 
 type Round struct {
-	TeamA Squad
-	TeamB Squad
+	TeamA TeamFormation
+	TeamB TeamFormation
 }
 
-type Squad struct {
+type TeamConfig struct {
+	TeamID     int64
+	TeamName   string
+	Formations []playbooks.Formation
+}
+
+type TeamFormation struct {
 	TeamID int64
 	Lanes  [3][]int
 }
 
-type SquadConfig struct {
+type LanesConfig struct {
 	TeamID int64
 	Lane1  int
 	Lane2  int

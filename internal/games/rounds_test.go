@@ -11,8 +11,8 @@ func TestResolveLane(t *testing.T) {
 
 	group.Test("Team A should win when Team B runs out of players", func(t *testing.T) {
 		r := &Round{
-			TeamA: Squad{},
-			TeamB: Squad{},
+			TeamA: TeamFormation{},
+			TeamB: TeamFormation{},
 		}
 		lane := 0
 		r.TeamA.LaneFill(lane, 2)
@@ -37,8 +37,8 @@ func TestResolveLane(t *testing.T) {
 
 	group.Test("Team B should win when Team A runs out of players", func(t *testing.T) {
 		r := &Round{
-			TeamA: Squad{},
-			TeamB: Squad{},
+			TeamA: TeamFormation{},
+			TeamB: TeamFormation{},
 		}
 		lane := 0
 		r.TeamA.LaneFill(lane, 1)
@@ -63,8 +63,8 @@ func TestResolveLane(t *testing.T) {
 
 	group.Test("Draw should not result in any player being eliminated", func(t *testing.T) {
 		r := &Round{
-			TeamA: Squad{},
-			TeamB: Squad{},
+			TeamA: TeamFormation{},
+			TeamB: TeamFormation{},
 		}
 		lane := 0
 		r.TeamA.LaneFill(lane, 1)
@@ -90,8 +90,8 @@ func TestResolveLane(t *testing.T) {
 
 	group.Test("Team A starts with 0 players should lose immediately", func(t *testing.T) {
 		r := &Round{
-			TeamA: Squad{},
-			TeamB: Squad{},
+			TeamA: TeamFormation{},
+			TeamB: TeamFormation{},
 		}
 		lane := 0
 		r.TeamA.LaneFill(lane, 0)
@@ -106,8 +106,8 @@ func TestResolveLane(t *testing.T) {
 
 	group.Test("Team B starts with 0 players should lose immediately", func(t *testing.T) {
 		r := &Round{
-			TeamA: Squad{},
-			TeamB: Squad{},
+			TeamA: TeamFormation{},
+			TeamB: TeamFormation{},
 		}
 		lane := 0
 		r.TeamA.LaneFill(lane, 3)
@@ -129,8 +129,8 @@ func TestResolveLanes(t *testing.T) {
 
 	group.Test("Team A should win the round if they have more remaining players across all lanes", func(t *testing.T) {
 		r := &Round{
-			TeamA: Squad{},
-			TeamB: Squad{},
+			TeamA: TeamFormation{},
+			TeamB: TeamFormation{},
 		}
 		// Lane 0: Team A wins (2 remaining)
 		r.TeamA.LaneFill(0, 2)
@@ -167,8 +167,8 @@ func TestResolveLanes(t *testing.T) {
 
 	group.Test("Team B should win the round if they have more remaining players across all lanes", func(t *testing.T) {
 		r := &Round{
-			TeamA: Squad{},
-			TeamB: Squad{},
+			TeamA: TeamFormation{},
+			TeamB: TeamFormation{},
 		}
 		// Lane 0: Team B wins (3 remaining)
 		r.TeamA.LaneFill(0, 0)
@@ -203,8 +203,8 @@ func TestResolveLanes(t *testing.T) {
 
 	group.Test("A tie in total remaining players should default to Team B win (or current logic)", func(t *testing.T) {
 		r := &Round{
-			TeamA: Squad{},
-			TeamB: Squad{},
+			TeamA: TeamFormation{},
+			TeamB: TeamFormation{},
 		}
 		// Lane 0: Team A wins (1 remaining)
 		r.TeamA.LaneFill(0, 1)

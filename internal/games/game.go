@@ -1,25 +1,28 @@
 package games
 
-import "github.com/code-gorilla-au/rush/internal/playbooks"
+type NewGameParams struct {
+	TeamA TeamConfig
+	TeamB TeamConfig
+}
 
-func NewGame(teamAPlaybook playbooks.Playbook, teamBPlaybook playbooks.Playbook) Game {
+func NewGame(params NewGameParams) Game {
 	rounds := [10]Round{}
 
 	for i := range rounds {
 		r := NewRound()
 
 		r.FillSquad(
-			SquadConfig{
-				TeamID: teamAPlaybook.TeamID,
-				Lane1:  teamAPlaybook.Formations[i].Lane1,
-				Lane2:  teamAPlaybook.Formations[i].Lane2,
-				Lane3:  teamAPlaybook.Formations[i].Lane3,
+			LanesConfig{
+				TeamID: params.TeamA.TeamID,
+				Lane1:  params.TeamA.Formations[i].Lane1,
+				Lane2:  params.TeamA.Formations[i].Lane2,
+				Lane3:  params.TeamA.Formations[i].Lane3,
 			},
-			SquadConfig{
-				TeamID: teamBPlaybook.TeamID,
-				Lane1:  teamBPlaybook.Formations[i].Lane1,
-				Lane2:  teamBPlaybook.Formations[i].Lane2,
-				Lane3:  teamBPlaybook.Formations[i].Lane3,
+			LanesConfig{
+				TeamID: params.TeamB.TeamID,
+				Lane1:  params.TeamB.Formations[i].Lane1,
+				Lane2:  params.TeamB.Formations[i].Lane2,
+				Lane3:  params.TeamB.Formations[i].Lane3,
 			},
 		)
 

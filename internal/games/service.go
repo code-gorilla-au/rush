@@ -9,8 +9,8 @@ import (
 	"github.com/code-gorilla-au/rush/internal/database"
 )
 
-func NewService(store Store) Service {
-	return Service{
+func NewService(store Store) *Service {
+	return &Service{
 		Store: store,
 	}
 }

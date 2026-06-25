@@ -4,6 +4,7 @@ import (
 	"context"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
@@ -53,10 +54,11 @@ type RootModel struct {
 	globalState             *GlobalState
 	teamsSvc                *teams.Service
 	playbookSvc             *playbooks.Service
+	gameSvc                 *games.Service
 }
 
 // New returns a new UI model.
-func New(teamsService *teams.Service, playbookService *playbooks.Service) RootModel {
+func New(teamsService *teams.Service, playbookService *playbooks.Service, gameService *games.Service) RootModel {
 	state := &GlobalState{}
 
 	return RootModel{
@@ -72,6 +74,7 @@ func New(teamsService *teams.Service, playbookService *playbooks.Service) RootMo
 		globalState:             state,
 		teamsSvc:                teamsService,
 		playbookSvc:             playbookService,
+		gameSvc:                 gameService,
 	}
 }
 

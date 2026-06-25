@@ -13,8 +13,10 @@ create table if not exists games (
     team_a integer references teams(id),
     team_b integer references teams(id),
     winner integer references teams(id),
-    status varchar(255),
-    results_log string not null,
+    status varchar(255) not null,
+    rounds text not null,
+    current_round integer not null default 0,
+    results_log text not null,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

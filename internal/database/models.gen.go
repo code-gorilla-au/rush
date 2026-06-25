@@ -6,6 +6,7 @@ package database
 
 import (
 	"database/sql"
+	"encoding/json"
 )
 
 type Coach struct {
@@ -24,8 +25,10 @@ type Game struct {
 	TeamA        sql.NullInt64
 	TeamB        sql.NullInt64
 	Winner       sql.NullInt64
-	Status       sql.NullString
-	ResultsLog   interface{}
+	Status       string
+	Rounds       json.RawMessage
+	CurrentRound int64
+	ResultsLog   json.RawMessage
 	CreatedAt    sql.NullTime
 	UpdatedAt    sql.NullTime
 }

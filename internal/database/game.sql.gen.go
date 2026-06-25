@@ -8,6 +8,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 )
 
 const createGame = `-- name: CreateGame :one
@@ -15,13 +16,19 @@ insert into games (name,
                    team_a,
                    team_b,
                    tournament_id,
-                   results_log)
+                   results_log,
+                   status,
+                   rounds,
+                   current_round)
 values (?,
         ?,
         ?,
         ?,
+        ?,
+        'pending',
+        ?,
         ?)
-returning id, name, tournament_id, team_a, team_b, winner, status, results_log, created_at, updated_at
+returning id, name, tournament_id, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 `
 
 type CreateGameParams struct {
@@ -29,7 +36,9 @@ type CreateGameParams struct {
 	TeamA        sql.NullInt64
 	TeamB        sql.NullInt64
 	TournamentID sql.NullInt64
-	ResultsLog   interface{}
+	ResultsLog   json.RawMessage
+	Rounds       json.RawMessage
+	CurrentRound int64
 }
 
 func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, error) {
@@ -39,6 +48,8 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 		arg.TeamB,
 		arg.TournamentID,
 		arg.ResultsLog,
+		arg.Rounds,
+		arg.CurrentRound,
 	)
 	var i Game
 	err := row.Scan(
@@ -49,6 +60,8 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 		&i.TeamB,
 		&i.Winner,
 		&i.Status,
+		&i.Rounds,
+		&i.CurrentRound,
 		&i.ResultsLog,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -57,7 +70,7 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 }
 
 const getGameByID = `-- name: GetGameByID :one
-select id, name, tournament_id, team_a, team_b, winner, status, results_log, created_at, updated_at
+select id, name, tournament_id, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 from games
 where id = ?
 `
@@ -73,6 +86,8 @@ func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
 		&i.TeamB,
 		&i.Winner,
 		&i.Status,
+		&i.Rounds,
+		&i.CurrentRound,
 		&i.ResultsLog,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -82,15 +97,17 @@ func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
 
 const updateGame = `-- name: UpdateGame :one
 update games
-set name = ?,
-    team_a = ?,
-    team_b = ?,
-    winner = ?,
-    status = ?,
-    results_log = ?,
+set name          = ?,
+    team_a        = ?,
+    team_b        = ?,
+    winner        = ?,
+    status        = ?,
+    results_log   = ?,
+    rounds        = ?,
+    current_round = ?,
     tournament_id = ?
 where id = ?
-returning id, name, tournament_id, team_a, team_b, winner, status, results_log, created_at, updated_at
+returning id, name, tournament_id, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 `
 
 type UpdateGameParams struct {
@@ -98,8 +115,10 @@ type UpdateGameParams struct {
 	TeamA        sql.NullInt64
 	TeamB        sql.NullInt64
 	Winner       sql.NullInt64
-	Status       sql.NullString
-	ResultsLog   interface{}
+	Status       string
+	ResultsLog   json.RawMessage
+	Rounds       json.RawMessage
+	CurrentRound int64
 	TournamentID sql.NullInt64
 	ID           int64
 }
@@ -112,6 +131,8 @@ func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) (Game, e
 		arg.Winner,
 		arg.Status,
 		arg.ResultsLog,
+		arg.Rounds,
+		arg.CurrentRound,
 		arg.TournamentID,
 		arg.ID,
 	)
@@ -124,6 +145,8 @@ func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) (Game, e
 		&i.TeamB,
 		&i.Winner,
 		&i.Status,
+		&i.Rounds,
+		&i.CurrentRound,
 		&i.ResultsLog,
 		&i.CreatedAt,
 		&i.UpdatedAt,

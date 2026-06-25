@@ -2,23 +2,36 @@ package games
 
 import (
 	"errors"
+	"time"
 
 	"github.com/code-gorilla-au/rush/internal/playbooks"
-)
-
-const (
-	MaxRounds = 10
 )
 
 type Service struct {
 	Store Store
 }
 
+type GameStatus string
+
+const (
+	StatusPending  GameStatus = "pending"
+	StatusRunning  GameStatus = "running"
+	StatusComplete GameStatus = "complete"
+)
+
 type Game struct {
 	id           int64
+	name         string
+	tournamentID *int64
+	teamA        int64
+	teamB        int64
+	winner       *int64
+	status       GameStatus
 	rounds       [10]Round
-	currentRound int
+	currentRound int64
 	results      []Result
+	createdAt    time.Time
+	updatedAt    time.Time
 }
 
 type Round struct {

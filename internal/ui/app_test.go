@@ -7,11 +7,12 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
-func setupServices(t *testing.T) (*teams.Service, *playbooks.Service) {
+func setupServices(t *testing.T) (*teams.Service, *playbooks.Service, *games.Service) {
 	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		t.Fatalf("failed to open database: %v", err)
@@ -23,7 +24,7 @@ func setupServices(t *testing.T) (*teams.Service, *playbooks.Service) {
 	}
 
 	queries := database.New(db)
-	return teams.NewTeamsService(queries), playbooks.NewPlaybooksService(queries)
+	return teams.NewTeamsService(queries), playbooks.NewPlaybooksService(queries), games.NewService(queries)
 }
 
 func TestTheme(t *testing.T) {
@@ -48,19 +49,19 @@ func TestNew(t *testing.T) {
 
 	err := group.
 		Test("New should initialize model with IceTheme", func(t *testing.T) {
-			s, ps := setupServices(t)
-			m := New(s, ps)
+			s, ps, gs := setupServices(t)
+			m := New(s, ps, gs)
 			odize.AssertTrue(t, m.theme.Logo.GetForeground() != nil)
 		}).
 		Test("Init should return a command", func(t *testing.T) {
-			s, ps := setupServices(t)
-			m := New(s, ps)
+			s, ps, gs := setupServices(t)
+			m := New(s, ps, gs)
 			cmd := m.Init()
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle Quit keys", func(t *testing.T) {
-			s, ps := setupServices(t)
-			m := New(s, ps)
+			s, ps, gs := setupServices(t)
+			m := New(s, ps, gs)
 			_, cmd := m.Update(tea.KeyPressMsg{Text: "q"})
 			odize.AssertTrue(t, cmd != nil)
 
@@ -68,8 +69,8 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle WindowSizeMsg", func(t *testing.T) {
-			s, ps := setupServices(t)
-			m := New(s, ps)
+			s, ps, gs := setupServices(t)
+			m := New(s, ps, gs)
 			newModel, _ := m.Update(tea.WindowSizeMsg{Width: 100, Height: 50})
 			updatedModel := newModel.(RootModel)
 			odize.AssertTrue(t, updatedModel.width == 100)

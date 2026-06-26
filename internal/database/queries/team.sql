@@ -13,6 +13,9 @@ UPDATE coaches SET is_default = false WHERE is_default = true;
 -- name: GetCoaches :many
 SELECT * FROM coaches;
 
+-- name: GetAICoaches :many
+SELECT * FROM coaches WHERE is_human = false;
+
 -- name: CreateCoach :one
 INSERT INTO coaches (name, is_human, is_default) VALUES (?, ?, ?) RETURNING *;
 

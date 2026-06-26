@@ -30,7 +30,7 @@ const (
 	PageLockerPlaybooksCreate
 	PageLockerPlaybooksEdit
 	PageNewTournament
-	PageNewBattle
+	PageNewBattleSelection
 	PageTitleSettings
 )
 
@@ -57,7 +57,7 @@ type RootModel struct {
 	pageLockerPlaybooksCreate tea.Model
 	pageLockerPlaybooksEdit   tea.Model
 	pageNewTournament         tea.Model
-	pageNewBattle             tea.Model
+	pageNewBattleSelection    tea.Model
 	pageTitleSettings         tea.Model
 	globalState               *GlobalState
 	teamsSvc                  *teams.Service
@@ -81,7 +81,7 @@ func New(teamsService *teams.Service, playbookService *playbooks.Service, gameSe
 		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, playbookService),
 		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, playbookService),
 		pageNewTournament:         NewModelNewTournament(state),
-		pageNewBattle:             NewModelNewBattle(state),
+		pageNewBattleSelection:    NewModelNewBattleSelection(state, teamsService, playbookService),
 		pageTitleSettings:         NewModelTitleSettings(state),
 		globalState:               state,
 		teamsSvc:                  teamsService,
@@ -140,7 +140,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
 		cmds = append(cmds, cmd)
-		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
+		m.pageNewBattleSelection, cmd = m.pageNewBattleSelection.Update(msg)
 		cmds = append(cmds, cmd)
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 		cmds = append(cmds, cmd)
@@ -164,8 +164,8 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageLockerPlaybooksEdit, cmd = m.pageLockerPlaybooksEdit.Update(msg)
 	case PageNewTournament:
 		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
-	case PageNewBattle:
-		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
+	case PageNewBattleSelection:
+		m.pageNewBattleSelection, cmd = m.pageNewBattleSelection.Update(msg)
 	case PageTitleSettings:
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 	}
@@ -196,8 +196,8 @@ func (m RootModel) View() tea.View {
 		return m.pageLockerPlaybooksEdit.View()
 	case PageNewTournament:
 		return m.pageNewTournament.View()
-	case PageNewBattle:
-		return m.pageNewBattle.View()
+	case PageNewBattleSelection:
+		return m.pageNewBattleSelection.View()
 	case PageTitleSettings:
 		return m.pageTitleSettings.View()
 	}

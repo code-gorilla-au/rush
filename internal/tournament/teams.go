@@ -3,7 +3,6 @@ package tournament
 import (
 	"context"
 	"fmt"
-	"slices"
 
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
@@ -12,7 +11,7 @@ import (
 
 const totalTeams = 12
 
-type AITeam struct {
+type AIGenerationParams struct {
 	CoachName  string `faker:"name"`
 	TeamName   string `faker:"username"`
 	Persona    string
@@ -134,14 +133,10 @@ func NewAITeamService(teamsSvc TeamCreator, playbooksSvc PlaybookCreator) *AITea
 }
 
 func (s *AITeamService) HasAICoaches(ctx context.Context) (bool, error) {
-	coaches, err := s.teamsSvc.ListCoaches(ctx)
+	aiCoaches, err := s.teamsSvc.ListAICoaches(ctx)
 	if err != nil {
 		return false, fmt.Errorf("listing coaches: %w", err)
 	}
-
-	aiCoaches := slices.DeleteFunc(coaches, func(c teams.Coach) bool {
-		return c.IsHuman == false
-	})
 
 	return len(aiCoaches) > 0, nil
 }
@@ -161,7 +156,7 @@ func (s *AITeamService) GenerateTeams(ctx context.Context) error {
 	return nil
 }
 
-func (s *AITeamService) generateTeam(ctx context.Context, team AITeam) error {
+func (s *AITeamService) generateTeam(ctx context.Context, team AIGenerationParams) error {
 	coach, err := s.teamsSvc.CreateCoach(ctx, teams.CreateCoachParams{
 		Name:      team.CoachName,
 		IsHuman:   false,
@@ -171,7 +166,7 @@ func (s *AITeamService) generateTeam(ctx context.Context, team AITeam) error {
 		return fmt.Errorf("creating AI coach: %w", err)
 	}
 
-	aiTeam, err := s.teamsSvc.CreateTeam(ctx, team.TeamName, coach.ID, false)
+	aiTeam, err := s.teamsSvc.CreateTeam(ctx, team.TeamName, coach.ID, true)
 	if err != nil {
 		return fmt.Errorf("creating team: %w", err)
 	}
@@ -188,8 +183,8 @@ func (s *AITeamService) generateTeam(ctx context.Context, team AITeam) error {
 	return nil
 }
 
-func generateAITeams() ([]AITeam, error) {
-	aiTeams := make([]AITeam, totalTeams)
+func generateAITeams() ([]AIGenerationParams, error) {
+	aiTeams := make([]AIGenerationParams, totalTeams)
 	allFormations := playbooks.Formations()
 	formationMap := make(map[string]playbooks.Formation)
 	for _, f := range allFormations {
@@ -197,7 +192,7 @@ func generateAITeams() ([]AITeam, error) {
 	}
 
 	for i := 0; i < totalTeams; i++ {
-		tmpTeam := AITeam{}
+		tmpTeam := AIGenerationParams{}
 
 		if err := faker.FakeData(&tmpTeam); err != nil {
 			return nil, fmt.Errorf("generating team: %w", err)

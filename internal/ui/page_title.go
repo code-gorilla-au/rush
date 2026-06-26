@@ -84,9 +84,9 @@ func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, func() tea.Msg {
 					return MsgSwitchPage{NewPage: PageNewTournament}
 				}
-			case components.TitleItemNewBattle:
+			case components.TitleItemNewBattleSelection:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageNewBattle}
+					return MsgSwitchPage{NewPage: PageNewBattleSelection}
 				}
 			case components.TitleItemSettings:
 				return m, func() tea.Msg {

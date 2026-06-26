@@ -125,6 +125,40 @@ func (q *Queries) DeleteTeam(ctx context.Context, id int64) error {
 	return err
 }
 
+const getAICoaches = `-- name: GetAICoaches :many
+SELECT id, name, is_default, is_human, created_at, updated_at FROM coaches WHERE is_human = false
+`
+
+func (q *Queries) GetAICoaches(ctx context.Context) ([]Coach, error) {
+	rows, err := q.db.QueryContext(ctx, getAICoaches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Coach
+	for rows.Next() {
+		var i Coach
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.IsDefault,
+			&i.IsHuman,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCoach = `-- name: GetCoach :one
 SELECT id, name, is_default, coach_id, created_at, updated_at FROM teams WHERE id = ?
 `

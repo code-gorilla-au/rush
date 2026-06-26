@@ -11,7 +11,7 @@ const (
 	TitleItemCreateCoach TitleItem = iota
 	TitleItemLockerRoom
 	TitleItemNewTournament
-	TitleItemNewBattle
+	TitleItemNewBattleSelection
 	TitleItemSettings
 )
 
@@ -23,7 +23,7 @@ func (i TitleItem) String() string {
 		return "Locker Room"
 	case TitleItemNewTournament:
 		return "New Tournament"
-	case TitleItemNewBattle:
+	case TitleItemNewBattleSelection:
 		return "New Battle"
 	case TitleItemSettings:
 		return "Settings"
@@ -41,7 +41,7 @@ func NewTitleMenu(hasCoach bool) TitleMenu {
 	if !hasCoach {
 		items = []TitleItem{TitleItemCreateCoach}
 	} else {
-		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattle, TitleItemSettings}
+		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattleSelection, TitleItemSettings}
 	}
 	return TitleMenu{
 		items: items,
@@ -91,7 +91,7 @@ func (m *TitleMenu) SetHasCoach(hasCoach bool) {
 	if !hasCoach {
 		items = []TitleItem{TitleItemCreateCoach}
 	} else {
-		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattle, TitleItemSettings}
+		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattleSelection, TitleItemSettings}
 	}
 	m.items = items
 	if m.cursor >= len(m.items) {

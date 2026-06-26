@@ -51,6 +51,15 @@ func (s *Service) ListCoaches(ctx context.Context) ([]Coach, error) {
 	return fromCoachesModel(models), nil
 }
 
+func (s *Service) ListAICoaches(ctx context.Context) ([]Coach, error) {
+	models, err := s.store.GetAICoaches(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("listing ai coaches: %w", err)
+	}
+
+	return fromCoachesModel(models), nil
+}
+
 func (s *Service) GetDefaultCoach(ctx context.Context) (Coach, error) {
 	model, err := s.store.GetDefaultCoach(ctx)
 	if err != nil {

@@ -46,24 +46,6 @@ func (s *Service) CreateCoach(ctx context.Context, params CreateCoachParams) (Co
 	return fromCoachModel(model), nil
 }
 
-func (s *Service) ListCoaches(ctx context.Context) ([]Coach, error) {
-	models, err := s.store.GetCoaches(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("listing coaches: %w", err)
-	}
-
-	return fromCoachesModel(models), nil
-}
-
-func (s *Service) ListAICoaches(ctx context.Context) ([]Coach, error) {
-	models, err := s.store.GetAICoaches(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("listing ai coaches: %w", err)
-	}
-
-	return fromCoachesModel(models), nil
-}
-
 func (s *Service) GetDefaultCoach(ctx context.Context) (Coach, error) {
 	model, err := s.store.GetDefaultCoach(ctx)
 	if err != nil {

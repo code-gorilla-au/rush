@@ -96,7 +96,7 @@ func TestService(t *testing.T) {
 			queries := database.New(db)
 			_, err = queries.GetDefaultCoach(ctx)
 			odize.AssertError(t, err)
-			odize.AssertTrue(t, err == sql.ErrNoRows)
+			odize.AssertTrue(t, errors.Is(err, sql.ErrNoRows))
 		}).
 		Test("SetDefaultTeam should set the default team", func(t *testing.T) {
 			ctx := t.Context()

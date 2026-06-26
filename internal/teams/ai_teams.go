@@ -171,6 +171,15 @@ func (s *Service) GetAITeam(ctx context.Context, coach Coach) (AITeam, error) {
 	}, nil
 }
 
+func (s *Service) ListAICoaches(ctx context.Context) ([]Coach, error) {
+	models, err := s.store.GetAICoaches(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("listing ai coaches: %w", err)
+	}
+
+	return fromCoachesModel(models), nil
+}
+
 func (s *Service) GenerateAITeams(ctx context.Context) error {
 	aiTeams, err := generateAITeams()
 	if err != nil {

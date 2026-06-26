@@ -81,3 +81,14 @@ func (s *Service) UpdateGame(ctx context.Context, game Game) (Game, error) {
 
 	return fromGameModel(updated)
 }
+
+func (s *Service) CompleteGame(ctx context.Context, game Game) (Game, error) {
+	game.status = StatusComplete
+
+	updatedGame, err := s.UpdateGame(ctx, game)
+	if err != nil {
+		return Game{}, fmt.Errorf("completing game: %w", err)
+	}
+
+	return updatedGame, nil
+}

@@ -49,6 +49,10 @@ func (g *Game) ResolveRound(roll RollFn) (Result, error) {
 	return result, nil
 }
 
+func (g *Game) IsGameComplete() bool {
+	return g.currentRound >= int64(len(g.rounds))
+}
+
 func fromGameModel(m database.Game) (Game, error) {
 
 	var rounds [10]Round

@@ -60,16 +60,16 @@ func (m ModelTitle) Init() tea.Cmd {
 }
 
 func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
+	switch vMsg := msg.(type) {
 	case MsgStateUpdated:
-		m.globalState.Coach = msg.Coach
-		m.globalState.Team = msg.Team
+		m.globalState.Coach = vMsg.Coach
+		m.globalState.Team = vMsg.Team
 		m.menu.SetHasCoach(m.globalState.Coach != nil)
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.Quit):
+		case key.Matches(vMsg, m.keys.Quit):
 			return m, tea.Quit
-		case key.Matches(msg, m.keys.Enter):
+		case key.Matches(vMsg, m.keys.Enter):
 			selected := m.menu.SelectedItem()
 			switch selected {
 			case components.ItemCreateCoach:
@@ -82,11 +82,11 @@ func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
-		m.menu.Update(msg)
+		m.menu.Update(vMsg)
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		m.footer.Update(msg)
+		m.width = vMsg.Width
+		m.height = vMsg.Height
+		m.footer.Update(vMsg)
 	}
 
 	return m, nil

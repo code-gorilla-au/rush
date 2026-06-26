@@ -72,13 +72,25 @@ func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(vMsg, m.keys.Enter):
 			selected := m.menu.SelectedItem()
 			switch selected {
-			case components.ItemCreateCoach:
+			case components.TitleItemCreateCoach:
 				return m, func() tea.Msg {
 					return MsgSwitchPage{NewPage: PageCreateCoach}
 				}
-			case components.ItemLockerRoom:
+			case components.TitleItemLockerRoom:
 				return m, func() tea.Msg {
 					return MsgSwitchPage{NewPage: PageLockerRoom}
+				}
+			case components.TitleItemNewTournament:
+				return m, func() tea.Msg {
+					return MsgSwitchPage{NewPage: PageNewTournament}
+				}
+			case components.TitleItemNewBattle:
+				return m, func() tea.Msg {
+					return MsgSwitchPage{NewPage: PageNewBattle}
+				}
+			case components.TitleItemSettings:
+				return m, func() tea.Msg {
+					return MsgSwitchPage{NewPage: PageTitleSettings}
 				}
 			}
 		}

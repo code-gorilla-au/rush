@@ -8,24 +8,24 @@ import (
 type TitleItem int
 
 const (
-	ItemCreateCoach TitleItem = iota
-	ItemLockerRoom
-	ItemNewTournament
-	ItemNewBattle
-	ItemNewSettings
+	TitleItemCreateCoach TitleItem = iota
+	TitleItemLockerRoom
+	TitleItemNewTournament
+	TitleItemNewBattle
+	TitleItemSettings
 )
 
 func (i TitleItem) String() string {
 	switch i {
-	case ItemCreateCoach:
+	case TitleItemCreateCoach:
 		return "Create Coach"
-	case ItemLockerRoom:
+	case TitleItemLockerRoom:
 		return "Locker Room"
-	case ItemNewTournament:
+	case TitleItemNewTournament:
 		return "New Tournament"
-	case ItemNewBattle:
+	case TitleItemNewBattle:
 		return "New Battle"
-	case ItemNewSettings:
+	case TitleItemSettings:
 		return "Settings"
 	}
 	return ""
@@ -39,9 +39,9 @@ type TitleMenu struct {
 func NewTitleMenu(hasCoach bool) TitleMenu {
 	var items []TitleItem
 	if !hasCoach {
-		items = []TitleItem{ItemCreateCoach}
+		items = []TitleItem{TitleItemCreateCoach}
 	} else {
-		items = []TitleItem{ItemLockerRoom, ItemNewTournament, ItemNewBattle, ItemNewSettings}
+		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattle, TitleItemSettings}
 	}
 	return TitleMenu{
 		items: items,
@@ -89,9 +89,9 @@ func (m *TitleMenu) SelectedItem() TitleItem {
 func (m *TitleMenu) SetHasCoach(hasCoach bool) {
 	var items []TitleItem
 	if !hasCoach {
-		items = []TitleItem{ItemCreateCoach}
+		items = []TitleItem{TitleItemCreateCoach}
 	} else {
-		items = []TitleItem{ItemLockerRoom, ItemNewTournament, ItemNewBattle, ItemNewSettings}
+		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattle, TitleItemSettings}
 	}
 	m.items = items
 	if m.cursor >= len(m.items) {

@@ -29,6 +29,9 @@ const (
 	PageLockerPlaybooksList
 	PageLockerPlaybooksCreate
 	PageLockerPlaybooksEdit
+	PageNewTournament
+	PageNewBattle
+	PageTitleSettings
 )
 
 type GlobalState struct {
@@ -53,6 +56,9 @@ type RootModel struct {
 	pageLockerPlaybooksList   tea.Model
 	pageLockerPlaybooksCreate tea.Model
 	pageLockerPlaybooksEdit   tea.Model
+	pageNewTournament         tea.Model
+	pageNewBattle             tea.Model
+	pageTitleSettings         tea.Model
 	globalState               *GlobalState
 	teamsSvc                  *teams.Service
 	playbookSvc               *playbooks.Service
@@ -74,6 +80,9 @@ func New(teamsService *teams.Service, playbookService *playbooks.Service, gameSe
 		pageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, playbookService),
 		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, playbookService),
 		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, playbookService),
+		pageNewTournament:         NewModelNewTournament(state),
+		pageNewBattle:             NewModelNewBattle(state),
+		pageTitleSettings:         NewModelTitleSettings(state),
 		globalState:               state,
 		teamsSvc:                  teamsService,
 		playbookSvc:               playbookService,
@@ -129,6 +138,12 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageLockerPlaybooksEdit, cmd = m.pageLockerPlaybooksEdit.Update(msg)
 		cmds = append(cmds, cmd)
+		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
+		cmds = append(cmds, cmd)
+		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
+		cmds = append(cmds, cmd)
+		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
+		cmds = append(cmds, cmd)
 	}
 
 	var cmd tea.Cmd
@@ -147,6 +162,12 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageLockerPlaybooksCreate, cmd = m.pageLockerPlaybooksCreate.Update(msg)
 	case PageLockerPlaybooksEdit:
 		m.pageLockerPlaybooksEdit, cmd = m.pageLockerPlaybooksEdit.Update(msg)
+	case PageNewTournament:
+		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
+	case PageNewBattle:
+		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
+	case PageTitleSettings:
+		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 
@@ -173,6 +194,12 @@ func (m RootModel) View() tea.View {
 		return m.pageLockerPlaybooksCreate.View()
 	case PageLockerPlaybooksEdit:
 		return m.pageLockerPlaybooksEdit.View()
+	case PageNewTournament:
+		return m.pageNewTournament.View()
+	case PageNewBattle:
+		return m.pageNewBattle.View()
+	case PageTitleSettings:
+		return m.pageTitleSettings.View()
 	}
 
 	return tea.NewView("unknown page")

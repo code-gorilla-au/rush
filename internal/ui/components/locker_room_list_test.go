@@ -15,7 +15,7 @@ func TestLockerRoomList(t *testing.T) {
 		odize.AssertEqual(t, 3, len(l.items))
 		odize.AssertEqual(t, ItemPlayers, l.items[0])
 		odize.AssertEqual(t, ItemPlaybooks, l.items[1])
-		odize.AssertEqual(t, ItemSettings, l.items[2])
+		odize.AssertEqual(t, TitleItemSettings, l.items[2])
 	})
 
 	group.Test("Update should move cursor down", func(t *testing.T) {

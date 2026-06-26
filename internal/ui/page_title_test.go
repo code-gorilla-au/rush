@@ -12,12 +12,12 @@ func TestModelTitle(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	err := group.
-		Test("should route to create coach when coach is nil and 'c' is pressed", func(t *testing.T) {
+		Test("should route to create coach when coach is nil and enter is pressed", func(t *testing.T) {
 			m := NewModelTitle(&GlobalState{Coach: nil})
 			m.width = 100
 			m.height = 50
 
-			_, cmd := m.Update(tea.KeyPressMsg{Text: m.keys.CreateCoach.Keys()[0]})
+			_, cmd := m.Update(tea.KeyPressMsg{Text: "enter"})
 			odize.AssertTrue(t, cmd != nil)
 
 			msg := cmd()
@@ -28,12 +28,12 @@ func TestModelTitle(t *testing.T) {
 				t.Fatalf("expected MsgSwitchPage, got %T", msg)
 			}
 		}).
-		Test("should route to locker room when coach is not nil and 'l' is pressed", func(t *testing.T) {
+		Test("should route to locker room when coach is not nil and enter is pressed", func(t *testing.T) {
 			m := NewModelTitle(&GlobalState{Coach: &teams.Coach{Name: "Coach Carter"}})
 			m.width = 100
 			m.height = 50
 
-			_, cmd := m.Update(tea.KeyPressMsg{Text: m.keys.LockerRoom.Keys()[0]})
+			_, cmd := m.Update(tea.KeyPressMsg{Text: "enter"})
 			odize.AssertTrue(t, cmd != nil)
 
 			msg := cmd()

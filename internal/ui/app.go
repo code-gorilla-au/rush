@@ -68,10 +68,10 @@ type RootModel struct {
 }
 
 type Dependencies struct {
-	teamsSvc    *teams.Service
-	playbookSvc *playbooks.Service
-	gameSvc     *games.Service
-	aiTeamsSvc  *tournament.AITeamService
+	TeamsSvc    *teams.Service
+	PlaybookSvc *playbooks.Service
+	GameSvc     *games.Service
+	AiTeamsSvc  *tournament.AITeamService
 }
 
 // New returns a new UI model.
@@ -83,20 +83,20 @@ func New(deps Dependencies) RootModel {
 		theme:                     NewIceTheme(),
 		currentPage:               PageTitle,
 		pageTitle:                 NewModelTitle(state),
-		pageCreateCoach:           NewModelCreateCoach(state, deps.teamsSvc),
+		pageCreateCoach:           NewModelCreateCoach(state, deps.TeamsSvc),
 		pageLockerRoom:            NewModelLockerRoom(state),
-		pageLockerPlayers:         NewModelLockerPlayers(state, deps.teamsSvc),
-		pageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, deps.playbookSvc),
-		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.playbookSvc),
-		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.playbookSvc),
+		pageLockerPlayers:         NewModelLockerPlayers(state, deps.TeamsSvc),
+		pageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, deps.PlaybookSvc),
+		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.PlaybookSvc),
+		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.PlaybookSvc),
 		pageNewTournament:         NewModelNewTournament(state),
-		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.teamsSvc, deps.playbookSvc),
+		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.AiTeamsSvc),
 		pageTitleSettings:         NewModelTitleSettings(state),
 		globalState:               state,
-		teamsSvc:                  deps.teamsSvc,
-		playbookSvc:               deps.playbookSvc,
-		gameSvc:                   deps.gameSvc,
-		aiTeamsSvc:                deps.aiTeamsSvc,
+		teamsSvc:                  deps.TeamsSvc,
+		playbookSvc:               deps.PlaybookSvc,
+		gameSvc:                   deps.GameSvc,
+		aiTeamsSvc:                deps.AiTeamsSvc,
 	}
 }
 

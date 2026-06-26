@@ -61,7 +61,12 @@ func main() {
 		}
 	}()
 
-	p := tea.NewProgram(ui.New(teamsSvc, playbooksSvc, gameSvc))
+	p := tea.NewProgram(ui.New(ui.Dependencies{
+		TeamsSvc:    teamsSvc,
+		PlaybookSvc: playbooksSvc,
+		GameSvc:     gameSvc,
+		AiTeamsSvc:  tournamentSvc,
+	}))
 	if _, err = p.Run(); err != nil {
 		slog.Error("Failed to run program", "error", err)
 		os.Exit(1)

@@ -11,17 +11,22 @@ import (
 )
 
 type mockTeamCreator struct {
-	createCoachFunc func(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error)
-	listCoachesFunc func(ctx context.Context) ([]teams.Coach, error)
-	createTeamFunc  func(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error)
+	createCoachFunc      func(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error)
+	listAICoachesFunc    func(ctx context.Context) ([]teams.Coach, error)
+	getTeamByCoachIDFunc func(ctx context.Context, id int64) (teams.Team, error)
+	createTeamFunc       func(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error)
 }
 
 func (m *mockTeamCreator) CreateCoach(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error) {
 	return m.createCoachFunc(ctx, params)
 }
 
-func (m *mockTeamCreator) ListCoaches(ctx context.Context) ([]teams.Coach, error) {
-	return m.listCoachesFunc(ctx)
+func (m *mockTeamCreator) ListAICoaches(ctx context.Context) ([]teams.Coach, error) {
+	return m.listAICoachesFunc(ctx)
+}
+
+func (m *mockTeamCreator) GetTeamByCoachID(ctx context.Context, id int64) (teams.Team, error) {
+	return m.getTeamByCoachIDFunc(ctx, id)
 }
 
 func (m *mockTeamCreator) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error) {
@@ -29,11 +34,16 @@ func (m *mockTeamCreator) CreateTeam(ctx context.Context, name string, coachID i
 }
 
 type mockPlaybookCreator struct {
-	createPlaybookFunc func(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error)
+	createPlaybookFunc   func(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error)
+	getTeamPlaybooksFunc func(ctx context.Context, teamID int64) ([]playbooks.Playbook, error)
 }
 
 func (m *mockPlaybookCreator) CreatePlaybook(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error) {
 	return m.createPlaybookFunc(ctx, params)
+}
+
+func (m *mockPlaybookCreator) GetTeamPlaybooks(ctx context.Context, teamID int64) ([]playbooks.Playbook, error) {
+	return m.getTeamPlaybooksFunc(ctx, teamID)
 }
 
 func TestGenerateAITeams(t *testing.T) {

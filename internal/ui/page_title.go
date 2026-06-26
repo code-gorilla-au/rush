@@ -12,30 +12,25 @@ import (
 
 type titleKeyMap struct {
 	components.CommonKeys
-	CreateCoach key.Binding
-	LockerRoom  key.Binding
+	Enter key.Binding
 }
 
 func (k titleKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.CreateCoach, k.LockerRoom, k.Quit}
+	return []key.Binding{k.Enter, k.Quit}
 }
 
 func (k titleKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.CreateCoach, k.LockerRoom, k.Quit},
+		{k.Enter, k.Quit},
 	}
 }
 
 func newTitleKeyMap() titleKeyMap {
 	return titleKeyMap{
 		CommonKeys: components.NewCommonKeys(),
-		CreateCoach: key.NewBinding(
-			key.WithKeys("c"),
-			key.WithHelp("c", "create coach"),
-		),
-		LockerRoom: key.NewBinding(
-			key.WithKeys("l"),
-			key.WithHelp("l", "locker room"),
+		Enter: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "select"),
 		),
 	}
 }
@@ -47,6 +42,7 @@ type ModelTitle struct {
 	globalState *GlobalState
 	keys        titleKeyMap
 	footer      components.Footer
+	menu        components.TitleMenu
 }
 
 func NewModelTitle(globalState *GlobalState) *ModelTitle {
@@ -55,6 +51,7 @@ func NewModelTitle(globalState *GlobalState) *ModelTitle {
 		globalState: globalState,
 		keys:        keys,
 		footer:      components.NewFooter(keys),
+		menu:        components.NewTitleMenu(globalState.Coach != nil),
 	}
 }
 
@@ -67,23 +64,25 @@ func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
+		m.menu.SetHasCoach(m.globalState.Coach != nil)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
-		case key.Matches(msg, m.keys.CreateCoach):
-			if m.globalState.Coach == nil {
+		case key.Matches(msg, m.keys.Enter):
+			selected := m.menu.SelectedItem()
+			switch selected {
+			case components.ItemCreateCoach:
 				return m, func() tea.Msg {
 					return MsgSwitchPage{NewPage: PageCreateCoach}
 				}
-			}
-		case key.Matches(msg, m.keys.LockerRoom):
-			if m.globalState.Coach != nil {
+			case components.ItemLockerRoom:
 				return m, func() tea.Msg {
 					return MsgSwitchPage{NewPage: PageLockerRoom}
 				}
 			}
 		}
+		m.menu.Update(msg)
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -108,12 +107,7 @@ func (m ModelTitle) View() tea.View {
 
 	styledLogo := m.theme.Logo.Render(strings.Trim(logo, "\n"))
 
-	var navigation string
-	if m.globalState.Coach == nil {
-		navigation = "Press " + m.theme.Hotkey.Render("c") + " to create a coach"
-	} else {
-		navigation = m.theme.Button.Render("Locker Room (l)")
-	}
+	navigation := m.menu.View(m.theme.Base, m.theme.Hotkey)
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,

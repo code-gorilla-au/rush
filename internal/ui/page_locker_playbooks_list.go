@@ -127,7 +127,7 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.New):
 			if !m.playbookList.IsFiltering() {
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerPlaybooksEdit}
+					return MsgSwitchPage{NewPage: PageLockerPlaybooksCreate}
 				}
 			}
 		case key.Matches(msg, m.keys.Delete):
@@ -163,7 +163,7 @@ func (m *ModelLockerPlaybooksList) handleRouteEditPlaybook() (tea.Model, tea.Cmd
 	if selected != nil {
 		return m, func() tea.Msg {
 			return MsgSwitchPage{
-				NewPage:  PageLockerPlaybooksEdit,
+				NewPage:  PageLockerPlaybooksCreate,
 				Playbook: selected,
 			}
 		}, true

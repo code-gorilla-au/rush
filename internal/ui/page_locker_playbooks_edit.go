@@ -4,18 +4,10 @@ import (
 	"fmt"
 
 	"charm.land/bubbles/v2/key"
-	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
-)
-
-type editPlaybookMode int
-
-const (
-	modeCreateName editPlaybookMode = iota
-	modeAddFormations
 )
 
 type lockerPlaybooksEditKeyMap struct {
@@ -63,26 +55,21 @@ type ModelLockerPlaybooksEdit struct {
 	footer                components.Footer
 	formationList         components.FormationList
 	selectedFormationList components.FormationList
-	mode                  editPlaybookMode
 	activeList            int // 0 for formationList, 1 for selectedFormationList
 	playbookID            int64
-	newPlaybookName       textinput.Model
+	playbookName          string
+	playbookDescription   string
 	newFormations         []playbooks.Formation
 	err                   error
 }
 
 func NewModelLockerPlaybooksEdit(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooksEdit {
-	ti := textinput.New()
-	ti.Placeholder = "Playbook Name"
-	ti.Focus()
-
 	return &ModelLockerPlaybooksEdit{
-		theme:           NewIceTheme(),
-		globalState:     state,
-		playbookSvc:     playbookSvc,
-		keys:            newLockerPlaybooksEditKeyMap(),
-		footer:          components.NewFooter(newLockerPlaybooksEditKeyMap()),
-		newPlaybookName: ti,
+		theme:       NewIceTheme(),
+		globalState: state,
+		playbookSvc: playbookSvc,
+		keys:        newLockerPlaybooksEditKeyMap(),
+		footer:      components.NewFooter(newLockerPlaybooksEditKeyMap()),
 		formationList: components.NewFormationList(components.FormationListConfig{
 			Title:           "Available Formations",
 			Items:           playbooks.Formations(),
@@ -124,17 +111,19 @@ func (m *ModelLockerPlaybooksEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Back):
-			if m.mode == modeCreateName {
-				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerPlaybooksList}
-				}
+			if m.formationList.IsFiltering() {
+				break
 			}
-			if m.mode == modeAddFormations {
-				if m.formationList.IsFiltering() {
-					break
+			return m, func() tea.Msg {
+				return MsgSwitchPage{
+					NewPage: PageLockerPlaybooksCreate,
+					Playbook: &playbooks.Playbook{
+						ID:          m.playbookID,
+						Name:        m.playbookName,
+						Description: m.playbookDescription,
+						Formations:  m.newFormations,
+					},
 				}
-				m.mode = modeCreateName
-				return m, nil
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -145,47 +134,27 @@ func (m *ModelLockerPlaybooksEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.footer.Update(msg)
 	}
 
-	switch m.mode {
-	case modeCreateName:
-		cmds = append(cmds, m.updateCreateName(msg))
-	case modeAddFormations:
-		cmds = append(cmds, m.updateAddFormations(msg))
-	}
+	cmds = append(cmds, m.updateAddFormations(msg))
 
 	return m, tea.Batch(cmds...)
 }
 
 func (m *ModelLockerPlaybooksEdit) reset() {
-	m.newPlaybookName.Reset()
-	m.newPlaybookName.Focus()
 	m.newFormations = nil
 	m.playbookID = 0
-	m.mode = modeCreateName
+	m.playbookName = ""
+	m.playbookDescription = ""
 	m.selectedFormationList.SetItems(nil)
 	m.err = nil
 }
 
 func (m *ModelLockerPlaybooksEdit) load(p *playbooks.Playbook) {
-	m.newPlaybookName.SetValue(p.Name)
-	m.newPlaybookName.Focus()
 	m.newFormations = p.Formations
 	m.playbookID = p.ID
-	m.mode = modeCreateName
+	m.playbookName = p.Name
+	m.playbookDescription = p.Description
 	m.selectedFormationList.SetItems(m.newFormations)
 	m.err = nil
-}
-
-func (m *ModelLockerPlaybooksEdit) updateCreateName(msg tea.Msg) tea.Cmd {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if msg.String() == "enter" && m.newPlaybookName.Value() != "" {
-			m.mode = modeAddFormations
-			return nil
-		}
-	}
-	var cmd tea.Cmd
-	m.newPlaybookName, cmd = m.newPlaybookName.Update(msg)
-	return cmd
 }
 
 func (m *ModelLockerPlaybooksEdit) updateAddFormations(msg tea.Msg) tea.Cmd {
@@ -245,15 +214,17 @@ func (m *ModelLockerPlaybooksEdit) savePlaybook() tea.Msg {
 	var err error
 	if m.playbookID != 0 {
 		_, err = m.playbookSvc.UpdatePlaybook(m.globalState.Context(), m.playbookID, playbooks.PlaybookParams{
-			TeamID:     m.globalState.Team.ID,
-			Name:       m.newPlaybookName.Value(),
-			Formations: m.newFormations,
+			TeamID:      m.globalState.Team.ID,
+			Name:        m.playbookName,
+			Description: m.playbookDescription,
+			Formations:  m.newFormations,
 		})
 	} else {
 		_, err = m.playbookSvc.CreatePlaybook(m.globalState.Context(), playbooks.PlaybookParams{
-			TeamID:     m.globalState.Team.ID,
-			Name:       m.newPlaybookName.Value(),
-			Formations: m.newFormations,
+			TeamID:      m.globalState.Team.ID,
+			Name:        m.playbookName,
+			Description: m.playbookDescription,
+			Formations:  m.newFormations,
 		})
 	}
 	if err != nil {
@@ -267,32 +238,21 @@ func (m *ModelLockerPlaybooksEdit) View() tea.View {
 	view.AltScreen = true
 
 	var content string
-	title := "PLAYBOOKS"
+	title := "ALLOCATE FORMATIONS"
 
 	if m.err != nil {
 		content = m.theme.Logo.Render(fmt.Sprintf("Error: %v", m.err))
 	} else {
-		switch m.mode {
-		case modeCreateName:
-			if m.playbookID != 0 {
-				title = "EDIT PLAYBOOK"
-			} else {
-				title = "CREATE PLAYBOOK"
-			}
-			content = "Enter playbook name:\n\n" + m.newPlaybookName.View()
-		case modeAddFormations:
-			title = "ADD FORMATIONS"
-			m.formationList.SetSize(m.width/2-4, m.height-15)
-			m.selectedFormationList.SetSize(m.width/2-4, m.height-15)
+		m.formationList.SetSize(m.width/2-4, m.height-15)
+		m.selectedFormationList.SetSize(m.width/2-4, m.height-15)
 
-			content = lipgloss.JoinHorizontal(
-				lipgloss.Top,
-				m.formationList.View(),
-				lipgloss.NewStyle().Width(2).Render(""),
-				m.selectedFormationList.View(),
-			)
-			content += "\n\n" + m.theme.Footer.Render(fmt.Sprintf("%d/10 formations • Tab: switch • Enter: add/remove • 's': save", len(m.newFormations)))
-		}
+		content = lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			m.formationList.View(),
+			lipgloss.NewStyle().Width(2).Render(""),
+			m.selectedFormationList.View(),
+		)
+		content += "\n\n" + m.theme.Footer.Render(fmt.Sprintf("%d/10 formations • Tab: switch • Enter: add/remove • 's': save", len(m.newFormations)))
 	}
 
 	mainContent := lipgloss.JoinVertical(

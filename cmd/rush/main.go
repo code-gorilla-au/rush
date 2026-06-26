@@ -56,7 +56,7 @@ func main() {
 			return
 		}
 
-		if tErr = tournamentSvc.GenerateTeams(ctx); tErr != nil {
+		if tErr = tournamentSvc.GenerateAITeams(ctx); tErr != nil {
 			slog.Error("Failed to generate teams", "error", tErr)
 		}
 	}()

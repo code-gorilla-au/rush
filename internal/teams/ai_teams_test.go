@@ -1,4 +1,4 @@
-package tournament
+package teams
 
 import (
 	"context"
@@ -7,29 +7,28 @@ import (
 
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
-	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
 type mockTeamCreator struct {
-	createCoachFunc      func(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error)
-	listAICoachesFunc    func(ctx context.Context) ([]teams.Coach, error)
-	getTeamByCoachIDFunc func(ctx context.Context, id int64) (teams.Team, error)
-	createTeamFunc       func(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error)
+	createCoachFunc      func(ctx context.Context, params CreateCoachParams) (Coach, error)
+	listAICoachesFunc    func(ctx context.Context) ([]Coach, error)
+	getTeamByCoachIDFunc func(ctx context.Context, id int64) (Team, error)
+	createTeamFunc       func(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error)
 }
 
-func (m *mockTeamCreator) CreateCoach(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error) {
+func (m *mockTeamCreator) CreateCoach(ctx context.Context, params CreateCoachParams) (Coach, error) {
 	return m.createCoachFunc(ctx, params)
 }
 
-func (m *mockTeamCreator) ListAICoaches(ctx context.Context) ([]teams.Coach, error) {
+func (m *mockTeamCreator) ListAICoaches(ctx context.Context) ([]Coach, error) {
 	return m.listAICoachesFunc(ctx)
 }
 
-func (m *mockTeamCreator) GetTeamByCoachID(ctx context.Context, id int64) (teams.Team, error) {
+func (m *mockTeamCreator) GetTeamByCoachID(ctx context.Context, id int64) (Team, error) {
 	return m.getTeamByCoachIDFunc(ctx, id)
 }
 
-func (m *mockTeamCreator) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error) {
+func (m *mockTeamCreator) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
 	return m.createTeamFunc(ctx, name, coachID, isDefault)
 }
 
@@ -89,20 +88,20 @@ func TestAITeamService_GenerateTeams(t *testing.T) {
 		Test("should successfully generate all teams", func(t *testing.T) {
 			var coachCount, teamCount, playbookCount int
 
-			mockTeams.createCoachFunc = func(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error) {
+			mockTeams.createCoachFunc = func(ctx context.Context, params CreateCoachParams) (Coach, error) {
 				coachCount++
-				return teams.Coach{ID: int64(coachCount), Name: params.Name}, nil
+				return Coach{ID: int64(coachCount), Name: params.Name}, nil
 			}
-			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error) {
+			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
 				teamCount++
-				return teams.Team{ID: int64(teamCount), Name: name}, nil
+				return Team{ID: int64(teamCount), Name: name}, nil
 			}
 			mockPlaybooks.createPlaybookFunc = func(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error) {
 				playbookCount++
 				return playbooks.Playbook{ID: int64(playbookCount), Name: params.Name}, nil
 			}
 
-			err := svc.GenerateTeams(t.Context())
+			err := svc.GenerateAITeams(t.Context())
 			odize.AssertNoError(t, err)
 			odize.AssertEqual(t, totalTeams, coachCount)
 			odize.AssertEqual(t, totalTeams, teamCount)
@@ -110,40 +109,40 @@ func TestAITeamService_GenerateTeams(t *testing.T) {
 		}).
 		Test("should return error when CreateCoach fails", func(t *testing.T) {
 			expectedErr := errors.New("coach error")
-			mockTeams.createCoachFunc = func(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error) {
-				return teams.Coach{}, expectedErr
+			mockTeams.createCoachFunc = func(ctx context.Context, params CreateCoachParams) (Coach, error) {
+				return Coach{}, expectedErr
 			}
 
-			err := svc.GenerateTeams(t.Context())
+			err := svc.GenerateAITeams(t.Context())
 			odize.AssertError(t, err)
 			odize.AssertTrue(t, errors.Is(err, expectedErr))
 		}).
 		Test("should return error when CreateTeam fails", func(t *testing.T) {
 			expectedErr := errors.New("team error")
-			mockTeams.createCoachFunc = func(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error) {
-				return teams.Coach{ID: 1}, nil
+			mockTeams.createCoachFunc = func(ctx context.Context, params CreateCoachParams) (Coach, error) {
+				return Coach{ID: 1}, nil
 			}
-			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error) {
-				return teams.Team{}, expectedErr
+			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
+				return Team{}, expectedErr
 			}
 
-			err := svc.GenerateTeams(t.Context())
+			err := svc.GenerateAITeams(t.Context())
 			odize.AssertError(t, err)
 			odize.AssertTrue(t, errors.Is(err, expectedErr))
 		}).
 		Test("should return error when CreatePlaybook fails", func(t *testing.T) {
 			expectedErr := errors.New("playbook error")
-			mockTeams.createCoachFunc = func(ctx context.Context, params teams.CreateCoachParams) (teams.Coach, error) {
-				return teams.Coach{ID: 1}, nil
+			mockTeams.createCoachFunc = func(ctx context.Context, params CreateCoachParams) (Coach, error) {
+				return Coach{ID: 1}, nil
 			}
-			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (teams.Team, error) {
-				return teams.Team{ID: 1, Name: name}, nil
+			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
+				return Team{ID: 1, Name: name}, nil
 			}
 			mockPlaybooks.createPlaybookFunc = func(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error) {
 				return playbooks.Playbook{}, expectedErr
 			}
 
-			err := svc.GenerateTeams(t.Context())
+			err := svc.GenerateAITeams(t.Context())
 			odize.AssertError(t, err)
 			odize.AssertTrue(t, errors.Is(err, expectedErr))
 		}).

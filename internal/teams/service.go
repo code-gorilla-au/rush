@@ -10,7 +10,8 @@ import (
 )
 
 type Service struct {
-	store Store
+	store       Store
+	playbookSvc PlaybookCreator
 }
 
 func NewTeamsService(store Store) *Service {

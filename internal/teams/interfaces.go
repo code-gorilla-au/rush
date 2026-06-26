@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/code-gorilla-au/rush/internal/playbooks"
 )
 
 type Store interface {
@@ -38,3 +39,8 @@ type TeamStore interface {
 }
 
 var _ Store = (*database.Queries)(nil)
+
+type PlaybookCreator interface {
+	CreatePlaybook(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error)
+	GetTeamPlaybooks(ctx context.Context, teamID int64) ([]playbooks.Playbook, error)
+}

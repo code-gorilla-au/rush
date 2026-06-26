@@ -7,6 +7,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/tournament"
 )
 
 type MsgStateUpdated struct {
@@ -63,10 +64,18 @@ type RootModel struct {
 	teamsSvc                  *teams.Service
 	playbookSvc               *playbooks.Service
 	gameSvc                   *games.Service
+	aiTeamsSvc                *tournament.AITeamService
+}
+
+type Dependencies struct {
+	teamsSvc    *teams.Service
+	playbookSvc *playbooks.Service
+	gameSvc     *games.Service
+	aiTeamsSvc  *tournament.AITeamService
 }
 
 // New returns a new UI model.
-func New(teamsService *teams.Service, playbookService *playbooks.Service, gameService *games.Service) RootModel {
+func New(deps Dependencies) RootModel {
 	state := &GlobalState{}
 
 	return RootModel{
@@ -74,19 +83,20 @@ func New(teamsService *teams.Service, playbookService *playbooks.Service, gameSe
 		theme:                     NewIceTheme(),
 		currentPage:               PageTitle,
 		pageTitle:                 NewModelTitle(state),
-		pageCreateCoach:           NewModelCreateCoach(state, teamsService),
+		pageCreateCoach:           NewModelCreateCoach(state, deps.teamsSvc),
 		pageLockerRoom:            NewModelLockerRoom(state),
-		pageLockerPlayers:         NewModelLockerPlayers(state, teamsService),
-		pageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, playbookService),
-		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, playbookService),
-		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, playbookService),
+		pageLockerPlayers:         NewModelLockerPlayers(state, deps.teamsSvc),
+		pageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, deps.playbookSvc),
+		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.playbookSvc),
+		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.playbookSvc),
 		pageNewTournament:         NewModelNewTournament(state),
-		pageNewBattleSelection:    NewModelNewBattleSelection(state, teamsService, playbookService),
+		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.teamsSvc, deps.playbookSvc),
 		pageTitleSettings:         NewModelTitleSettings(state),
 		globalState:               state,
-		teamsSvc:                  teamsService,
-		playbookSvc:               playbookService,
-		gameSvc:                   gameService,
+		teamsSvc:                  deps.teamsSvc,
+		playbookSvc:               deps.playbookSvc,
+		gameSvc:                   deps.gameSvc,
+		aiTeamsSvc:                deps.aiTeamsSvc,
 	}
 }
 

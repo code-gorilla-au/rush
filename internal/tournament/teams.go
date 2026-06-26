@@ -121,11 +121,17 @@ var personas = []struct {
 }
 
 type AITeamService struct {
-	teamsSvc     TeamCreator
+	teamsSvc     TeamCreatLister
 	playbooksSvc PlaybookCreator
 }
 
-func NewAITeamService(teamsSvc TeamCreator, playbooksSvc PlaybookCreator) *AITeamService {
+type AITeam struct {
+	Coach    teams.Coach
+	Team     teams.Team
+	Playbook playbooks.Playbook
+}
+
+func NewAITeamService(teamsSvc TeamCreatLister, playbooksSvc PlaybookCreator) *AITeamService {
 	return &AITeamService{
 		teamsSvc:     teamsSvc,
 		playbooksSvc: playbooksSvc,
@@ -139,6 +145,43 @@ func (s *AITeamService) HasAICoaches(ctx context.Context) (bool, error) {
 	}
 
 	return len(aiCoaches) > 0, nil
+}
+
+func (s *AITeamService) ListAITeams(ctx context.Context) ([]AITeam, error) {
+	aiCoaches, err := s.teamsSvc.ListAICoaches(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("listing coaches: %w", err)
+	}
+
+	aiTeams := make([]AITeam, len(aiCoaches))
+	for i, coach := range aiCoaches {
+		aiTeam, tErr := s.GetAITeam(ctx, coach)
+		if tErr != nil {
+			return nil, fmt.Errorf("getting team: %w", tErr)
+		}
+
+		aiTeams[i] = aiTeam
+	}
+
+	return aiTeams, nil
+}
+
+func (s *AITeamService) GetAITeam(ctx context.Context, coach teams.Coach) (AITeam, error) {
+	aiTeam, tErr := s.teamsSvc.GetTeamByCoachID(ctx, coach.ID)
+	if tErr != nil {
+		return AITeam{}, fmt.Errorf("getting team: %w", tErr)
+	}
+
+	aiPlaybook, pErr := s.playbooksSvc.GetTeamPlaybooks(ctx, aiTeam.ID)
+	if pErr != nil {
+		return AITeam{}, fmt.Errorf("getting team playbooks: %w", pErr)
+	}
+
+	return AITeam{
+		Coach:    coach,
+		Team:     aiTeam,
+		Playbook: aiPlaybook[0],
+	}, nil
 }
 
 func (s *AITeamService) GenerateTeams(ctx context.Context) error {

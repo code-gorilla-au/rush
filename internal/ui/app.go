@@ -7,7 +7,6 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
-	"github.com/code-gorilla-au/rush/internal/tournament"
 )
 
 type MsgStateUpdated struct {
@@ -64,14 +63,12 @@ type RootModel struct {
 	teamsSvc                  *teams.Service
 	playbookSvc               *playbooks.Service
 	gameSvc                   *games.Service
-	aiTeamsSvc                *tournament.AITeamService
 }
 
 type Dependencies struct {
 	TeamsSvc    *teams.Service
 	PlaybookSvc *playbooks.Service
 	GameSvc     *games.Service
-	AiTeamsSvc  *tournament.AITeamService
 }
 
 // New returns a new UI model.
@@ -90,13 +87,12 @@ func New(deps Dependencies) RootModel {
 		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.PlaybookSvc),
 		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.PlaybookSvc),
 		pageNewTournament:         NewModelNewTournament(state),
-		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.AiTeamsSvc),
+		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc),
 		pageTitleSettings:         NewModelTitleSettings(state),
 		globalState:               state,
 		teamsSvc:                  deps.TeamsSvc,
 		playbookSvc:               deps.PlaybookSvc,
 		gameSvc:                   deps.GameSvc,
-		aiTeamsSvc:                deps.AiTeamsSvc,
 	}
 }
 

@@ -11,7 +11,6 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
-	"github.com/code-gorilla-au/rush/internal/tournament"
 	"github.com/code-gorilla-au/rush/internal/ui"
 )
 
@@ -40,13 +39,12 @@ func main() {
 	}
 
 	queries := database.New(db)
-	teamsSvc := teams.NewTeamsService(queries)
 	playbooksSvc := playbooks.NewPlaybooksService(queries)
+	teamsSvc := teams.NewTeamsService(queries, playbooksSvc)
 	gameSvc := games.NewService(queries)
-	tournamentSvc := tournament.NewAITeamService(teamsSvc, playbooksSvc)
 
 	go func() {
-		hasAICoaches, tErr := tournamentSvc.HasAICoaches(ctx)
+		hasAICoaches, tErr := teamsSvc.HasAICoaches(ctx)
 		if tErr != nil {
 			slog.Error("Failed to check for AI coaches", "error", tErr)
 			return
@@ -56,7 +54,7 @@ func main() {
 			return
 		}
 
-		if tErr = tournamentSvc.GenerateAITeams(ctx); tErr != nil {
+		if tErr = teamsSvc.GenerateAITeams(ctx); tErr != nil {
 			slog.Error("Failed to generate teams", "error", tErr)
 		}
 	}()
@@ -65,7 +63,6 @@ func main() {
 		TeamsSvc:    teamsSvc,
 		PlaybookSvc: playbooksSvc,
 		GameSvc:     gameSvc,
-		AiTeamsSvc:  tournamentSvc,
 	}))
 	if _, err = p.Run(); err != nil {
 		slog.Error("Failed to run program", "error", err)

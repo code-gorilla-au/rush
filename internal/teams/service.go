@@ -14,8 +14,11 @@ type Service struct {
 	playbookSvc PlaybookCreator
 }
 
-func NewTeamsService(store Store) *Service {
-	return &Service{store: store}
+func NewTeamsService(store Store, playbookSvc PlaybookCreator) *Service {
+	return &Service{
+		store:       store,
+		playbookSvc: playbookSvc,
+	}
 }
 
 type CreateCoachParams struct {

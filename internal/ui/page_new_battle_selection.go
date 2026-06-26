@@ -5,7 +5,6 @@ import (
 
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
-	"github.com/code-gorilla-au/rush/internal/tournament"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 
 	"charm.land/bubbles/v2/key"
@@ -62,7 +61,6 @@ type ModelNewBattleSelection struct {
 	globalState      *GlobalState
 	teamsSvc         *teams.Service
 	playbookSvc      *playbooks.Service
-	aiTeamsSvc       *tournament.AITeamService
 	state            selectionState
 	aiCoaches        []AICoachItem
 	selectedCoachIdx int
@@ -73,11 +71,11 @@ type ModelNewBattleSelection struct {
 	err              error
 }
 
-func NewModelNewBattleSelection(globalState *GlobalState, aiTeamsSvc *tournament.AITeamService) *ModelNewBattleSelection {
+func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Service) *ModelNewBattleSelection {
 	keys := newBattleSelectionKeyMap()
 	return &ModelNewBattleSelection{
 		globalState:  globalState,
-		aiTeamsSvc:   aiTeamsSvc,
+		teamsSvc:     teamsSvc,
 		theme:        NewIceTheme(),
 		keys:         keys,
 		footer:       components.NewFooter(keys),

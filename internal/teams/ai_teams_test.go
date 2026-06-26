@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/code-gorilla-au/odize"
+	"github.com/code-gorilla-au/rush/internal/database"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 )
 
@@ -30,6 +31,30 @@ func (m *mockTeamCreator) GetTeamByCoachID(ctx context.Context, id int64) (Team,
 
 func (m *mockTeamCreator) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
 	return m.createTeamFunc(ctx, name, coachID, isDefault)
+}
+
+type mockStore struct {
+	Store
+	createCoachFunc  func(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error)
+	createTeamFunc   func(ctx context.Context, arg database.CreateTeamParams) (database.Team, error)
+	createPlayerFunc func(ctx context.Context, arg database.CreatePlayerParams) (database.Player, error)
+	getAICoachesFunc func(ctx context.Context) ([]database.Coach, error)
+}
+
+func (m *mockStore) CreateCoach(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error) {
+	return m.createCoachFunc(ctx, arg)
+}
+
+func (m *mockStore) CreateTeam(ctx context.Context, arg database.CreateTeamParams) (database.Team, error) {
+	return m.createTeamFunc(ctx, arg)
+}
+
+func (m *mockStore) CreatePlayer(ctx context.Context, arg database.CreatePlayerParams) (database.Player, error) {
+	return m.createPlayerFunc(ctx, arg)
+}
+
+func (m *mockStore) GetAICoaches(ctx context.Context) ([]database.Coach, error) {
+	return m.getAICoachesFunc(ctx)
 }
 
 type mockPlaybookCreator struct {
@@ -68,33 +93,37 @@ func TestGenerateAITeams(t *testing.T) {
 	odize.AssertNoError(t, err)
 }
 
-func TestAITeamService_GenerateTeams(t *testing.T) {
+func TestTeamsService_GenerateTeams(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
-	var mockTeams *mockTeamCreator
+	var mStore *mockStore
 	var mockPlaybooks *mockPlaybookCreator
-	var svc *AITeamService
+	var svc *Service
 
 	group.BeforeEach(func() {
-		mockTeams = &mockTeamCreator{}
+		mStore = &mockStore{}
 		mockPlaybooks = &mockPlaybookCreator{}
-		svc = &AITeamService{
-			teamsSvc:     mockTeams,
-			playbooksSvc: mockPlaybooks,
+		svc = &Service{
+			store:       mStore,
+			playbookSvc: mockPlaybooks,
 		}
 	})
 
 	err := group.
 		Test("should successfully generate all teams", func(t *testing.T) {
-			var coachCount, teamCount, playbookCount int
+			var coachCount, teamCount, playbookCount, playerCount int
 
-			mockTeams.createCoachFunc = func(ctx context.Context, params CreateCoachParams) (Coach, error) {
+			mStore.createCoachFunc = func(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error) {
 				coachCount++
-				return Coach{ID: int64(coachCount), Name: params.Name}, nil
+				return database.Coach{ID: int64(coachCount), Name: arg.Name}, nil
 			}
-			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
+			mStore.createTeamFunc = func(ctx context.Context, arg database.CreateTeamParams) (database.Team, error) {
 				teamCount++
-				return Team{ID: int64(teamCount), Name: name}, nil
+				return database.Team{ID: int64(teamCount), Name: arg.Name}, nil
+			}
+			mStore.createPlayerFunc = func(ctx context.Context, arg database.CreatePlayerParams) (database.Player, error) {
+				playerCount++
+				return database.Player{ID: int64(playerCount), Name: arg.Name}, nil
 			}
 			mockPlaybooks.createPlaybookFunc = func(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error) {
 				playbookCount++
@@ -106,11 +135,12 @@ func TestAITeamService_GenerateTeams(t *testing.T) {
 			odize.AssertEqual(t, totalTeams, coachCount)
 			odize.AssertEqual(t, totalTeams, teamCount)
 			odize.AssertEqual(t, totalTeams, playbookCount)
+			odize.AssertEqual(t, totalTeams*5, playerCount)
 		}).
 		Test("should return error when CreateCoach fails", func(t *testing.T) {
 			expectedErr := errors.New("coach error")
-			mockTeams.createCoachFunc = func(ctx context.Context, params CreateCoachParams) (Coach, error) {
-				return Coach{}, expectedErr
+			mStore.createCoachFunc = func(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error) {
+				return database.Coach{}, expectedErr
 			}
 
 			err := svc.GenerateAITeams(t.Context())
@@ -119,11 +149,11 @@ func TestAITeamService_GenerateTeams(t *testing.T) {
 		}).
 		Test("should return error when CreateTeam fails", func(t *testing.T) {
 			expectedErr := errors.New("team error")
-			mockTeams.createCoachFunc = func(ctx context.Context, params CreateCoachParams) (Coach, error) {
-				return Coach{ID: 1}, nil
+			mStore.createCoachFunc = func(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error) {
+				return database.Coach{ID: 1}, nil
 			}
-			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
-				return Team{}, expectedErr
+			mStore.createTeamFunc = func(ctx context.Context, arg database.CreateTeamParams) (database.Team, error) {
+				return database.Team{}, expectedErr
 			}
 
 			err := svc.GenerateAITeams(t.Context())
@@ -132,11 +162,14 @@ func TestAITeamService_GenerateTeams(t *testing.T) {
 		}).
 		Test("should return error when CreatePlaybook fails", func(t *testing.T) {
 			expectedErr := errors.New("playbook error")
-			mockTeams.createCoachFunc = func(ctx context.Context, params CreateCoachParams) (Coach, error) {
-				return Coach{ID: 1}, nil
+			mStore.createCoachFunc = func(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error) {
+				return database.Coach{ID: 1}, nil
 			}
-			mockTeams.createTeamFunc = func(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
-				return Team{ID: 1, Name: name}, nil
+			mStore.createTeamFunc = func(ctx context.Context, arg database.CreateTeamParams) (database.Team, error) {
+				return database.Team{ID: 1, Name: arg.Name}, nil
+			}
+			mStore.createPlayerFunc = func(ctx context.Context, arg database.CreatePlayerParams) (database.Player, error) {
+				return database.Player{}, nil
 			}
 			mockPlaybooks.createPlaybookFunc = func(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error) {
 				return playbooks.Playbook{}, expectedErr

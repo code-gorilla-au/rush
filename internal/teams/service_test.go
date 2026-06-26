@@ -7,6 +7,7 @@ import (
 
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/code-gorilla-au/rush/internal/playbooks"
 	_ "modernc.org/sqlite"
 )
 
@@ -34,7 +35,7 @@ func TestService(t *testing.T) {
 	group.BeforeEach(func() {
 		db = setupTestDB(t)
 		queries = database.New(db)
-		s = NewTeamsService(queries)
+		s = NewTeamsService(queries, playbooks.NewPlaybooksService(queries))
 	})
 
 	group.AfterEach(func() {

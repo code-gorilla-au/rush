@@ -10,10 +10,9 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
-	"github.com/code-gorilla-au/rush/internal/tournament"
 )
 
-func setupServices(t *testing.T) (*teams.Service, *playbooks.Service, *games.Service, *tournament.AITeamService) {
+func setupServices(t *testing.T) (*teams.Service, *playbooks.Service, *games.Service) {
 	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		t.Fatalf("failed to open database: %v", err)
@@ -25,11 +24,10 @@ func setupServices(t *testing.T) (*teams.Service, *playbooks.Service, *games.Ser
 	}
 
 	queries := database.New(db)
-	ts := teams.NewTeamsService(queries)
 	ps := playbooks.NewPlaybooksService(queries)
+	ts := teams.NewTeamsService(queries, ps)
 	gs := games.NewService(queries)
-	as := tournament.NewAITeamService(ts, ps)
-	return ts, ps, gs, as
+	return ts, ps, gs
 }
 
 func TestTheme(t *testing.T) {
@@ -54,33 +52,30 @@ func TestNew(t *testing.T) {
 
 	err := group.
 		Test("New should initialize model with IceTheme", func(t *testing.T) {
-			s, ps, gs, as := setupServices(t)
+			s, ps, gs := setupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
 				GameSvc:     gs,
-				AiTeamsSvc:  as,
 			})
 			odize.AssertTrue(t, m.theme.Logo.GetForeground() != nil)
 		}).
 		Test("Init should return a command", func(t *testing.T) {
-			s, ps, gs, as := setupServices(t)
+			s, ps, gs := setupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
 				GameSvc:     gs,
-				AiTeamsSvc:  as,
 			})
 			cmd := m.Init()
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle Quit keys", func(t *testing.T) {
-			s, ps, gs, as := setupServices(t)
+			s, ps, gs := setupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
 				GameSvc:     gs,
-				AiTeamsSvc:  as,
 			})
 			_, cmd := m.Update(tea.KeyPressMsg{Text: "q"})
 			odize.AssertTrue(t, cmd != nil)
@@ -89,12 +84,11 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle WindowSizeMsg", func(t *testing.T) {
-			s, ps, gs, as := setupServices(t)
+			s, ps, gs := setupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
 				GameSvc:     gs,
-				AiTeamsSvc:  as,
 			})
 			newModel, _ := m.Update(tea.WindowSizeMsg{Width: 100, Height: 50})
 			updatedModel := newModel.(RootModel)

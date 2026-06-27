@@ -1,0 +1,97 @@
+version: '3'
+
+vars:
+  GOLANG_WORKSPACES: ./...
+  GOLANG_COVERAGE: coverage.out
+
+tasks:
+  dev:
+    desc: Run dev
+    cmds:
+      - go run ./cmd/rush/...
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run ./...
+      - sqlc vet
+      - task: format-check
+
+  format-check:
+    desc: Check if Go code is formatted
+    cmds:
+      - cmd: test -z "$(gofmt -l .)"
+        silent: true
+    status:
+      - test -z "$(gofmt -l .)"
+
+  format:
+    desc: Format Go code and tidy modules
+    cmds:
+      - go fmt ./...
+      - go mod tidy
+
+  sqlc:
+    desc: Generate Go code from SQL queries using sqlc
+    sources:
+      - sqlc.yaml
+      - "**/*.sql"
+    generates:
+      - "**/*.gen.go"
+    cmds:
+      - sqlc generate
+
+  generate:
+    desc: Run all code generation
+    cmds:
+      - task: sqlc
+
+  ci:
+    desc: Run ci tasks
+    cmds:
+      - task: generate
+      - task: format
+      - task: lint
+      - task: cover
+
+
+  test:
+    desc: Run go tests.
+    deps: [generate]
+    cmds:
+      - go test -cover -coverprofile={{ .GOLANG_COVERAGE }} -failfast {{ .GOLANG_WORKSPACES }}
+
+  watch:
+    desc: Run go tests in watch mode.
+    cmds:
+      - gow test -cover -coverprofile={{ .GOLANG_COVERAGE }} -failfast {{ .GOLANG_WORKSPACES }}
+
+  gen-coverage:
+    desc: Generate go coverage.
+    deps: [test]
+    cmds:
+      - grep -v -E -f ${PWD}/.covignore {{ .GOLANG_COVERAGE }} > coverage.filtered.out
+      - mv coverage.filtered.out {{ .GOLANG_COVERAGE }}
+
+  cover:
+    desc: Run go coverage.
+    deps: [gen-coverage]
+    cmds:
+      - go tool cover -func={{ .GOLANG_COVERAGE }} | grep total
+
+  cover-html:
+    desc: Run go coverage html.
+    deps: [gen-coverage]
+    cmds:
+      - go tool cover -html={{ .GOLANG_COVERAGE }}
+
+  db-clean:
+    desc: Run db clean
+    cmds:
+      - rm -rf ./.db
+      - mkdir ./.db
+  db-reset:
+    desc: Run db clean and migrate
+    deps: [db-clean]
+    cmds:
+      - go run ./cmd/local/...

@@ -1,0 +1,48 @@
+version: "2"
+
+linters:
+  enable:
+    - cyclop
+    - nestif
+    - bodyclose
+    - iface
+    - gosec
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - forcetypeassert
+    - govet
+    - importas
+    - ireturn
+    - perfsprint
+    - recvcheck
+    - sloglint
+    - staticcheck
+    - unparam
+    - unused
+    - wastedassign
+  exclusions:
+    generated: lax
+
+    rules:
+      # Exclude some linters from running on tests files.
+      - path: _test\.go
+        linters:
+          - gocyclo
+          - cyclop
+          - dupl
+          - gosec
+          - forbidigo
+          - exhaustruct
+
+  settings:
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+
+

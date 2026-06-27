@@ -1,0 +1,25 @@
+create table if not exists coaches (
+	id integer primary key autoincrement,
+	name varchar(255) not null,
+    is_default BOOLEAN DEFAULT 0,
+    is_human BOOLEAN DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+create table if not exists teams (
+    id integer primary key autoincrement,
+    name varchar(255) not null,
+    is_default BOOLEAN DEFAULT 0,
+    coach_id integer references coaches(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+create table if not exists players (
+	id integer primary key autoincrement,
+	name varchar(255) not null,
+	team_id integer references teams(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

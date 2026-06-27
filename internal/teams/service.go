@@ -59,6 +59,23 @@ func (s *Service) GetDefaultCoach(ctx context.Context) (Coach, error) {
 	return fromCoachModel(model), nil
 }
 
+func (s *Service) GetTeamAndPlaybooksByCoachID(ctx context.Context, id int64) (TeamWithPlaybooks, error) {
+	team, err := s.GetTeamByCoachID(ctx, id)
+	if err != nil {
+		return TeamWithPlaybooks{}, err
+	}
+
+	playbooks, err := s.playbookSvc.GetTeamPlaybooks(ctx, team.ID)
+	if err != nil {
+		return TeamWithPlaybooks{}, err
+	}
+
+	return TeamWithPlaybooks{
+		Playbooks: playbooks,
+		Team:      team,
+	}, nil
+}
+
 func (s *Service) GetTeamByCoachID(ctx context.Context, id int64) (Team, error) {
 	model, err := s.store.GetTeamByCoachID(ctx, sql.NullInt64{
 		Valid: true,
@@ -69,7 +86,7 @@ func (s *Service) GetTeamByCoachID(ctx context.Context, id int64) (Team, error) 
 			return Team{}, ErrTeamNotFound
 		}
 
-		return Team{}, fmt.Errorf("getting team: %w", err)
+		return Team{}, fmt.Errorf("GetTeamByCoachID: %w", err)
 	}
 
 	pModel, err := s.store.GetTeamMembers(ctx, sql.NullInt64{
@@ -77,7 +94,7 @@ func (s *Service) GetTeamByCoachID(ctx context.Context, id int64) (Team, error) 
 		Valid: true,
 	})
 	if err != nil {
-		return Team{}, fmt.Errorf("getting team members: %w", err)
+		return Team{}, fmt.Errorf("GetTeamByCoachID team members: %w", err)
 	}
 
 	return fromTeamModel(model, pModel), nil

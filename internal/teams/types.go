@@ -3,7 +3,14 @@ package teams
 import (
 	"errors"
 	"time"
+
+	"github.com/code-gorilla-au/rush/internal/playbooks"
 )
+
+type TeamWithPlaybooks struct {
+	Playbooks []playbooks.Playbook `json:"playbooks,omitzero"`
+	Team      Team                 `json:"team,omitzero"`
+}
 
 type Team struct {
 	ID        int64     `json:"id,omitzero"`

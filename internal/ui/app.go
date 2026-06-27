@@ -126,6 +126,12 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case MsgSwitchPage:
 		m.currentPage = msg.NewPage
+		var cmd tea.Cmd
+		switch m.currentPage {
+		case PageNewBattleSelection:
+			cmd = m.pageNewBattleSelection.Init()
+		}
+		cmds = append(cmds, cmd)
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height

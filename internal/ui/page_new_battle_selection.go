@@ -113,13 +113,13 @@ type msgPlaybooksLoaded struct {
 	playbooks []playbooks.Playbook
 }
 
-func (m *ModelNewBattleSelection) loadPlaybooks(teamID int64) tea.Cmd {
+func (m *ModelNewBattleSelection) loadPlaybooks() tea.Cmd {
 	return func() tea.Msg {
-		pbks, err := m.playbookSvc.GetTeamPlaybooks(m.globalState.Context(), teamID)
+		team, err := m.teamsSvc.GetTeamAndPlaybooksByCoachID(m.globalState.Context(), m.globalState.Coach.ID)
 		if err != nil {
 			return err
 		}
-		return msgPlaybooksLoaded{playbooks: pbks}
+		return msgPlaybooksLoaded{playbooks: team.Playbooks}
 	}
 }
 
@@ -157,7 +157,7 @@ func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Select):
 			if m.state == stateSelectingCoach && len(m.aiCoaches) > 0 {
 				m.state = stateSelectingPlaybook
-				cmds = append(cmds, m.loadPlaybooks(m.aiCoaches[m.selectedCoachIdx].team.ID))
+				cmds = append(cmds, m.loadPlaybooks())
 			} else if m.state == stateSelectingPlaybook {
 				selectedPlaybook := m.playbookList.SelectedItem()
 				if selectedPlaybook != nil {

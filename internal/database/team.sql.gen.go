@@ -248,7 +248,7 @@ func (q *Queries) GetTeam(ctx context.Context, id int64) (Team, error) {
 }
 
 const getTeamByCoachID = `-- name: GetTeamByCoachID :one
-SELECT id, name, is_default, coach_id, created_at, updated_at FROM teams WHERE coach_id = ? AND is_default = true LIMIT 1
+SELECT id, name, is_default, coach_id, created_at, updated_at FROM teams WHERE coach_id = ? LIMIT 1
 `
 
 func (q *Queries) GetTeamByCoachID(ctx context.Context, coachID sql.NullInt64) (Team, error) {

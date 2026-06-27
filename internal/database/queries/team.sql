@@ -29,7 +29,7 @@ SELECT * FROM teams;
 SELECT * FROM teams WHERE id = ?;
 
 -- name: GetTeamByCoachID :one
-SELECT * FROM teams WHERE coach_id = ? AND is_default = true LIMIT 1;
+SELECT * FROM teams WHERE coach_id = ? LIMIT 1;
 
 -- name: CreateTeam :one
 INSERT INTO teams (name, is_default, coach_id) VALUES (?, ?, ?) RETURNING *;

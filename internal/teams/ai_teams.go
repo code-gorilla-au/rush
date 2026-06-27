@@ -156,12 +156,12 @@ func (s *Service) ListAITeams(ctx context.Context) ([]AITeam, error) {
 func (s *Service) GetAITeam(ctx context.Context, coach Coach) (AITeam, error) {
 	aiTeam, tErr := s.GetTeamByCoachID(ctx, coach.ID)
 	if tErr != nil {
-		return AITeam{}, fmt.Errorf("getting team: %w", tErr)
+		return AITeam{}, fmt.Errorf("GetAITeam: %w", tErr)
 	}
 
 	aiPlaybook, pErr := s.playbookSvc.GetTeamPlaybooks(ctx, aiTeam.ID)
 	if pErr != nil {
-		return AITeam{}, fmt.Errorf("getting team playbooks: %w", pErr)
+		return AITeam{}, fmt.Errorf("GetAITeam playbooks: %w", pErr)
 	}
 
 	return AITeam{

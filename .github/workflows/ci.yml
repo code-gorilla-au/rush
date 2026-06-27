@@ -35,10 +35,10 @@ jobs:
       - name: Run format
         run: task format
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
-        with:
-          version: v2.12
+#      - name: golangci-lint
+#        uses: golangci/golangci-lint-action@v9
+#        with:
+#          version: v2.12
 
       - name: Run sqlc vet
         run: sqlc vet

@@ -40,7 +40,7 @@ type TeamStore interface {
 
 var _ Store = (*database.Queries)(nil)
 
-type PlaybookCreator interface {
+type PlaybookCreatGetter interface {
 	CreatePlaybook(ctx context.Context, params playbooks.PlaybookParams) (playbooks.Playbook, error)
 	GetTeamPlaybooks(ctx context.Context, teamID int64) ([]playbooks.Playbook, error)
 }

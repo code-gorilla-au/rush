@@ -11,10 +11,10 @@ import (
 
 type Service struct {
 	store       Store
-	playbookSvc PlaybookCreator
+	playbookSvc PlaybookCreatGetter
 }
 
-func NewTeamsService(store Store, playbookSvc PlaybookCreator) *Service {
+func NewTeamsService(store Store, playbookSvc PlaybookCreatGetter) *Service {
 	return &Service{
 		store:       store,
 		playbookSvc: playbookSvc,

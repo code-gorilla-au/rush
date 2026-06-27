@@ -87,7 +87,7 @@ func New(deps Dependencies) RootModel {
 		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.PlaybookSvc),
 		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.PlaybookSvc),
 		pageNewTournament:         NewModelNewTournament(state),
-		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc),
+		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc),
 		pageTitleSettings:         NewModelTitleSettings(state),
 		globalState:               state,
 		teamsSvc:                  deps.TeamsSvc,

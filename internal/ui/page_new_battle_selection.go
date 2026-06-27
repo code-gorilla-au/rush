@@ -75,11 +75,12 @@ type ModelNewBattleSelection struct {
 	err              error
 }
 
-func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Service) *ModelNewBattleSelection {
+func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service) *ModelNewBattleSelection {
 	keys := newBattleSelectionKeyMap()
 	return &ModelNewBattleSelection{
 		globalState:  globalState,
 		teamsSvc:     teamsSvc,
+		playbookSvc:  playbookSvc,
 		theme:        NewIceTheme(),
 		keys:         keys,
 		footer:       components.NewFooter(keys),
@@ -124,15 +125,18 @@ func (m *ModelNewBattleSelection) loadPlaybooks(teamID int64) tea.Cmd {
 
 func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
+	m.footer.Update(msg)
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.footer.Update(msg)
 		m.playbookList.SetSize(m.width, m.height-10)
 	case msgAICoachesLoaded:
 		m.aiCoaches = msg.aiTeams
+		if len(m.aiCoaches) > 0 {
+			m.selectedCoachIdx = 0
+		}
 	case msgPlaybooksLoaded:
 		m.playbooks = msg.playbooks
 		cmds = append(cmds, m.playbookList.SetItems(msg.playbooks))
@@ -184,6 +188,10 @@ func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *ModelNewBattleSelection) View() tea.View {
+	if m.width == 0 || m.height == 0 {
+		return tea.NewView("Initializing...")
+	}
+
 	view := tea.NewView("")
 	view.AltScreen = true
 

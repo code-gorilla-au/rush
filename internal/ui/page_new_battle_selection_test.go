@@ -15,7 +15,7 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 	group.Test("should load AI coaches and render them", func(t *testing.T) {
 		state := &GlobalState{}
 
-		m := NewModelNewBattleSelection(state, nil, nil)
+		m := NewModelNewBattleSelection(state, nil)
 		m.width = 100
 		m.height = 40
 
@@ -38,9 +38,9 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		odize.AssertTrue(t, !strings.Contains(content, "No AI coaches available"))
 	})
 
-	group.Test("should transition to playbook selection and load playbooks", func(t *testing.T) {
+	group.Test("should handle select coach and return to title", func(t *testing.T) {
 		state := &GlobalState{}
-		m := NewModelNewBattleSelection(state, nil, nil)
+		m := NewModelNewBattleSelection(state, nil)
 		m.width = 100
 		m.height = 40
 		m.aiCoaches = []AITeamItem{
@@ -51,20 +51,8 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		}
 		m.selectedCoachIdx = 0
 
-		// Simulate Enter key on stateSelectingCoach
-		m.state = stateSelectingCoach
+		// Simulate Enter key
 		_, cmd := m.Update(tea.KeyPressMsg{Text: "enter"})
-
-		odize.AssertEqual(t, stateSelectingPlaybook, m.state)
-		odize.AssertTrue(t, cmd != nil)
-	})
-
-	group.Test("should handle back navigation from coach selection", func(t *testing.T) {
-		state := &GlobalState{}
-		m := NewModelNewBattleSelection(state, nil, nil)
-		m.state = stateSelectingCoach
-
-		_, cmd := m.Update(tea.KeyPressMsg{Text: "esc"})
 
 		odize.AssertTrue(t, cmd != nil)
 		msg := cmd()
@@ -76,15 +64,20 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		}
 	})
 
-	group.Test("should handle back navigation from playbook selection", func(t *testing.T) {
+	group.Test("should handle back navigation from coach selection", func(t *testing.T) {
 		state := &GlobalState{}
-		m := NewModelNewBattleSelection(state, nil, nil)
-		m.state = stateSelectingPlaybook
+		m := NewModelNewBattleSelection(state, nil)
 
 		_, cmd := m.Update(tea.KeyPressMsg{Text: "esc"})
 
-		odize.AssertEqual(t, stateSelectingCoach, m.state)
-		odize.AssertTrue(t, cmd == nil)
+		odize.AssertTrue(t, cmd != nil)
+		msg := cmd()
+		switch v := msg.(type) {
+		case MsgSwitchPage:
+			odize.AssertEqual(t, PageTitle, v.NewPage)
+		default:
+			t.Fatalf("expected MsgSwitchPage, got %T", msg)
+		}
 	})
 
 	err := group.Run()

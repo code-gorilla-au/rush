@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 
-	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 
@@ -16,7 +15,6 @@ type selectionState int
 
 const (
 	stateSelectingCoach selectionState = iota
-	stateSelectingPlaybook
 )
 
 type msgAICoachesLoaded struct {
@@ -64,27 +62,22 @@ type ModelNewBattleSelection struct {
 	theme            IceTheme
 	globalState      *GlobalState
 	teamsSvc         *teams.Service
-	playbookSvc      *playbooks.Service
 	state            selectionState
 	aiCoaches        []AITeamItem
 	selectedCoachIdx int
-	playbooks        []playbooks.Playbook
-	playbookList     components.PlaybookList
 	keys             battleSelectionKeyMap
 	footer           components.Footer
 	err              error
 }
 
-func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service) *ModelNewBattleSelection {
+func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Service) *ModelNewBattleSelection {
 	keys := newBattleSelectionKeyMap()
 	return &ModelNewBattleSelection{
-		globalState:  globalState,
-		teamsSvc:     teamsSvc,
-		playbookSvc:  playbookSvc,
-		theme:        NewIceTheme(),
-		keys:         keys,
-		footer:       components.NewFooter(keys),
-		playbookList: components.NewPlaybookList(nil),
+		globalState: globalState,
+		teamsSvc:    teamsSvc,
+		theme:       NewIceTheme(),
+		keys:        keys,
+		footer:      components.NewFooter(keys),
 	}
 }
 
@@ -109,20 +102,6 @@ func (m *ModelNewBattleSelection) loadAICoaches() tea.Msg {
 	return msgAICoachesLoaded{aiTeams: items}
 }
 
-type msgPlaybooksLoaded struct {
-	playbooks []playbooks.Playbook
-}
-
-func (m *ModelNewBattleSelection) loadPlaybooks() tea.Cmd {
-	return func() tea.Msg {
-		team, err := m.teamsSvc.GetTeamAndPlaybooksByCoachID(m.globalState.Context(), m.globalState.Coach.ID)
-		if err != nil {
-			return err
-		}
-		return msgPlaybooksLoaded{playbooks: team.Playbooks}
-	}
-}
-
 func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	m.footer.Update(msg)
@@ -131,15 +110,11 @@ func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.playbookList.SetSize(m.width, m.height-10)
 	case msgAICoachesLoaded:
 		m.aiCoaches = msg.aiTeams
 		if len(m.aiCoaches) > 0 {
 			m.selectedCoachIdx = 0
 		}
-	case msgPlaybooksLoaded:
-		m.playbooks = msg.playbooks
-		cmds = append(cmds, m.playbookList.SetItems(msg.playbooks))
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
@@ -147,41 +122,25 @@ func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Back):
-			if m.state == stateSelectingPlaybook {
-				m.state = stateSelectingCoach
-				return m, nil
-			}
 			return m, func() tea.Msg {
 				return MsgSwitchPage{NewPage: PageTitle}
 			}
 		case key.Matches(msg, m.keys.Select):
-			if m.state == stateSelectingCoach && len(m.aiCoaches) > 0 {
-				m.state = stateSelectingPlaybook
-				cmds = append(cmds, m.loadPlaybooks())
-			} else if m.state == stateSelectingPlaybook {
-				selectedPlaybook := m.playbookList.SelectedItem()
-				if selectedPlaybook != nil {
-					// TODO: Start battle with selected coach and playbook
-					return m, func() tea.Msg {
-						return MsgSwitchPage{NewPage: PageTitle}
-					}
+			if len(m.aiCoaches) > 0 {
+				// TODO: Start battle with selected coach
+				return m, func() tea.Msg {
+					return MsgSwitchPage{NewPage: PageTitle}
 				}
 			}
 		case msg.String() == "up", msg.String() == "k":
-			if m.state == stateSelectingCoach && m.selectedCoachIdx > 0 {
+			if m.selectedCoachIdx > 0 {
 				m.selectedCoachIdx--
 			}
 		case msg.String() == "down", msg.String() == "j":
-			if m.state == stateSelectingCoach && m.selectedCoachIdx < len(m.aiCoaches)-1 {
+			if m.selectedCoachIdx < len(m.aiCoaches)-1 {
 				m.selectedCoachIdx++
 			}
 		}
-	}
-
-	if m.state == stateSelectingPlaybook {
-		var cmd tea.Cmd
-		m.playbookList, cmd = m.playbookList.Update(msg)
-		cmds = append(cmds, cmd)
 	}
 
 	return m, tea.Batch(cmds...)
@@ -198,10 +157,8 @@ func (m *ModelNewBattleSelection) View() tea.View {
 	var content string
 	if m.err != nil {
 		content = m.theme.Logo.Render(fmt.Sprintf("Error: %v", m.err))
-	} else if m.state == stateSelectingCoach {
-		content = m.viewCoaches()
 	} else {
-		content = m.viewPlaybooks()
+		content = m.viewCoaches()
 	}
 
 	centeredContent := lipgloss.Place(
@@ -244,16 +201,4 @@ func (m *ModelNewBattleSelection) viewCoaches() string {
 	}
 
 	return s
-}
-
-func (m *ModelNewBattleSelection) viewPlaybooks() string {
-	if len(m.playbooks) == 0 {
-		return "This coach has no playbooks"
-	}
-
-	return lipgloss.JoinVertical(lipgloss.Left,
-		m.theme.Logo.Render(fmt.Sprintf("Select %s's playbook:", m.aiCoaches[m.selectedCoachIdx].coach.Name)),
-		"",
-		m.playbookList.View(),
-	)
 }

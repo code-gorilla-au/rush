@@ -32,8 +32,8 @@ jobs:
       - name: Run generation
         run: task generate
 
-      - name: Run format
-        run: task format
+      - name: Run format checker
+        run: task format-check
 
 #      - name: golangci-lint
 #        uses: golangci/golangci-lint-action@v9

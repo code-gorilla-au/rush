@@ -15,6 +15,15 @@ tasks:
     cmds:
       - golangci-lint run ./...
       - sqlc vet
+      - task: format-check
+
+  format-check:
+    desc: Check if Go code is formatted
+    cmds:
+      - cmd: test -z "$(gofmt -l .)"
+        silent: true
+    status:
+      - test -z "$(gofmt -l .)"
 
   format:
     desc: Format Go code and tidy modules

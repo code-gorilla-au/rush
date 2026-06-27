@@ -19,6 +19,10 @@ const (
 	stateSelectingPlaybook
 )
 
+type msgAICoachesLoaded struct {
+	aiTeams []AITeamItem
+}
+
 type battleSelectionKeyMap struct {
 	components.CommonKeys
 	Back   key.Binding
@@ -49,7 +53,7 @@ func newBattleSelectionKeyMap() battleSelectionKeyMap {
 	}
 }
 
-type AICoachItem struct {
+type AITeamItem struct {
 	coach teams.Coach
 	team  teams.Team
 }
@@ -62,7 +66,7 @@ type ModelNewBattleSelection struct {
 	teamsSvc         *teams.Service
 	playbookSvc      *playbooks.Service
 	state            selectionState
-	aiCoaches        []AICoachItem
+	aiCoaches        []AITeamItem
 	selectedCoachIdx int
 	playbooks        []playbooks.Playbook
 	playbookList     components.PlaybookList
@@ -88,24 +92,20 @@ func (m *ModelNewBattleSelection) Init() tea.Cmd {
 }
 
 func (m *ModelNewBattleSelection) loadAICoaches() tea.Msg {
-	coaches, err := m.teamsSvc.ListAICoaches(m.globalState.Context())
+	aiTeams, err := m.teamsSvc.ListAITeams(m.globalState.Context())
 	if err != nil {
 		return err
 	}
 
-	items := make([]AICoachItem, 0, len(coaches))
-	for _, coach := range coaches {
-		team, err := m.teamsSvc.GetTeamByCoachID(m.globalState.Context(), coach.ID)
-		if err != nil {
-			continue
-		}
-		items = append(items, AICoachItem{coach: coach, team: team})
+	items := make([]AITeamItem, 0, len(aiTeams))
+	for _, aiTeam := range aiTeams {
+		items = append(items, AITeamItem{
+			coach: aiTeam.Coach,
+			team:  aiTeam.Team,
+		})
 	}
-	return msgAICoachesLoaded{coaches: items}
-}
 
-type msgAICoachesLoaded struct {
-	coaches []AICoachItem
+	return msgAICoachesLoaded{aiTeams: items}
 }
 
 type msgPlaybooksLoaded struct {
@@ -132,7 +132,7 @@ func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.footer.Update(msg)
 		m.playbookList.SetSize(m.width, m.height-10)
 	case msgAICoachesLoaded:
-		m.aiCoaches = msg.coaches
+		m.aiCoaches = msg.aiTeams
 	case msgPlaybooksLoaded:
 		m.playbooks = msg.playbooks
 		cmds = append(cmds, m.playbookList.SetItems(msg.playbooks))

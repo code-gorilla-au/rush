@@ -11,12 +11,6 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-type selectionState int
-
-const (
-	stateSelectingCoach selectionState = iota
-)
-
 type msgAICoachesLoaded struct {
 	aiTeams []AITeamItem
 }
@@ -62,7 +56,6 @@ type ModelNewBattleSelection struct {
 	theme            IceTheme
 	globalState      *GlobalState
 	teamsSvc         *teams.Service
-	state            selectionState
 	aiCoaches        []AITeamItem
 	selectedCoachIdx int
 	keys             battleSelectionKeyMap
@@ -103,7 +96,6 @@ func (m *ModelNewBattleSelection) loadAICoaches() tea.Msg {
 }
 
 func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
 	m.footer.Update(msg)
 
 	switch msg := msg.(type) {
@@ -118,32 +110,37 @@ func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Back):
+		return m.handleKey(msg)
+	}
+
+	return m, nil
+}
+
+func (m *ModelNewBattleSelection) handleKey(msg tea.KeyMsg) (*ModelNewBattleSelection, tea.Cmd) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit
+	case key.Matches(msg, m.keys.Back):
+		return m, func() tea.Msg {
+			return MsgSwitchPage{NewPage: PageTitle}
+		}
+	case key.Matches(msg, m.keys.Select):
+		if len(m.aiCoaches) > 0 {
+			// TODO: Start battle with selected coach
 			return m, func() tea.Msg {
 				return MsgSwitchPage{NewPage: PageTitle}
 			}
-		case key.Matches(msg, m.keys.Select):
-			if len(m.aiCoaches) > 0 {
-				// TODO: Start battle with selected coach
-				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageTitle}
-				}
-			}
-		case msg.String() == "up", msg.String() == "k":
-			if m.selectedCoachIdx > 0 {
-				m.selectedCoachIdx--
-			}
-		case msg.String() == "down", msg.String() == "j":
-			if m.selectedCoachIdx < len(m.aiCoaches)-1 {
-				m.selectedCoachIdx++
-			}
+		}
+	case msg.String() == "up", msg.String() == "k":
+		if m.selectedCoachIdx > 0 {
+			m.selectedCoachIdx--
+		}
+	case msg.String() == "down", msg.String() == "j":
+		if m.selectedCoachIdx < len(m.aiCoaches)-1 {
+			m.selectedCoachIdx++
 		}
 	}
-
-	return m, tea.Batch(cmds...)
+	return m, nil
 }
 
 func (m *ModelNewBattleSelection) View() tea.View {

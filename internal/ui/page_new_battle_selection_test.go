@@ -80,6 +80,41 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		}
 	})
 
+	group.Test("should handle navigation between coaches", func(t *testing.T) {
+		state := &GlobalState{}
+		m := NewModelNewBattleSelection(state, nil)
+		m.aiCoaches = []AITeamItem{
+			{coach: teams.Coach{Name: "Coach A"}},
+			{coach: teams.Coach{Name: "Coach B"}},
+			{coach: teams.Coach{Name: "Coach C"}},
+		}
+		m.selectedCoachIdx = 0
+
+		// Move down
+		m.Update(tea.KeyPressMsg{Text: "down"})
+		odize.AssertEqual(t, 1, m.selectedCoachIdx)
+
+		// Move down again
+		m.Update(tea.KeyPressMsg{Text: "j"})
+		odize.AssertEqual(t, 2, m.selectedCoachIdx)
+
+		// Move down at the end (should stay)
+		m.Update(tea.KeyPressMsg{Text: "down"})
+		odize.AssertEqual(t, 2, m.selectedCoachIdx)
+
+		// Move up
+		m.Update(tea.KeyPressMsg{Text: "up"})
+		odize.AssertEqual(t, 1, m.selectedCoachIdx)
+
+		// Move up again
+		m.Update(tea.KeyPressMsg{Text: "k"})
+		odize.AssertEqual(t, 0, m.selectedCoachIdx)
+
+		// Move up at the beginning (should stay)
+		m.Update(tea.KeyPressMsg{Text: "up"})
+		odize.AssertEqual(t, 0, m.selectedCoachIdx)
+	})
+
 	err := group.Run()
 	odize.AssertNoError(t, err)
 }

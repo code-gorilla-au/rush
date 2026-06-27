@@ -37,8 +37,6 @@ jobs:
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.64
 
       - name: Run sqlc vet
         run: sqlc vet

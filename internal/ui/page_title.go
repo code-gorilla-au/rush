@@ -55,11 +55,11 @@ func NewModelTitle(globalState *GlobalState) *ModelTitle {
 	}
 }
 
-func (m ModelTitle) Init() tea.Cmd {
+func (m *ModelTitle) Init() tea.Cmd {
 	return nil
 }
 
-func (m ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch vMsg := msg.(type) {
 	case MsgStateUpdated:
 		m.globalState.Coach = vMsg.Coach
@@ -112,7 +112,7 @@ const logo = `
  |_| \_\\___/|____/|_| |_|
 `
 
-func (m ModelTitle) View() tea.View {
+func (m *ModelTitle) View() tea.View {
 	if m.width == 0 || m.height == 0 {
 		return tea.NewView("Initializing...")
 	}

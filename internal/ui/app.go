@@ -72,10 +72,10 @@ type Dependencies struct {
 }
 
 // New returns a new UI model.
-func New(deps Dependencies) RootModel {
+func New(deps Dependencies) *RootModel {
 	state := &GlobalState{}
 
-	return RootModel{
+	return &RootModel{
 		ctx:                       context.Background(),
 		theme:                     NewIceTheme(),
 		currentPage:               PageTitle,
@@ -96,7 +96,7 @@ func New(deps Dependencies) RootModel {
 	}
 }
 
-func (m RootModel) Init() tea.Cmd {
+func (m *RootModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		coach, err := m.teamsSvc.GetDefaultCoach(m.ctx)
 		if err != nil {
@@ -112,7 +112,7 @@ func (m RootModel) Init() tea.Cmd {
 	}
 }
 
-func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -156,6 +156,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 		cmds = append(cmds, cmd)
+		return m, tea.Batch(cmds...)
 	}
 
 	var cmd tea.Cmd
@@ -186,7 +187,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m RootModel) View() tea.View {
+func (m *RootModel) View() tea.View {
 	if m.width == 0 || m.height == 0 {
 		return tea.NewView("Initializing...")
 	}

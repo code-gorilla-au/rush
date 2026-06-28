@@ -66,6 +66,7 @@ type Result struct {
 type RollFn func() int
 
 var (
-	ErrNoPlayer = errors.New("no player left in lane")
-	ErrNoRounds = errors.New("no rounds left")
+	ErrNoPlayer        = errors.New("no player left in lane")
+	ErrNoRounds        = errors.New("no rounds left")
+	ErrGameNotComplete = errors.New("game not complete")
 )

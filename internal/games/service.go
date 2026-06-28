@@ -94,6 +94,13 @@ func (s *Service) GetGame(ctx context.Context, id int64) (Game, error) {
 func (s *Service) CompleteGame(ctx context.Context, game Game) (Game, error) {
 	game.status = StatusComplete
 
+	winner, err := game.CalculateWinner()
+	if err != nil {
+		return Game{}, fmt.Errorf("calculating winner: %w", err)
+	}
+
+	game.winner = &winner
+
 	updatedGame, err := s.UpdateGame(ctx, game)
 	if err != nil {
 		return Game{}, fmt.Errorf("completing game: %w", err)

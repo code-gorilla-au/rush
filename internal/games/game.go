@@ -49,6 +49,30 @@ func (g *Game) ResolveRound(roll RollFn) (Result, error) {
 	return result, nil
 }
 
+func (g *Game) CalculateWinner() (int64, error) {
+	if g.status != StatusComplete {
+		return 0, ErrGameNotComplete
+	}
+	teamA := 0
+	teamB := 0
+
+	for _, result := range g.results {
+		if result.TeamA {
+			teamA++
+		} else {
+			teamB++
+		}
+	}
+
+	if teamA > teamB {
+		return g.teamA, nil
+	} else if teamA < teamB {
+		return g.teamB, nil
+	}
+
+	return 0, nil
+}
+
 func (g *Game) IsGameComplete() bool {
 	return g.currentRound >= int64(len(g.rounds))
 }

@@ -22,6 +22,11 @@ func (r *Round) ResolveLanes(rollFn RollFn) Result {
 		result = append(result, laneResult)
 	}
 
+	return r.calculateWinner(result)
+
+}
+
+func (r *Round) calculateWinner(result []Result) Result {
 	teamA := 0
 	teamAPlayers := 0
 
@@ -51,7 +56,6 @@ func (r *Round) ResolveLanes(rollFn RollFn) Result {
 		TeamB:            true,
 		RemainingPlayers: teamBPlayers,
 	}
-
 }
 
 func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {

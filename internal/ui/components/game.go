@@ -62,16 +62,7 @@ func (g *Game) Init() tea.Cmd {
 func (g *Game) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case MsgResolveRound:
-		if !g.resolved {
-			res, err := g.game.ResolveRound(g.rollFn)
-			if err == nil {
-				g.result = res
-				g.resolved = true
-				// Update the round component with the final state
-				currentRoundIdx := g.game.CurrentRound() - 1
-				g.roundComp = NewRound(g.game.Rounds()[currentRoundIdx], g.teamAName, g.teamBName)
-			}
-		}
+		g.handleRound()
 	case tea.KeyMsg:
 		if g.resolved {
 			switch msg.String() {
@@ -83,6 +74,21 @@ func (g *Game) Update(msg tea.Msg) tea.Cmd {
 		}
 	}
 	return nil
+}
+
+func (g *Game) handleRound() {
+	if g.resolved {
+		return
+	}
+
+	res, err := g.game.ResolveRound(g.rollFn)
+	if err == nil {
+		g.result = res
+		g.resolved = true
+		// Update the round component with the final state
+		currentRoundIdx := g.game.CurrentRound() - 1
+		g.roundComp = NewRound(g.game.Rounds()[currentRoundIdx], g.teamAName, g.teamBName)
+	}
 }
 
 // View renders the Game component.

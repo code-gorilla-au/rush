@@ -53,6 +53,10 @@ func (g *Game) IsGameComplete() bool {
 	return g.currentRound >= int64(len(g.rounds))
 }
 
+func (g *Game) ID() int64 {
+	return g.id
+}
+
 func fromGameModel(m database.Game) (Game, error) {
 
 	var rounds [10]Round

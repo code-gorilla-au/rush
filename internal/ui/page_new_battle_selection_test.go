@@ -6,67 +6,85 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
+	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
 func TestModelNewBattleSelection_Rendering(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
-	group.Test("should load AI coaches and render them", func(t *testing.T) {
-		state := &GlobalState{}
-
-		m := NewModelNewBattleSelection(state, nil)
-		m.width = 100
-		m.height = 40
-
-		aiTeams := []AITeamItem{
-			{
-				coach: teams.Coach{Name: "Coach A"},
-				team:  teams.Team{Name: "Team A"},
-			},
+	group.Test("should load data and render selection", func(t *testing.T) {
+		state := &GlobalState{
+			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
 
-		msg := msgAICoachesLoaded{aiTeams: aiTeams}
+		m := NewModelNewBattleSelection(state, nil, nil, nil)
+		m.width = 100
+		m.height = 40
+		m.Update(tea.WindowSizeMsg{Width: 100, Height: 40})
+
+		msg := msgDataLoaded{
+			playbooks: []playbooks.Playbook{{ID: 1, Name: "Playbook 1"}},
+			aiTeams: []teams.AITeam{
+				{
+					Coach: teams.Coach{Name: "Coach A"},
+					Team:  teams.Team{Name: "Team A"},
+				},
+			},
+		}
 		m.Update(msg)
 
-		odize.AssertEqual(t, 1, len(m.aiCoaches))
+		odize.AssertEqual(t, 1, m.playbookList.Len())
+		odize.AssertEqual(t, 1, m.aiTeamList.Len())
 
 		view := m.View()
 		content := view.Content
 
-		odize.AssertTrue(t, strings.Contains(content, "Select your opponent"))
-		odize.AssertTrue(t, !strings.Contains(content, "No AI coaches available"))
+		odize.AssertTrue(t, strings.Contains(content, "NEW BATTLE"))
+		odize.AssertTrue(t, strings.Contains(content, "Playbook 1"))
+		odize.AssertTrue(t, strings.Contains(content, "Team A"))
 	})
 
-	group.Test("should handle select coach and return to title", func(t *testing.T) {
-		state := &GlobalState{}
-		m := NewModelNewBattleSelection(state, nil)
-		m.width = 100
-		m.height = 40
-		m.aiCoaches = []AITeamItem{
-			{
-				coach: teams.Coach{ID: 1, Name: "Coach A"},
-				team:  teams.Team{ID: 1, Name: "Team A"},
+	group.Test("should handle state transitions", func(t *testing.T) {
+		state := &GlobalState{
+			Team: &teams.Team{ID: 1, Name: "My Team"},
+		}
+		m := NewModelNewBattleSelection(state, nil, nil, nil)
+		m.Update(tea.WindowSizeMsg{Width: 100, Height: 40})
+		m.Update(msgDataLoaded{
+			playbooks: []playbooks.Playbook{{ID: 1, Name: "Playbook 1"}},
+			aiTeams: []teams.AITeam{
+				{
+					Team: teams.Team{ID: 2, Name: "Team A"},
+				},
 			},
-		}
-		m.selectedCoachIdx = 0
+		})
 
-		// Simulate Enter key
-		_, cmd := m.Update(tea.KeyPressMsg{Text: "enter"})
+		// 1. Initial state: selecting playbook
+		odize.AssertEqual(t, stateSelectingPlaybook, m.state)
 
-		odize.AssertTrue(t, cmd != nil)
-		msg := cmd()
-		switch v := msg.(type) {
-		case MsgSwitchPage:
-			odize.AssertEqual(t, PageTitle, v.NewPage)
-		default:
-			t.Fatalf("expected MsgSwitchPage, got %T", msg)
-		}
+		// 2. Select playbook -> selecting opponent
+		m.Update(tea.KeyPressMsg{Text: "enter"})
+		odize.AssertEqual(t, stateSelectingOpponent, m.state)
+		odize.AssertTrue(t, m.selectedPlaybook != nil)
+
+		// 3. Select opponent -> confirming
+		m.Update(tea.KeyPressMsg{Text: "enter"})
+		odize.AssertEqual(t, stateConfirming, m.state)
+		odize.AssertTrue(t, m.selectedAITeam != nil)
+
+		// 4. Back from confirming -> selecting opponent
+		m.Update(tea.KeyPressMsg{Text: "esc"})
+		odize.AssertEqual(t, stateSelectingOpponent, m.state)
+
+		// 5. Back from selecting opponent -> selecting playbook
+		m.Update(tea.KeyPressMsg{Text: "esc"})
+		odize.AssertEqual(t, stateSelectingPlaybook, m.state)
 	})
 
-	group.Test("should handle back navigation from coach selection", func(t *testing.T) {
+	group.Test("should handle back navigation to title", func(t *testing.T) {
 		state := &GlobalState{}
-		m := NewModelNewBattleSelection(state, nil)
+		m := NewModelNewBattleSelection(state, nil, nil, nil)
 
 		_, cmd := m.Update(tea.KeyPressMsg{Text: "esc"})
 
@@ -78,41 +96,6 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		default:
 			t.Fatalf("expected MsgSwitchPage, got %T", msg)
 		}
-	})
-
-	group.Test("should handle navigation between coaches", func(t *testing.T) {
-		state := &GlobalState{}
-		m := NewModelNewBattleSelection(state, nil)
-		m.aiCoaches = []AITeamItem{
-			{coach: teams.Coach{Name: "Coach A"}},
-			{coach: teams.Coach{Name: "Coach B"}},
-			{coach: teams.Coach{Name: "Coach C"}},
-		}
-		m.selectedCoachIdx = 0
-
-		// Move down
-		m.Update(tea.KeyPressMsg{Text: "down"})
-		odize.AssertEqual(t, 1, m.selectedCoachIdx)
-
-		// Move down again
-		m.Update(tea.KeyPressMsg{Text: "j"})
-		odize.AssertEqual(t, 2, m.selectedCoachIdx)
-
-		// Move down at the end (should stay)
-		m.Update(tea.KeyPressMsg{Text: "down"})
-		odize.AssertEqual(t, 2, m.selectedCoachIdx)
-
-		// Move up
-		m.Update(tea.KeyPressMsg{Text: "up"})
-		odize.AssertEqual(t, 1, m.selectedCoachIdx)
-
-		// Move up again
-		m.Update(tea.KeyPressMsg{Text: "k"})
-		odize.AssertEqual(t, 0, m.selectedCoachIdx)
-
-		// Move up at the beginning (should stay)
-		m.Update(tea.KeyPressMsg{Text: "up"})
-		odize.AssertEqual(t, 0, m.selectedCoachIdx)
 	})
 
 	err := group.Run()

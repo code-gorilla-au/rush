@@ -34,6 +34,10 @@ type Game struct {
 	updatedAt    time.Time
 }
 
+func (g Game) ID() int64 {
+	return g.id
+}
+
 type Round struct {
 	TeamA TeamFormation
 	TeamB TeamFormation

@@ -3,6 +3,7 @@ package ui
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/code-gorilla-au/rush/internal/games"
 )
 
 type PageGameModel struct {
@@ -10,6 +11,20 @@ type PageGameModel struct {
 	height      int
 	theme       IceTheme
 	globalState *GlobalState
+	gameSvc     *games.Service
+	gameID      int64
+}
+
+func NewModelGame(state *GlobalState, gameSvc *games.Service) *PageGameModel {
+	return &PageGameModel{
+		theme:       NewIceTheme(),
+		globalState: state,
+		gameSvc:     gameSvc,
+	}
+}
+
+func (m *PageGameModel) SetGameID(id int64) {
+	m.gameID = id
 }
 
 func (m *PageGameModel) Init() tea.Cmd {

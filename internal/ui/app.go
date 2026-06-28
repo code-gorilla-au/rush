@@ -17,6 +17,7 @@ type MsgStateUpdated struct {
 type MsgSwitchPage struct {
 	NewPage  Page
 	Playbook *playbooks.Playbook
+	GameID   int64
 }
 
 type Page int
@@ -32,6 +33,7 @@ const (
 	PageNewTournament
 	PageNewBattleSelection
 	PageTitleSettings
+	PageGame
 )
 
 type GlobalState struct {
@@ -59,6 +61,7 @@ type RootModel struct {
 	pageNewTournament         tea.Model
 	pageNewBattleSelection    tea.Model
 	pageTitleSettings         tea.Model
+	pageGame                  tea.Model
 	globalState               *GlobalState
 	teamsSvc                  *teams.Service
 	playbookSvc               *playbooks.Service
@@ -87,8 +90,9 @@ func New(deps Dependencies) *RootModel {
 		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.PlaybookSvc),
 		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.PlaybookSvc),
 		pageNewTournament:         NewModelNewTournament(state),
-		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc),
+		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc),
 		pageTitleSettings:         NewModelTitleSettings(state),
+		pageGame:                  NewModelGame(state, deps.GameSvc),
 		globalState:               state,
 		teamsSvc:                  deps.TeamsSvc,
 		playbookSvc:               deps.PlaybookSvc,
@@ -130,6 +134,11 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch m.currentPage {
 		case PageNewBattleSelection:
 			cmd = m.pageNewBattleSelection.Init()
+		case PageGame:
+			if page, ok := m.pageGame.(*PageGameModel); ok {
+				page.SetGameID(msg.GameID)
+			}
+			cmd = m.pageGame.Init()
 		}
 		cmds = append(cmds, cmd)
 	case tea.WindowSizeMsg:
@@ -156,6 +165,8 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 		cmds = append(cmds, cmd)
+		m.pageGame, cmd = m.pageGame.Update(msg)
+		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
 	}
 
@@ -181,6 +192,8 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageNewBattleSelection, cmd = m.pageNewBattleSelection.Update(msg)
 	case PageTitleSettings:
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
+	case PageGame:
+		m.pageGame, cmd = m.pageGame.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 
@@ -213,6 +226,8 @@ func (m *RootModel) View() tea.View {
 		return m.pageNewBattleSelection.View()
 	case PageTitleSettings:
 		return m.pageTitleSettings.View()
+	case PageGame:
+		return m.pageGame.View()
 	}
 
 	return tea.NewView("unknown page")

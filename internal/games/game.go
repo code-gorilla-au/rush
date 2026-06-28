@@ -36,11 +36,11 @@ func generateRounds(teamA TeamConfig, teamB TeamConfig) [10]Round {
 }
 
 func (g *Game) ResolveRound(roll RollFn) (Result, error) {
-	if g.currentRound <= 0 || g.currentRound >= int64(len(g.rounds)) {
+	if g.currentRound < 0 || g.currentRound >= int64(len(g.rounds)) {
 		return Result{}, ErrNoRounds
 	}
 
-	round := g.rounds[int(g.currentRound)]
+	round := &g.rounds[int(g.currentRound)]
 	result := round.ResolveLanes(roll)
 
 	g.results = append(g.results, result)
@@ -114,7 +114,7 @@ func toGameModel(g Game) (database.Game, error) {
 		}
 	}
 
-	roundData, err := json.Marshal(g.results)
+	roundData, err := json.Marshal(g.rounds)
 	if err != nil {
 		return database.Game{}, fmt.Errorf("failed to marshal game model: %w", err)
 	}

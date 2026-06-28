@@ -17,7 +17,7 @@ type PageGameModel struct {
 	gameSvc     *games.Service
 	gameID      int64
 	game        *games.Game
-	roundComp   components.Round
+	gameComp    components.Game
 }
 
 func NewModelGame(state *GlobalState, gameSvc *games.Service) *PageGameModel {
@@ -61,17 +61,49 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 	case MsgGameLoaded:
-		m.game = &msg.Game
-		teamA, teamB := "Team A", "Team B"
-		parts := strings.Split(m.game.Name(), " VS ")
-		if len(parts) == 2 {
-			teamA = parts[0]
-			teamB = parts[1]
+		m.game = new(games.Game)
+		*m.game = msg.Game
+		teamA, teamB := getTeamNames(m.game.Name())
+		m.gameComp = components.NewGame(m.game, teamA, teamB, nil)
+		cmds = append(cmds, m.gameComp.Init())
+	case components.MsgResolveRound:
+		cmds = append(cmds, m.gameComp.Update(msg))
+		cmds = append(cmds, func() tea.Msg {
+			_, err := m.gameSvc.UpdateGame(m.globalState.Context(), *m.game)
+			if err != nil {
+				return MsgGameError{Err: err}
+			}
+			return nil
+		})
+	case components.MsgNextRound:
+		if !m.game.IsGameComplete() {
+			teamA, teamB := getTeamNames(m.game.Name())
+			m.gameComp = components.NewGame(m.game, teamA, teamB, nil)
+			cmds = append(cmds, m.gameComp.Init())
+		} else {
+			cmds = append(cmds, func() tea.Msg {
+				_, err := m.gameSvc.CompleteGame(m.globalState.Context(), *m.game)
+				if err != nil {
+					return MsgGameError{Err: err}
+				}
+				return nil
+			})
 		}
-		m.roundComp = components.NewRound(m.game.Rounds()[m.game.CurrentRound()], teamA, teamB)
+	default:
+		cmds = append(cmds, m.gameComp.Update(msg))
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+func getTeamNames(gameName string) (string, string) {
+	teamA, teamB := "Team A", "Team B"
+	parts := strings.Split(gameName, " VS ")
+	if len(parts) == 2 {
+		teamA = parts[0]
+		teamB = parts[1]
+	}
+	return teamA, teamB
 }
 
 func (m *PageGameModel) View() tea.View {
@@ -82,7 +114,7 @@ func (m *PageGameModel) View() tea.View {
 	if m.game == nil {
 		mainContent = "Loading Game..."
 	} else {
-		mainContent = m.roundComp.View()
+		mainContent = m.gameComp.View()
 	}
 
 	centeredContent := lipgloss.Place(

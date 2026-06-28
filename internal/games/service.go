@@ -46,7 +46,7 @@ func (s *Service) NewGame(ctx context.Context, params NewGameParams) (Game, erro
 			Valid: true,
 		},
 		TournamentID: resolvedTournamentID,
-		ResultsLog:   nil,
+		ResultsLog:   []byte(`[]`),
 		Rounds:       roundsJsonData,
 		CurrentRound: 0,
 	})

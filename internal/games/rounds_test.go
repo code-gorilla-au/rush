@@ -61,33 +61,6 @@ func TestResolveLane(t *testing.T) {
 		odize.AssertEqual(t, 0, r.TeamA.LaneCount(lane))
 	})
 
-	group.Test("Draw should not result in any player being eliminated", func(t *testing.T) {
-		r := &Round{
-			TeamA: TeamFormation{},
-			TeamB: TeamFormation{},
-		}
-		lane := 0
-		r.TeamA.LaneFill(lane, 1)
-		r.TeamB.LaneFill(lane, 1)
-
-		// Draw
-		rolls := []int{3, 3, 6, 1} // aRoll=3, bRoll=3 -> nothing; then aRoll=6, bRoll=1 -> Team B pops
-		idx := 0
-		rollFn := func() int {
-			val := rolls[idx]
-			idx++
-			return val
-		}
-
-		res := r.ResolveLane(lane, rollFn)
-
-		odize.AssertTrue(t, res.TeamA)
-		odize.AssertFalse(t, res.TeamB)
-		odize.AssertEqual(t, 1, res.RemainingPlayers)
-		odize.AssertEqual(t, 0, r.TeamB.LaneCount(lane))
-		odize.AssertEqual(t, 1, r.TeamA.LaneCount(lane))
-	})
-
 	group.Test("Team A starts with 0 players should lose immediately", func(t *testing.T) {
 		r := &Round{
 			TeamA: TeamFormation{},

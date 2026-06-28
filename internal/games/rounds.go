@@ -59,6 +59,11 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {
 		aRoll := rollFn()
 		bRoll := rollFn()
 
+		for aRoll == bRoll {
+			bRoll = rollFn()
+			aRoll = rollFn()
+		}
+
 		if aRoll > bRoll {
 			_, err := r.TeamB.LanePop(lane)
 			if errors.Is(err, ErrNoPlayer) {

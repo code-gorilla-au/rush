@@ -82,6 +82,15 @@ func (s *Service) UpdateGame(ctx context.Context, game Game) (Game, error) {
 	return fromGameModel(updated)
 }
 
+func (s *Service) GetGame(ctx context.Context, id int64) (Game, error) {
+	model, err := s.Store.GetGameByID(ctx, id)
+	if err != nil {
+		return Game{}, fmt.Errorf("getting game: %w", err)
+	}
+
+	return fromGameModel(model)
+}
+
 func (s *Service) CompleteGame(ctx context.Context, game Game) (Game, error) {
 	game.status = StatusComplete
 

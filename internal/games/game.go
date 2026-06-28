@@ -57,6 +57,18 @@ func (g *Game) ID() int64 {
 	return g.id
 }
 
+func (g *Game) Rounds() [10]Round {
+	return g.rounds
+}
+
+func (g *Game) CurrentRound() int64 {
+	return g.currentRound
+}
+
+func (g *Game) Name() string {
+	return g.name
+}
+
 func fromGameModel(m database.Game) (Game, error) {
 
 	var rounds [10]Round

@@ -65,11 +65,14 @@ func (g *Game) CalculateWinner() (int64, error) {
 	}
 
 	if teamA > teamB {
+		g.winner = &g.teamA
 		return g.teamA, nil
 	} else if teamA < teamB {
+		g.winner = &g.teamB
 		return g.teamB, nil
 	}
 
+	g.winner = new(int64)
 	return 0, nil
 }
 

@@ -56,7 +56,7 @@ func NewModelLockerRoom(globalState *GlobalState, theme styles.IceTheme) *ModelL
 		keys:        keys,
 		footer:      components.NewFooter(keys),
 		theme:       theme,
-		list:        components.NewLockerRoomList(),
+		list:        components.NewLockerRoomList(theme),
 	}
 }
 

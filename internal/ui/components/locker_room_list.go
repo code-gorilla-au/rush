@@ -26,47 +26,35 @@ func (i LockerRoomItem) String() string {
 }
 
 type LockerRoomList struct {
-	cursor int
-	items  []LockerRoomItem
+	List[LockerRoomItem]
 }
 
-func NewLockerRoomList() LockerRoomList {
+func NewLockerRoomList(theme styles.IceTheme) LockerRoomList {
 	return LockerRoomList{
-		items: []LockerRoomItem{ItemPlayers, ItemPlaybooks, ItemSettings},
+		List: NewList(ListConfig[LockerRoomItem]{
+			Items: []LockerRoomItem{ItemPlayers, ItemPlaybooks, ItemSettings},
+			ItemMapper: func(i LockerRoomItem) ListItem[LockerRoomItem] {
+				return ListItem[LockerRoomItem]{
+					Data:     i,
+					TitleVal: i.String(),
+				}
+			},
+			EnableFiltering: false,
+		}, theme),
 	}
 }
 
 func (l *LockerRoomList) Update(msg tea.Msg) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "up", "k":
-			if l.cursor > 0 {
-				l.cursor--
-			}
-		case "down", "j":
-			if l.cursor < len(l.items)-1 {
-				l.cursor++
-			}
-		}
-	}
+	l.List.Update(msg)
 }
 
 func (l *LockerRoomList) View(theme styles.IceTheme) string {
-	var s string
-	for i, item := range l.items {
-		if i == l.cursor {
-			s += theme.ListSelected.Render(">  " + item.String())
-		} else {
-			s += theme.Base.Render("   " + item.String())
-		}
-		if i < len(l.items)-1 {
-			s += "\n"
-		}
-	}
-	return s
+	return l.List.View()
 }
 
 func (l *LockerRoomList) SelectedItem() LockerRoomItem {
-	return l.items[l.cursor]
+	if item, ok := l.List.SelectedItem(); ok {
+		return item
+	}
+	return -1
 }

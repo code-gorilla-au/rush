@@ -68,9 +68,9 @@ func (m *TitleMenu) View(theme styles.IceTheme) string {
 	var s string
 	for i, item := range m.items {
 		if i == m.cursor {
-			s += theme.ListSelected.Render("> " + item.String())
+			s += theme.ListSelected.Render(">  " + item.String())
 		} else {
-			s += theme.Base.Render("  " + item.String())
+			s += theme.Base.Render("   " + item.String())
 		}
 		if i < len(m.items)-1 {
 			s += "\n"

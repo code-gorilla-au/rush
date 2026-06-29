@@ -95,9 +95,9 @@ func (l *PlayerList) View(theme styles.IceTheme) string {
 		}
 
 		if i == l.cursor {
-			s += theme.ListSelected.Render("> " + content)
+			s += theme.ListSelected.Render(">  " + content)
 		} else {
-			s += theme.Base.Render("  " + content)
+			s += theme.Base.Render("   " + content)
 		}
 		if i < len(l.Items)-1 {
 			s += "\n"

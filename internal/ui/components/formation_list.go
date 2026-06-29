@@ -47,13 +47,18 @@ func NewFormationList(config FormationListConfig, theme styles.IceTheme) Formati
 	}
 
 	delegate := list.NewDefaultDelegate()
+	delegate.Styles.NormalTitle = theme.Base.PaddingLeft(3)
+	delegate.Styles.NormalDesc = theme.Muted.PaddingLeft(3)
 	delegate.Styles.SelectedTitle = theme.SelectedTitle
 	delegate.Styles.SelectedDesc = theme.SelectedDesc
+	delegate.Styles.DimmedTitle = theme.Muted.PaddingLeft(3)
+	delegate.Styles.DimmedDesc = theme.Muted.PaddingLeft(3)
 
 	l := list.New(items, delegate, 0, 0)
-	l.Title = config.Title
+	l.Title = ""
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(config.EnableFiltering)
+	l.SetShowHelp(false)
 	l.Styles.Title = theme.Title
 
 	return FormationList{
@@ -71,10 +76,7 @@ func (l *FormationList) Update(msg tea.Msg) (FormationList, tea.Cmd) {
 }
 
 func (l *FormationList) View(theme styles.IceTheme) string {
-	if l.active {
-		return theme.ActiveBorder.Render(l.list.View())
-	}
-	return theme.InactiveBorder.Render(l.list.View())
+	return l.list.View()
 }
 
 func (l *FormationList) SelectedItem() playbooks.Formation {

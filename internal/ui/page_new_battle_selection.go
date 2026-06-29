@@ -177,7 +177,7 @@ func (m *ModelNewBattleSelection) handleKey(msg tea.KeyMsg) (*ModelNewBattleSele
 			return m, nil
 		}
 		if m.state == stateSelectingOpponent {
-			m.selectedAITeam = m.aiTeamList.SelectedAITeam()
+			m.selectedAITeam = m.aiTeamList.SelectedItem()
 			if m.selectedAITeam != nil {
 				m.state = stateConfirming
 			}
@@ -277,10 +277,27 @@ func (m *ModelNewBattleSelection) View() tea.View {
 }
 
 func (m *ModelNewBattleSelection) viewSelection() string {
+	playbookView := m.playbookList.View(m.theme)
+	aiTeamView := m.aiTeamList.View(m.theme)
+
+	if m.state == stateSelectingPlaybook {
+		playbookView = m.theme.ActiveBorder.Render(playbookView)
+		aiTeamView = m.theme.InactiveBorder.Render(aiTeamView)
+	} else {
+		playbookView = m.theme.InactiveBorder.Render(playbookView)
+		aiTeamView = m.theme.ActiveBorder.Render(aiTeamView)
+	}
+
 	return lipgloss.JoinHorizontal(lipgloss.Top,
-		m.playbookList.View(m.theme),
+		lipgloss.JoinVertical(lipgloss.Left,
+			m.theme.SecondaryHeader.Render("PLAYBOOKS"),
+			playbookView,
+		),
 		lipgloss.NewStyle().Width(2).Render(""),
-		m.aiTeamList.View(m.theme),
+		lipgloss.JoinVertical(lipgloss.Left,
+			m.theme.SecondaryHeader.Render("AI TEAMS"),
+			aiTeamView,
+		),
 	)
 }
 

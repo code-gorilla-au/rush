@@ -27,13 +27,18 @@ func NewAITeamList(items []teams.AITeam, theme styles.IceTheme) AITeamList {
 	}
 
 	delegate := list.NewDefaultDelegate()
+	delegate.Styles.NormalTitle = theme.Base.PaddingLeft(3)
+	delegate.Styles.NormalDesc = theme.Muted.PaddingLeft(3)
 	delegate.Styles.SelectedTitle = theme.SelectedTitle
 	delegate.Styles.SelectedDesc = theme.SelectedDesc
+	delegate.Styles.DimmedTitle = theme.Muted.PaddingLeft(3)
+	delegate.Styles.DimmedDesc = theme.Muted.PaddingLeft(3)
 
 	l := list.New(listItems, delegate, 0, 0)
-	l.Title = "AI Teams"
+	l.Title = ""
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
+	l.SetShowHelp(false)
 	l.Styles.Title = theme.Title
 
 	return AITeamList{
@@ -49,17 +54,14 @@ func (l *AITeamList) Update(msg tea.Msg) (AITeamList, tea.Cmd) {
 }
 
 func (l *AITeamList) View(theme styles.IceTheme) string {
-	if l.active {
-		return theme.ActiveBorder.Render(l.list.View())
-	}
-	return theme.InactiveBorder.Render(l.list.View())
+	return l.list.View()
 }
 
 func (l *AITeamList) SetActive(active bool) {
 	l.active = active
 }
 
-func (l *AITeamList) SelectedAITeam() *teams.AITeam {
+func (l *AITeamList) SelectedItem() *teams.AITeam {
 	if item, ok := l.list.SelectedItem().(AITeamItem); ok {
 		return &item.team
 	}

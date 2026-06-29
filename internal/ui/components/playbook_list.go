@@ -27,13 +27,18 @@ func NewPlaybookList(items []playbooks.Playbook, theme styles.IceTheme) Playbook
 	}
 
 	delegate := list.NewDefaultDelegate()
+	delegate.Styles.NormalTitle = theme.Base.PaddingLeft(3)
+	delegate.Styles.NormalDesc = theme.Muted.PaddingLeft(3)
 	delegate.Styles.SelectedTitle = theme.SelectedTitle
 	delegate.Styles.SelectedDesc = theme.SelectedDesc
+	delegate.Styles.DimmedTitle = theme.Muted.PaddingLeft(3)
+	delegate.Styles.DimmedDesc = theme.Muted.PaddingLeft(3)
 
 	l := list.New(listItems, delegate, 0, 0)
-	l.Title = "Playbooks"
+	l.Title = ""
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
+	l.SetShowHelp(false)
 	l.Styles.Title = theme.Title
 
 	return PlaybookList{
@@ -49,10 +54,7 @@ func (l *PlaybookList) Update(msg tea.Msg) (PlaybookList, tea.Cmd) {
 }
 
 func (l *PlaybookList) View(theme styles.IceTheme) string {
-	if l.active {
-		return theme.ActiveBorder.Render(l.list.View())
-	}
-	return theme.InactiveBorder.Render(l.list.View())
+	return l.list.View()
 }
 
 func (l *PlaybookList) SetActive(active bool) {

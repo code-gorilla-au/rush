@@ -56,9 +56,9 @@ func (l *LockerRoomList) View(theme styles.IceTheme) string {
 	var s string
 	for i, item := range l.items {
 		if i == l.cursor {
-			s += theme.ListSelected.Render("> " + item.String())
+			s += theme.ListSelected.Render(">  " + item.String())
 		} else {
-			s += theme.Base.Render("  " + item.String())
+			s += theme.Base.Render("   " + item.String())
 		}
 		if i < len(l.items)-1 {
 			s += "\n"

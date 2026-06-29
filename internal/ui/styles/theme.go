@@ -51,7 +51,6 @@ func NewIceTheme() IceTheme {
 			Foreground(skyBlue).
 			Italic(true),
 		Base: lipgloss.NewStyle().
-			Background(black).
 			Foreground(white),
 		Button: lipgloss.NewStyle().
 			Foreground(black).
@@ -97,10 +96,15 @@ func NewIceTheme() IceTheme {
 			Foreground(grey),
 		SelectedTitle: lipgloss.NewStyle().
 			Foreground(iceBlue).
-			BorderForeground(iceBlue),
+			Bold(true).
+			Border(lipgloss.NormalBorder(), false, false, false, true).
+			BorderForeground(iceBlue).
+			PaddingLeft(2),
 		SelectedDesc: lipgloss.NewStyle().
 			Foreground(skyBlue).
-			BorderForeground(iceBlue),
+			Border(lipgloss.NormalBorder(), false, false, false, true).
+			BorderForeground(iceBlue).
+			PaddingLeft(2),
 		TeamA: lipgloss.NewStyle().
 			Foreground(iceBlue).
 			Bold(true).
@@ -123,7 +127,8 @@ func NewIceTheme() IceTheme {
 			Bold(true),
 		SecondaryHeader: lipgloss.NewStyle().
 			Foreground(white).
-			Bold(true),
+			Bold(true).
+			MarginBottom(1),
 		RoundBorder: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(skyBlue).

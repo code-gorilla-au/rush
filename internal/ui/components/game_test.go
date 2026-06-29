@@ -64,7 +64,7 @@ func TestGameComponent(t *testing.T) {
 		odize.AssertFalse(t, gComp.resolved)
 		view := gComp.View(theme)
 		odize.AssertTrue(t, strings.Contains(view, "ROUND 1"))
-		odize.AssertTrue(t, strings.Contains(view, "Resolving..."))
+		odize.AssertTrue(t, strings.Contains(view, "Dual in progress..."))
 
 		// Handle MsgResolveRound
 		cmd := gComp.Update(MsgResolveRound{})

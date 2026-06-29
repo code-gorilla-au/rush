@@ -247,11 +247,28 @@ func (m *ModelLockerPlaybooksEdit) View() tea.View {
 		m.formationList.SetSize(m.width/2-4, m.height-15)
 		m.selectedFormationList.SetSize(m.width/2-4, m.height-15)
 
+		availableView := m.formationList.View(m.theme)
+		selectedView := m.selectedFormationList.View(m.theme)
+
+		if m.activeList == 0 {
+			availableView = m.theme.ActiveBorder.Render(availableView)
+			selectedView = m.theme.InactiveBorder.Render(selectedView)
+		} else {
+			availableView = m.theme.InactiveBorder.Render(availableView)
+			selectedView = m.theme.ActiveBorder.Render(selectedView)
+		}
+
 		content = lipgloss.JoinHorizontal(
 			lipgloss.Top,
-			m.formationList.View(m.theme),
+			lipgloss.JoinVertical(lipgloss.Left,
+				m.theme.SecondaryHeader.Render("AVAILABLE FORMATIONS"),
+				availableView,
+			),
 			lipgloss.NewStyle().Width(2).Render(""),
-			m.selectedFormationList.View(m.theme),
+			lipgloss.JoinVertical(lipgloss.Left,
+				m.theme.SecondaryHeader.Render("SELECTED FORMATIONS (MAX 10)"),
+				selectedView,
+			),
 		)
 		content += "\n\n" + m.theme.Muted.Render(fmt.Sprintf("%d/10 formations • Tab: switch • Enter: add/remove • 's': save", len(m.newFormations)))
 	}

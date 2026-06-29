@@ -57,9 +57,9 @@ func (g *Game) CalculateWinner() (int64, error) {
 	teamB := 0
 
 	for _, result := range g.results {
-		if result.TeamA {
+		if result.Outcome == ResultTeamA {
 			teamA++
-		} else {
+		} else if result.Outcome == ResultTeamB {
 			teamB++
 		}
 	}

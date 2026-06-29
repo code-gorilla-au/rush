@@ -110,8 +110,10 @@ func (g *Game) View() string {
 	var footer string
 	if g.resolved {
 		winner := g.teamAName
-		if g.result.TeamB {
+		if g.result.Outcome == games.ResultTeamB {
 			winner = g.teamBName
+		} else if g.result.Outcome == games.ResultDraw {
+			winner = "Draw"
 		}
 
 		winnerStyle := lipgloss.NewStyle().

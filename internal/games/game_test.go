@@ -58,7 +58,7 @@ func TestGame_ResolveRound(t *testing.T) {
 		res, err := game.ResolveRound(rollFn)
 
 		odize.AssertNoError(t, err)
-		odize.AssertTrue(t, res.TeamA || res.TeamB)
+		odize.AssertTrue(t, res.Outcome == ResultTeamA || res.Outcome == ResultTeamB)
 		odize.AssertEqual(t, int64(1), game.currentRound)
 
 		// Check if players were removed from round 0

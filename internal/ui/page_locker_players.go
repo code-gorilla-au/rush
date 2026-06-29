@@ -85,8 +85,8 @@ func (m *ModelLockerPlayers) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.globalState.Team != nil {
 			m.playerList = components.NewPlayerList(m.globalState.Team.Players)
 		}
-	case MsgSwitchPage:
-		if msg.NewPage == PageLockerPlayers && m.globalState.Team != nil {
+	case MsgSwitchLockerPage:
+		if msg.NewPage == SubPageLockerPlayers && m.globalState.Team != nil {
 			m.playerList = components.NewPlayerList(m.globalState.Team.Players)
 		}
 	case components.MsgPlayerUpdated:

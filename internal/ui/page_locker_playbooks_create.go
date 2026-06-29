@@ -77,8 +77,8 @@ func (m *ModelLockerPlaybooksCreate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
-	case MsgSwitchPage:
-		if msg.NewPage == PageLockerPlaybooksCreate {
+	case MsgSwitchLockerPage:
+		if msg.NewPage == SubPageLockerPlaybooksCreate {
 			if msg.Playbook != nil {
 				m.load(msg.Playbook)
 			} else {
@@ -93,14 +93,14 @@ func (m *ModelLockerPlaybooksCreate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Back):
 			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageLockerPlaybooksList}
+				return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList}
 			}
 		case key.Matches(msg, m.keys.Enter):
 			name, description := m.playbookForm.Values()
 			if name != "" {
 				return m, func() tea.Msg {
-					return MsgSwitchPage{
-						NewPage: PageLockerPlaybooksEdit,
+					return MsgSwitchLockerPage{
+						NewPage: SubPageLockerPlaybooksEdit,
 						Playbook: &playbooks.Playbook{
 							ID:          m.playbookID,
 							Name:        name,

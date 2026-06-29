@@ -103,8 +103,8 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.playbooksLoaded = true
 		m.playbookList = components.NewPlaybookList(msg.Playbooks, m.theme)
 		m.playbookList.SetSize(m.width, m.height-10)
-	case MsgSwitchPage:
-		if msg.NewPage == PageLockerPlaybooksList {
+	case MsgSwitchLockerPage:
+		if msg.NewPage == SubPageLockerPlaybooksList {
 			cmds = append(cmds, m.loadPlaybooks)
 		}
 	case error:
@@ -128,7 +128,7 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.New):
 			if !m.playbookList.IsFiltering() {
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerPlaybooksCreate}
+					return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksCreate}
 				}
 			}
 		case key.Matches(msg, m.keys.Delete):
@@ -163,8 +163,8 @@ func (m *ModelLockerPlaybooksList) handleRouteEditPlaybook() (tea.Model, tea.Cmd
 	selected := m.playbookList.SelectedItem()
 	if selected != nil {
 		return m, func() tea.Msg {
-			return MsgSwitchPage{
-				NewPage:  PageLockerPlaybooksCreate,
+			return MsgSwitchLockerPage{
+				NewPage:  SubPageLockerPlaybooksCreate,
 				Playbook: selected,
 			}
 		}, true

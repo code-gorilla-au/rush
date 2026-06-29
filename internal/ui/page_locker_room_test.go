@@ -26,8 +26,8 @@ func TestModelLockerRoom_Selection(t *testing.T) {
 		odize.AssertTrue(t, cmd != nil)
 		msg := cmd()
 		switch v := msg.(type) {
-		case MsgSwitchPage:
-			odize.AssertEqual(t, PageLockerPlayers, v.NewPage)
+		case MsgSwitchLockerPage:
+			odize.AssertEqual(t, SubPageLockerPlayers, v.NewPage)
 		default:
 			t.Fatalf("expected MsgSwitchPage, got %T", msg)
 		}
@@ -48,10 +48,10 @@ func TestModelLockerRoom_Selection(t *testing.T) {
 		odize.AssertTrue(t, cmd != nil)
 		msg := cmd()
 		switch v := msg.(type) {
-		case MsgSwitchPage:
-			odize.AssertEqual(t, PageLockerPlaybooksList, v.NewPage)
+		case MsgSwitchLockerPage:
+			odize.AssertEqual(t, SubPageLockerPlaybooksList, v.NewPage)
 		default:
-			t.Fatalf("expected MsgSwitchPage, got %T", msg)
+			t.Fatalf("expected MsgSwitchLockerPage, got %T", msg)
 		}
 	})
 

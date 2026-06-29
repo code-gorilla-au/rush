@@ -101,7 +101,7 @@ func NewIceTheme() IceTheme {
 			BorderForeground(iceBlue).
 			PaddingLeft(2),
 		SelectedDesc: lipgloss.NewStyle().
-			Foreground(skyBlue).
+			Foreground(mutedGrey).
 			Border(lipgloss.NormalBorder(), false, false, false, true).
 			BorderForeground(iceBlue).
 			PaddingLeft(2),

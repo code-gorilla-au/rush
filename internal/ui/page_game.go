@@ -7,12 +7,13 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type PageGameModel struct {
 	width       int
 	height      int
-	theme       IceTheme
+	theme       styles.IceTheme
 	globalState *GlobalState
 	gameSvc     *games.Service
 	gameID      int64
@@ -22,7 +23,7 @@ type PageGameModel struct {
 
 func NewModelGame(state *GlobalState, gameSvc *games.Service) *PageGameModel {
 	return &PageGameModel{
-		theme:       NewIceTheme(),
+		theme:       styles.NewIceTheme(),
 		globalState: state,
 		gameSvc:     gameSvc,
 	}

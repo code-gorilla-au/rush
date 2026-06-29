@@ -8,6 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type lockerPlaybooksListKeyMap struct {
@@ -52,7 +53,7 @@ func newLockerPlaybooksListKeyMap() lockerPlaybooksListKeyMap {
 type ModelLockerPlaybooksList struct {
 	width           int
 	height          int
-	theme           IceTheme
+	theme           styles.IceTheme
 	globalState     *GlobalState
 	playbookSvc     *playbooks.Service
 	keys            lockerPlaybooksListKeyMap
@@ -64,7 +65,7 @@ type ModelLockerPlaybooksList struct {
 
 func NewModelLockerPlaybooksList(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooksList {
 	return &ModelLockerPlaybooksList{
-		theme:       NewIceTheme(),
+		theme:       styles.NewIceTheme(),
 		globalState: state,
 		playbookSvc: playbookSvc,
 		keys:        newLockerPlaybooksListKeyMap(),

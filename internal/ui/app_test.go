@@ -10,6 +10,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 func setupServices(t *testing.T) (*teams.Service, *playbooks.Service, *games.Service) {
@@ -35,7 +36,7 @@ func TestTheme(t *testing.T) {
 
 	err := group.
 		Test("NewIceTheme should return a theme with correct colors", func(t *testing.T) {
-			theme := NewIceTheme()
+			theme := styles.NewIceTheme()
 			// We can't easily check the color values from the Style object in Lipgloss v2
 			// without deep inspection, but we can check if they are not empty.
 			odize.AssertTrue(t, theme.Logo.GetForeground() != nil)

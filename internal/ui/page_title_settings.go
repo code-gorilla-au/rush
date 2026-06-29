@@ -1,11 +1,14 @@
 package ui
 
-import tea "charm.land/bubbletea/v2"
+import (
+	tea "charm.land/bubbletea/v2"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+)
 
 type ModelTitleSettings struct {
 	width       int
 	height      int
-	theme       IceTheme
+	theme       styles.IceTheme
 	globalState *GlobalState
 }
 

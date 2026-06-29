@@ -1,4 +1,4 @@
-package ui
+package styles
 
 import "charm.land/lipgloss/v2"
 

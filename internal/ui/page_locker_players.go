@@ -3,6 +3,7 @@ package ui
 import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -53,7 +54,7 @@ func newLockerPlayersKeyMap() lockerPlayersKeyMap {
 type ModelLockerPlayers struct {
 	width       int
 	height      int
-	theme       IceTheme
+	theme       styles.IceTheme
 	globalState *GlobalState
 	teamsSvc    *teams.Service
 	keys        lockerPlayersKeyMap
@@ -64,7 +65,7 @@ type ModelLockerPlayers struct {
 func NewModelLockerPlayers(state *GlobalState, teamsSvc *teams.Service) *ModelLockerPlayers {
 	keys := newLockerPlayersKeyMap()
 	return &ModelLockerPlayers{
-		theme:       NewIceTheme(),
+		theme:       styles.NewIceTheme(),
 		globalState: state,
 		teamsSvc:    teamsSvc,
 		keys:        keys,

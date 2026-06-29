@@ -8,12 +8,13 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type PageGameCompleteModel struct {
 	width       int
 	height      int
-	theme       IceTheme
+	theme       styles.IceTheme
 	globalState *GlobalState
 	teamsSvc    *teams.Service
 	gameSvc     *games.Service
@@ -26,7 +27,7 @@ type PageGameCompleteModel struct {
 
 func NewPageGameComplete(state *GlobalState, teamsSvc *teams.Service, gameSvc *games.Service) *PageGameCompleteModel {
 	return &PageGameCompleteModel{
-		theme:       NewIceTheme(),
+		theme:       styles.NewIceTheme(),
 		globalState: state,
 		teamsSvc:    teamsSvc,
 		gameSvc:     gameSvc,

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -38,7 +39,7 @@ func newTitleKeyMap() titleKeyMap {
 type ModelTitle struct {
 	width       int
 	height      int
-	theme       IceTheme
+	theme       styles.IceTheme
 	globalState *GlobalState
 	keys        titleKeyMap
 	footer      components.Footer

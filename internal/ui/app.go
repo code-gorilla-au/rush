@@ -7,6 +7,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type MsgStateUpdated struct {
@@ -50,7 +51,7 @@ type RootModel struct {
 	ctx                       context.Context
 	width                     int
 	height                    int
-	theme                     IceTheme
+	theme                     styles.IceTheme
 	currentPage               Page
 	pageTitle                 tea.Model
 	pageCreateCoach           tea.Model
@@ -82,7 +83,7 @@ func New(deps Dependencies) *RootModel {
 
 	return &RootModel{
 		ctx:                       context.Background(),
-		theme:                     NewIceTheme(),
+		theme:                     styles.NewIceTheme(),
 		currentPage:               PageTitle,
 		pageTitle:                 NewModelTitle(state),
 		pageCreateCoach:           NewModelCreateCoach(state, deps.TeamsSvc),

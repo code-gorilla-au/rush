@@ -7,6 +7,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -59,7 +60,7 @@ const (
 type ModelNewBattleSelection struct {
 	width            int
 	height           int
-	theme            IceTheme
+	theme            styles.IceTheme
 	globalState      *GlobalState
 	teamsSvc         *teams.Service
 	playbookSvc      *playbooks.Service
@@ -81,7 +82,7 @@ func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Servic
 		teamsSvc:     teamsSvc,
 		playbookSvc:  playbookSvc,
 		gameSvc:      gameSvc,
-		theme:        NewIceTheme(),
+		theme:        styles.NewIceTheme(),
 		keys:         keys,
 		footer:       components.NewFooter(keys),
 		playbookList: components.NewPlaybookList(nil),

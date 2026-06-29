@@ -7,6 +7,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type createCoachKeyMap struct {
@@ -64,7 +65,7 @@ func newCreateCoachKeyMap() createCoachKeyMap {
 type ModelCreateCoach struct {
 	width       int
 	height      int
-	theme       IceTheme
+	theme       styles.IceTheme
 	globalState *GlobalState
 	teamsSvc    *teams.Service
 
@@ -95,7 +96,7 @@ func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service) *ModelCrea
 		teamsSvc:    teamsSvc,
 		coachInput:  c,
 		teamInput:   t,
-		theme:       NewIceTheme(),
+		theme:       styles.NewIceTheme(),
 		keys:        keys,
 		footer:      components.NewFooter(keys),
 	}

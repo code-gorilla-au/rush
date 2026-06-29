@@ -27,34 +27,38 @@ func (r *Round) ResolveLanes(rollFn RollFn) Result {
 }
 
 func (r *Round) calculateWinner(result []Result) Result {
-	teamA := 0
-	teamAPlayers := 0
 
-	teamB := 0
+	teamAPlayers := 0
 	teamBPlayers := 0
 
 	for _, laneResult := range result {
-		if laneResult.TeamA {
-			teamA++
+
+		switch laneResult.Outcome {
+		case ResultTeamA:
 			teamAPlayers += laneResult.RemainingPlayers
-		} else {
-			teamB++
+		case ResultTeamB:
 			teamBPlayers += laneResult.RemainingPlayers
 		}
+
 	}
 
 	if teamAPlayers > teamBPlayers {
 		return Result{
-			TeamA:            true,
-			TeamB:            false,
+			Outcome:          ResultTeamA,
 			RemainingPlayers: teamAPlayers,
 		}
 	}
 
+	if teamAPlayers < teamBPlayers {
+		return Result{
+			Outcome:          ResultTeamB,
+			RemainingPlayers: teamBPlayers,
+		}
+	}
+
 	return Result{
-		TeamA:            false,
-		TeamB:            true,
-		RemainingPlayers: teamBPlayers,
+		Outcome:          ResultDraw,
+		RemainingPlayers: 0,
 	}
 }
 
@@ -85,15 +89,13 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {
 
 	if r.TeamA.LaneHasPlayers(lane) {
 		return Result{
-			TeamA:            true,
-			TeamB:            false,
+			Outcome:          ResultTeamA,
 			RemainingPlayers: r.TeamA.LaneCount(lane),
 		}
 	}
 
 	return Result{
-		TeamA:            false,
-		TeamB:            true,
+		Outcome:          ResultTeamB,
 		RemainingPlayers: r.TeamB.LaneCount(lane),
 	}
 

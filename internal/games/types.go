@@ -19,6 +19,14 @@ const (
 	StatusComplete GameStatus = "complete"
 )
 
+type ResultOutcome string
+
+const (
+	ResultDraw  ResultOutcome = "draw"
+	ResultTeamA ResultOutcome = "team_a"
+	ResultTeamB ResultOutcome = "team_b"
+)
+
 type Game struct {
 	id           int64
 	name         string
@@ -58,8 +66,7 @@ type LanesConfig struct {
 }
 
 type Result struct {
-	TeamA            bool
-	TeamB            bool
+	Outcome          ResultOutcome
 	RemainingPlayers int
 }
 

@@ -97,6 +97,11 @@ func (l *AITeamList) Len() int {
 	return len(l.list.Items())
 }
 
+func (l *AITeamList) Reset() {
+	l.list.Select(0)
+	l.list.FilterInput.Reset()
+}
+
 func (l *AITeamList) IsFiltering() bool {
 	return l.list.FilterState() == list.Filtering
 }

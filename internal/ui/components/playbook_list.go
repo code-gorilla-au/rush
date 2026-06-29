@@ -97,6 +97,11 @@ func (l *PlaybookList) Len() int {
 	return len(l.list.Items())
 }
 
+func (l *PlaybookList) Reset() {
+	l.list.Select(0)
+	l.list.FilterInput.Reset()
+}
+
 func (l *PlaybookList) IsFiltering() bool {
 	return l.list.FilterState() == list.Filtering
 }

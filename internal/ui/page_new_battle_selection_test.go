@@ -98,6 +98,26 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		}
 	})
 
+	group.Test("should reset state on Init", func(t *testing.T) {
+		state := &GlobalState{
+			Team: &teams.Team{ID: 1, Name: "My Team"},
+		}
+		m := NewModelNewBattleSelection(state, nil, nil, nil)
+
+		// 1. Set some state
+		m.state = stateConfirming
+		m.selectedPlaybook = &playbooks.Playbook{ID: 1, Name: "Playbook 1"}
+		m.selectedAITeam = &teams.AITeam{Team: teams.Team{ID: 2, Name: "Team A"}}
+
+		// 2. Call Init
+		m.Init()
+
+		// 3. Verify it's reset
+		odize.AssertEqual(t, stateSelectingPlaybook, m.state)
+		odize.AssertTrue(t, m.selectedPlaybook == nil)
+		odize.AssertTrue(t, m.selectedAITeam == nil)
+	})
+
 	err := group.Run()
 	odize.AssertNoError(t, err)
 }

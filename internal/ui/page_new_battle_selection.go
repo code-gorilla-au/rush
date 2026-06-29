@@ -90,6 +90,7 @@ func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Servic
 }
 
 func (m *ModelNewBattleSelection) Init() tea.Cmd {
+	m.reset()
 	return m.loadData
 }
 
@@ -211,10 +212,21 @@ func (m *ModelNewBattleSelection) createGame() tea.Msg {
 		return err
 	}
 
+	m.reset()
+
 	return MsgSwitchPage{
 		NewPage: PageGame,
 		GameID:  game.ID(),
 	}
+}
+
+func (m *ModelNewBattleSelection) reset() {
+	m.state = stateSelectingPlaybook
+	m.selectedPlaybook = nil
+	m.selectedAITeam = nil
+	m.err = nil
+	m.playbookList.Reset()
+	m.aiTeamList.Reset()
 }
 
 func (m *ModelNewBattleSelection) View() tea.View {

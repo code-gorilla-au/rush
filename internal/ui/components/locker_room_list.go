@@ -44,8 +44,10 @@ func NewLockerRoomList(theme styles.IceTheme) LockerRoomList {
 	}
 }
 
-func (l *LockerRoomList) Update(msg tea.Msg) {
-	l.List.Update(msg)
+func (l *LockerRoomList) Update(msg tea.Msg) (LockerRoomList, tea.Cmd) {
+	var cmd tea.Cmd
+	l.List, cmd = l.List.Update(msg)
+	return *l, cmd
 }
 
 func (l *LockerRoomList) View(theme styles.IceTheme) string {

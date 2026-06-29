@@ -1,7 +1,6 @@
 package components
 
 import (
-	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
@@ -48,19 +47,15 @@ func NewTitleMenu(hasCoach bool) TitleMenu {
 	}
 }
 
-func (m *TitleMenu) Update(msg tea.Msg) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down", "j":
-			if m.cursor < len(m.items)-1 {
-				m.cursor++
-			}
-		}
+func (m *TitleMenu) MoveUp() {
+	if m.cursor > 0 {
+		m.cursor--
+	}
+}
+
+func (m *TitleMenu) MoveDown() {
+	if m.cursor < len(m.items)-1 {
+		m.cursor++
 	}
 }
 

@@ -13,22 +13,32 @@ import (
 
 type titleKeyMap struct {
 	components.CommonKeys
+	Up    key.Binding
+	Down  key.Binding
 	Enter key.Binding
 }
 
 func (k titleKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Enter, k.Quit}
+	return []key.Binding{k.Up, k.Down, k.Enter, k.Quit}
 }
 
 func (k titleKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Enter, k.Quit},
+		{k.Up, k.Down, k.Enter, k.Quit},
 	}
 }
 
 func newTitleKeyMap() titleKeyMap {
 	return titleKeyMap{
 		CommonKeys: components.NewCommonKeys(),
+		Up: key.NewBinding(
+			key.WithKeys("up", "k"),
+			key.WithHelp("↑/k", "up"),
+		),
+		Down: key.NewBinding(
+			key.WithKeys("down", "j"),
+			key.WithHelp("↓/j", "down"),
+		),
 		Enter: key.NewBinding(
 			key.WithKeys("enter"),
 			key.WithHelp("enter", "select"),
@@ -71,6 +81,10 @@ func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(vMsg, m.keys.Quit):
 			return m, tea.Quit
+		case key.Matches(vMsg, m.keys.Up):
+			m.menu.MoveUp()
+		case key.Matches(vMsg, m.keys.Down):
+			m.menu.MoveDown()
 		case key.Matches(vMsg, m.keys.Enter):
 			selected := m.menu.SelectedItem()
 			switch selected {
@@ -96,7 +110,6 @@ func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
-		m.menu.Update(vMsg)
 	case tea.WindowSizeMsg:
 		m.width = vMsg.Width
 		m.height = vMsg.Height

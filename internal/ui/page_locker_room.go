@@ -65,7 +65,7 @@ func (m *ModelLockerRoom) Init() tea.Cmd {
 }
 
 func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m.list.Update(msg)
+	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case MsgStateUpdated:
@@ -94,10 +94,15 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.list.SetSize(40, 20)
 		m.footer.Update(msg)
 	}
 
-	return m, nil
+	var listCmd tea.Cmd
+	m.list, listCmd = m.list.Update(msg)
+	cmds = append(cmds, listCmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m *ModelLockerRoom) View() tea.View {

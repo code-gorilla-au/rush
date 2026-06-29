@@ -114,7 +114,7 @@ func (m *RootModel) Init() tea.Cmd {
 
 		team, err := m.teamsSvc.GetTeamByCoachID(m.ctx, coach.ID)
 		if err != nil {
-			return MsgStateUpdated{Coach: nil}
+			return MsgStateUpdated{Coach: &coach, Team: nil}
 		}
 
 		return MsgStateUpdated{Coach: &coach, Team: &team}

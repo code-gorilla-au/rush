@@ -4,7 +4,7 @@ import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 // Footer is a reusable component for displaying help information.
@@ -30,8 +30,8 @@ func (f *Footer) Update(msg tea.Msg) {
 }
 
 // View renders the footer component.
-func (f Footer) View(style lipgloss.Style) string {
-	return style.Render(f.Help.View(f.KeyMap))
+func (f Footer) View(theme styles.IceTheme) string {
+	return theme.Footer.Render(f.Help.View(f.KeyMap))
 }
 
 // CommonKeys defines keys that are shared across many pages.

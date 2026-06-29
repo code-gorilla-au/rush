@@ -10,6 +10,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 	_ "modernc.org/sqlite"
 )
 
@@ -115,7 +116,8 @@ func TestPageGameCompleteModel(t *testing.T) {
 			_, err = gameSvc.CompleteGame(ctx, game)
 			odize.AssertNoError(t, err)
 
-			m := NewPageGameComplete(state, teamsSvc, gameSvc)
+			theme := styles.NewIceTheme()
+			m := NewPageGameComplete(state, teamsSvc, gameSvc, theme)
 			m.SetGameID(game.ID())
 
 			// Execute Init
@@ -129,7 +131,8 @@ func TestPageGameCompleteModel(t *testing.T) {
 			odize.AssertFalse(t, winnerMsg.IsDraw)
 		}).
 		Test("should handle enter key and switch to title page", func(t *testing.T) {
-			m := NewPageGameComplete(state, teamsSvc, gameSvc)
+			theme := styles.NewIceTheme()
+			m := NewPageGameComplete(state, teamsSvc, gameSvc, theme)
 			_, cmd := m.Update(tea.KeyPressMsg{
 				Text: "enter",
 			})

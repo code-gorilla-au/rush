@@ -6,6 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 func TestModelTitle(t *testing.T) {
@@ -13,7 +14,8 @@ func TestModelTitle(t *testing.T) {
 
 	err := group.
 		Test("should route to create coach when coach is nil and enter is pressed", func(t *testing.T) {
-			m := NewModelTitle(&GlobalState{Coach: nil})
+			theme := styles.NewIceTheme()
+			m := NewModelTitle(&GlobalState{Coach: nil}, theme)
 			m.width = 100
 			m.height = 50
 
@@ -29,7 +31,8 @@ func TestModelTitle(t *testing.T) {
 			}
 		}).
 		Test("should route to locker room when coach is not nil and enter is pressed", func(t *testing.T) {
-			m := NewModelTitle(&GlobalState{Coach: &teams.Coach{Name: "Coach Carter"}})
+			theme := styles.NewIceTheme()
+			m := NewModelTitle(&GlobalState{Coach: &teams.Coach{Name: "Coach Carter"}}, theme)
 			m.width = 100
 			m.height = 50
 

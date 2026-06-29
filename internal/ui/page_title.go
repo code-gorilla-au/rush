@@ -46,13 +46,14 @@ type ModelTitle struct {
 	menu        components.TitleMenu
 }
 
-func NewModelTitle(globalState *GlobalState) *ModelTitle {
+func NewModelTitle(globalState *GlobalState, theme styles.IceTheme) *ModelTitle {
 	keys := newTitleKeyMap()
 	return &ModelTitle{
 		globalState: globalState,
 		keys:        keys,
 		footer:      components.NewFooter(keys),
 		menu:        components.NewTitleMenu(globalState.Coach != nil),
+		theme:       theme,
 	}
 }
 
@@ -120,7 +121,7 @@ func (m *ModelTitle) View() tea.View {
 
 	styledLogo := m.theme.Logo.Render(strings.Trim(logo, "\n"))
 
-	navigation := m.menu.View(m.theme.Base, m.theme.Hotkey)
+	navigation := m.menu.View(m.theme)
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
@@ -128,7 +129,7 @@ func (m *ModelTitle) View() tea.View {
 		"",
 		navigation,
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

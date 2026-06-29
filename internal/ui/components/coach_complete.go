@@ -6,6 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 // CoachWinnerHuman component displays the human coach winner details.
@@ -23,17 +24,15 @@ func NewCoachWinnerHuman(team *teams.Team, coach *teams.Coach) CoachWinnerHuman 
 }
 
 // View renders the CoachWinnerHuman component.
-func (c CoachWinnerHuman) View(coachStyle lipgloss.Style) string {
+func (c CoachWinnerHuman) View(theme styles.IceTheme) string {
 	if c.Team == nil || c.Coach == nil {
 		return ""
 	}
 
-	winnerHeader := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFFFFF")).
-		Bold(true).
+	winnerHeader := theme.SecondaryHeader.
 		Render(fmt.Sprintf("Winner: %s", c.Team.Name))
 
-	coachInfo := coachStyle.Render(fmt.Sprintf("%s (Human Coach)", c.Coach.Name))
+	coachInfo := theme.CoachName.Render(fmt.Sprintf("%s (Human Coach)", c.Coach.Name))
 
 	players := make([]string, len(c.Team.Players))
 	for i, p := range c.Team.Players {
@@ -66,17 +65,15 @@ func NewCoachWinnerAI(team *teams.Team, coach *teams.Coach) CoachWinnerAI {
 }
 
 // View renders the CoachWinnerAI component.
-func (c CoachWinnerAI) View(coachStyle lipgloss.Style) string {
+func (c CoachWinnerAI) View(theme styles.IceTheme) string {
 	if c.Team == nil || c.Coach == nil {
 		return ""
 	}
 
-	winnerHeader := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFFFFF")).
-		Bold(true).
+	winnerHeader := theme.SecondaryHeader.
 		Render(fmt.Sprintf("Winner: %s", c.Team.Name))
 
-	coachInfo := coachStyle.Render(fmt.Sprintf("%s (AI Coach)", c.Coach.Name))
+	coachInfo := theme.CoachName.Render(fmt.Sprintf("%s (AI Coach)", c.Coach.Name))
 
 	players := make([]string, len(c.Team.Players))
 	for i, p := range c.Team.Players {

@@ -6,6 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 func TestModelLockerRoom_Selection(t *testing.T) {
@@ -13,7 +14,8 @@ func TestModelLockerRoom_Selection(t *testing.T) {
 
 	group.Test("should route to locker players when players item is selected", func(t *testing.T) {
 		state := &GlobalState{}
-		m := NewModelLockerRoom(state)
+		theme := styles.NewIceTheme()
+		m := NewModelLockerRoom(state, theme)
 
 		// Ensure ItemPlayers is selected (it is by default)
 		odize.AssertEqual(t, components.ItemPlayers, m.list.SelectedItem())
@@ -33,7 +35,8 @@ func TestModelLockerRoom_Selection(t *testing.T) {
 
 	group.Test("should route to locker playbooks when playbooks item is selected", func(t *testing.T) {
 		state := &GlobalState{}
-		m := NewModelLockerRoom(state)
+		theme := styles.NewIceTheme()
+		m := NewModelLockerRoom(state, theme)
 
 		// Select Playbooks (it's the second item)
 		m.Update(tea.KeyPressMsg{Text: "down"})

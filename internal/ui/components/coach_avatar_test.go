@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 func TestCoachAvatar(t *testing.T) {
@@ -14,8 +14,7 @@ func TestCoachAvatar(t *testing.T) {
 
 	coach := &teams.Coach{Name: "Ted Lasso"}
 	team := &teams.Team{Name: "AFC Richmond"}
-	teamStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#0000FF"))
-	coachStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#CCCCCC"))
+	theme := styles.NewIceTheme()
 
 	err := group.
 		Test("NewCoachAvatar should initialize with given coach and team", func(t *testing.T) {
@@ -25,17 +24,17 @@ func TestCoachAvatar(t *testing.T) {
 		}).
 		Test("View should render team and coach names when both are present", func(t *testing.T) {
 			avatar := NewCoachAvatar(coach, team)
-			rendered := avatar.View(teamStyle, coachStyle)
+			rendered := avatar.View(theme)
 
 			odize.AssertTrue(t, strings.Contains(rendered, "AFC Richmond"))
 			odize.AssertTrue(t, strings.Contains(rendered, "Coach: Ted Lasso"))
 		}).
 		Test("View should return empty string if coach or team is nil", func(t *testing.T) {
 			avatarNoCoach := NewCoachAvatar(nil, team)
-			odize.AssertEqual(t, "", avatarNoCoach.View(teamStyle, coachStyle))
+			odize.AssertEqual(t, "", avatarNoCoach.View(theme))
 
 			avatarNoTeam := NewCoachAvatar(coach, nil)
-			odize.AssertEqual(t, "", avatarNoTeam.View(teamStyle, coachStyle))
+			odize.AssertEqual(t, "", avatarNoTeam.View(theme))
 		}).
 		Run()
 

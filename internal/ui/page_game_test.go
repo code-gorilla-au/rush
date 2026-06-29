@@ -10,6 +10,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/database"
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type pageGameMockStore struct {
@@ -51,7 +52,8 @@ func TestPageGameModel(t *testing.T) {
 	gameSvc := games.NewService(store)
 
 	group.Test("should handle MsgGameLoaded and initialize gameComp", func(t *testing.T) {
-		m := NewModelGame(state, gameSvc)
+		theme := styles.NewIceTheme()
+		m := NewModelGame(state, gameSvc, theme)
 		m.SetGameID(1)
 
 		game, _ := gameSvc.GetGame(context.Background(), 1)
@@ -66,7 +68,8 @@ func TestPageGameModel(t *testing.T) {
 	})
 
 	group.Test("should persist game on MsgResolveRound", func(t *testing.T) {
-		m := NewModelGame(state, gameSvc)
+		theme := styles.NewIceTheme()
+		m := NewModelGame(state, gameSvc, theme)
 		m.SetGameID(1)
 		game, _ := gameSvc.GetGame(context.Background(), 1)
 		m.Update(MsgGameLoaded{Game: game})
@@ -92,7 +95,8 @@ func TestPageGameModel(t *testing.T) {
 	})
 
 	group.Test("should handle MsgNextRound and reset gameComp", func(t *testing.T) {
-		m := NewModelGame(state, gameSvc)
+		theme := styles.NewIceTheme()
+		m := NewModelGame(state, gameSvc, theme)
 		m.SetGameID(1)
 		game, _ := gameSvc.GetGame(context.Background(), 1)
 		m.Update(MsgGameLoaded{Game: game})

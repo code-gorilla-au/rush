@@ -3,8 +3,8 @@ package components
 import (
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type PlayerItem struct {
@@ -84,7 +84,7 @@ func (l *PlayerList) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (l *PlayerList) View(itemStyle lipgloss.Style, selectedStyle lipgloss.Style) string {
+func (l *PlayerList) View(theme styles.IceTheme) string {
 	var s string
 	for i, item := range l.Items {
 		var content string
@@ -95,9 +95,9 @@ func (l *PlayerList) View(itemStyle lipgloss.Style, selectedStyle lipgloss.Style
 		}
 
 		if i == l.cursor {
-			s += selectedStyle.Render("> " + content)
+			s += theme.ListSelected.Render("> " + content)
 		} else {
-			s += itemStyle.Render("  " + content)
+			s += theme.Base.Render("  " + content)
 		}
 		if i < len(l.Items)-1 {
 			s += "\n"

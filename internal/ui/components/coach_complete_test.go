@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 func TestCoachWinnerComponents(t *testing.T) {
@@ -30,12 +30,12 @@ func TestCoachWinnerComponents(t *testing.T) {
 		IsHuman: false,
 	}
 
-	coachStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#555555"))
+	theme := styles.NewIceTheme()
 
 	err := group.
 		Test("CoachWinnerHuman renders correctly", func(t *testing.T) {
 			c := NewCoachWinnerHuman(team, coachHuman)
-			view := c.View(coachStyle)
+			view := c.View(theme)
 
 			odize.AssertTrue(t, contains(view, "Winner: Test Team"))
 			odize.AssertTrue(t, contains(view, "Human Coach (Human Coach)"))
@@ -45,7 +45,7 @@ func TestCoachWinnerComponents(t *testing.T) {
 		}).
 		Test("CoachWinnerAI renders correctly", func(t *testing.T) {
 			c := NewCoachWinnerAI(team, coachAI)
-			view := c.View(coachStyle)
+			view := c.View(theme)
 
 			odize.AssertTrue(t, contains(view, "Winner: Test Team"))
 			odize.AssertTrue(t, contains(view, "AI Coach (AI Coach)"))

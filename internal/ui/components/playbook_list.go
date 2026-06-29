@@ -3,8 +3,8 @@ package components
 import (
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type PlaybookItem struct {
@@ -20,21 +20,21 @@ type PlaybookList struct {
 	active bool
 }
 
-func NewPlaybookList(items []playbooks.Playbook) PlaybookList {
+func NewPlaybookList(items []playbooks.Playbook, theme styles.IceTheme) PlaybookList {
 	listItems := make([]list.Item, len(items))
 	for i, item := range items {
 		listItems[i] = PlaybookItem{playbook: item}
 	}
 
 	delegate := list.NewDefaultDelegate()
-	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("#A5F2F3")).BorderForeground(lipgloss.Color("#A5F2F3"))
-	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#87CEEB")).BorderForeground(lipgloss.Color("#A5F2F3"))
+	delegate.Styles.SelectedTitle = theme.SelectedTitle
+	delegate.Styles.SelectedDesc = theme.SelectedDesc
 
 	l := list.New(listItems, delegate, 0, 0)
 	l.Title = "Playbooks"
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
-	l.Styles.Title = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color("#A5F2F3")).Bold(true)
+	l.Styles.Title = theme.Title
 
 	return PlaybookList{
 		list:   l,
@@ -48,22 +48,11 @@ func (l *PlaybookList) Update(msg tea.Msg) (PlaybookList, tea.Cmd) {
 	return *l, cmd
 }
 
-func (l *PlaybookList) View() string {
-	activeStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#A5F2F3")).
-		Padding(1)
-
-	inactiveStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#333333")).
-		Padding(1).
-		Foreground(lipgloss.Color("#666666"))
-
+func (l *PlaybookList) View(theme styles.IceTheme) string {
 	if l.active {
-		return activeStyle.Render(l.list.View())
+		return theme.ActiveBorder.Render(l.list.View())
 	}
-	return inactiveStyle.Render(l.list.View())
+	return theme.InactiveBorder.Render(l.list.View())
 }
 
 func (l *PlaybookList) SetActive(active bool) {

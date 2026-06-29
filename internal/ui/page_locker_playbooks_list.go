@@ -63,9 +63,9 @@ type ModelLockerPlaybooksList struct {
 	err             error
 }
 
-func NewModelLockerPlaybooksList(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooksList {
+func NewModelLockerPlaybooksList(state *GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksList {
 	return &ModelLockerPlaybooksList{
-		theme:       styles.NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		playbookSvc: playbookSvc,
 		keys:        newLockerPlaybooksListKeyMap(),
@@ -101,7 +101,7 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.globalState.Team = msg.Team
 	case MsgPlaybooksLoaded:
 		m.playbooksLoaded = true
-		m.playbookList = components.NewPlaybookList(msg.Playbooks)
+		m.playbookList = components.NewPlaybookList(msg.Playbooks, m.theme)
 		m.playbookList.SetSize(m.width, m.height-10)
 	case MsgSwitchPage:
 		if msg.NewPage == PageLockerPlaybooksList {
@@ -205,7 +205,7 @@ func (m *ModelLockerPlaybooksList) View() tea.View {
 		if m.playbookList.Len() == 0 {
 			content = "No playbooks yet. Press 'n' to create one."
 		} else {
-			content = m.playbookList.View()
+			content = m.playbookList.View(m.theme)
 			if !m.playbookList.IsFiltering() {
 				content += "\n\nPress 'n' to create new playbook"
 			}
@@ -218,7 +218,7 @@ func (m *ModelLockerPlaybooksList) View() tea.View {
 		"",
 		content,
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

@@ -80,23 +80,24 @@ type Dependencies struct {
 // New returns a new UI model.
 func New(deps Dependencies) *RootModel {
 	state := &GlobalState{}
+	theme := styles.NewIceTheme()
 
 	return &RootModel{
 		ctx:                       context.Background(),
-		theme:                     styles.NewIceTheme(),
+		theme:                     theme,
 		currentPage:               PageTitle,
-		pageTitle:                 NewModelTitle(state),
-		pageCreateCoach:           NewModelCreateCoach(state, deps.TeamsSvc),
-		pageLockerRoom:            NewModelLockerRoom(state),
-		pageLockerPlayers:         NewModelLockerPlayers(state, deps.TeamsSvc),
-		pageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, deps.PlaybookSvc),
-		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.PlaybookSvc),
-		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.PlaybookSvc),
-		pageNewTournament:         NewModelNewTournament(state),
-		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc),
-		pageTitleSettings:         NewModelTitleSettings(state),
-		pageGame:                  NewModelGame(state, deps.GameSvc),
-		pageGameComplete:          NewPageGameComplete(state, deps.TeamsSvc, deps.GameSvc),
+		pageTitle:                 NewModelTitle(state, theme),
+		pageCreateCoach:           NewModelCreateCoach(state, deps.TeamsSvc, theme),
+		pageLockerRoom:            NewModelLockerRoom(state, theme),
+		pageLockerPlayers:         NewModelLockerPlayers(state, deps.TeamsSvc, theme),
+		pageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, deps.PlaybookSvc, theme),
+		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.PlaybookSvc, theme),
+		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.PlaybookSvc, theme),
+		pageNewTournament:         NewModelNewTournament(state, theme),
+		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
+		pageTitleSettings:         NewModelTitleSettings(state, theme),
+		pageGame:                  NewModelGame(state, deps.GameSvc, theme),
+		pageGameComplete:          NewPageGameComplete(state, deps.TeamsSvc, deps.GameSvc, theme),
 		globalState:               state,
 		teamsSvc:                  deps.TeamsSvc,
 		playbookSvc:               deps.PlaybookSvc,

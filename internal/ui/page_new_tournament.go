@@ -12,9 +12,10 @@ type ModelNewTournament struct {
 	globalState *GlobalState
 }
 
-func NewModelNewTournament(globalState *GlobalState) *ModelNewTournament {
+func NewModelNewTournament(globalState *GlobalState, theme styles.IceTheme) *ModelNewTournament {
 	return &ModelNewTournament{
 		globalState: globalState,
+		theme:       theme,
 	}
 }
 

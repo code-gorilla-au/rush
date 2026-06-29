@@ -77,7 +77,7 @@ type ModelCreateCoach struct {
 	footer     components.Footer
 }
 
-func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service) *ModelCreateCoach {
+func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelCreateCoach {
 	c := textinput.New()
 	c.Placeholder = "Coach Name"
 	c.Focus()
@@ -96,7 +96,7 @@ func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service) *ModelCrea
 		teamsSvc:    teamsSvc,
 		coachInput:  c,
 		teamInput:   t,
-		theme:       styles.NewIceTheme(),
+		theme:       theme,
 		keys:        keys,
 		footer:      components.NewFooter(keys),
 	}
@@ -227,13 +227,13 @@ func (m *ModelCreateCoach) View() tea.View {
 		lipgloss.Left,
 		m.theme.Logo.Render("RUSH - NEW CAREER"),
 		"",
-		"Coach Details",
+		m.theme.SecondaryHeader.Render("Coach Details"),
 		m.coachInput.View(),
 		"",
-		"Team Details",
+		m.theme.SecondaryHeader.Render("Team Details"),
 		m.teamInput.View(),
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

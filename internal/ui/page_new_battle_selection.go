@@ -75,18 +75,18 @@ type ModelNewBattleSelection struct {
 	err              error
 }
 
-func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, gameSvc *games.Service) *ModelNewBattleSelection {
+func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, gameSvc *games.Service, theme styles.IceTheme) *ModelNewBattleSelection {
 	keys := newBattleSelectionKeyMap()
 	return &ModelNewBattleSelection{
 		globalState:  globalState,
 		teamsSvc:     teamsSvc,
 		playbookSvc:  playbookSvc,
 		gameSvc:      gameSvc,
-		theme:        styles.NewIceTheme(),
+		theme:        theme,
 		keys:         keys,
 		footer:       components.NewFooter(keys),
-		playbookList: components.NewPlaybookList(nil),
-		aiTeamList:   components.NewAITeamList(nil),
+		playbookList: components.NewPlaybookList(nil, theme),
+		aiTeamList:   components.NewAITeamList(nil, theme),
 	}
 }
 
@@ -260,11 +260,11 @@ func (m *ModelNewBattleSelection) View() tea.View {
 		lipgloss.Center, lipgloss.Center,
 		lipgloss.JoinVertical(lipgloss.Center,
 			m.theme.Logo.Render("NEW BATTLE"),
-			m.theme.Footer.Render(header),
+			m.theme.Muted.Render(header),
 			"",
 			content,
 			"",
-			m.footer.View(m.theme.Footer),
+			m.footer.View(m.theme),
 		),
 	)
 
@@ -278,9 +278,9 @@ func (m *ModelNewBattleSelection) View() tea.View {
 
 func (m *ModelNewBattleSelection) viewSelection() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top,
-		m.playbookList.View(),
+		m.playbookList.View(m.theme),
 		lipgloss.NewStyle().Width(2).Render(""),
-		m.aiTeamList.View(),
+		m.aiTeamList.View(m.theme),
 	)
 }
 

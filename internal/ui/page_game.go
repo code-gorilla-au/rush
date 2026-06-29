@@ -21,9 +21,9 @@ type PageGameModel struct {
 	gameComp    components.Game
 }
 
-func NewModelGame(state *GlobalState, gameSvc *games.Service) *PageGameModel {
+func NewModelGame(state *GlobalState, gameSvc *games.Service, theme styles.IceTheme) *PageGameModel {
 	return &PageGameModel{
-		theme:       styles.NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		gameSvc:     gameSvc,
 	}
@@ -118,7 +118,7 @@ func (m *PageGameModel) View() tea.View {
 	if m.game == nil {
 		mainContent = "Loading Game..."
 	} else {
-		mainContent = m.gameComp.View()
+		mainContent = m.gameComp.View(m.theme)
 	}
 
 	centeredContent := lipgloss.Place(

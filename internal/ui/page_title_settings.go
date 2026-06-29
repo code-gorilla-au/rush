@@ -12,9 +12,10 @@ type ModelTitleSettings struct {
 	globalState *GlobalState
 }
 
-func NewModelTitleSettings(globalState *GlobalState) *ModelTitleSettings {
+func NewModelTitleSettings(globalState *GlobalState, theme styles.IceTheme) *ModelTitleSettings {
 	return &ModelTitleSettings{
 		globalState: globalState,
+		theme:       theme,
 	}
 }
 

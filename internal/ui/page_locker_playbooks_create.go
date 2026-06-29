@@ -55,9 +55,9 @@ type ModelLockerPlaybooksCreate struct {
 	err          error
 }
 
-func NewModelLockerPlaybooksCreate(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooksCreate {
+func NewModelLockerPlaybooksCreate(state *GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksCreate {
 	return &ModelLockerPlaybooksCreate{
-		theme:        styles.NewIceTheme(),
+		theme:        theme,
 		globalState:  state,
 		playbookSvc:  playbookSvc,
 		keys:         newLockerPlaybooksCreateKeyMap(),
@@ -162,7 +162,7 @@ func (m *ModelLockerPlaybooksCreate) View() tea.View {
 		"",
 		content,
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

@@ -2,7 +2,7 @@ package components
 
 import (
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type TitleItem int
@@ -64,13 +64,13 @@ func (m *TitleMenu) Update(msg tea.Msg) {
 	}
 }
 
-func (m *TitleMenu) View(itemStyle lipgloss.Style, selectedStyle lipgloss.Style) string {
+func (m *TitleMenu) View(theme styles.IceTheme) string {
 	var s string
 	for i, item := range m.items {
 		if i == m.cursor {
-			s += selectedStyle.Render("> " + item.String())
+			s += theme.ListSelected.Render("> " + item.String())
 		} else {
-			s += itemStyle.Render("  " + item.String())
+			s += theme.Base.Render("  " + item.String())
 		}
 		if i < len(m.items)-1 {
 			s += "\n"

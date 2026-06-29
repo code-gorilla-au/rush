@@ -6,6 +6,7 @@ import (
 
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/games"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 func TestRound(t *testing.T) {
@@ -37,7 +38,8 @@ func TestRound(t *testing.T) {
 		}).
 		Test("View should render team names and players in side-by-side formation", func(t *testing.T) {
 			rComp := NewRound(round, "Team A", "Team B")
-			rendered := rComp.View()
+			theme := styles.NewIceTheme()
+			rendered := rComp.View(theme)
 
 			odize.AssertTrue(t, strings.Contains(rendered, "Team A"))
 			odize.AssertTrue(t, strings.Contains(rendered, "Team B"))

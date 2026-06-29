@@ -6,6 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/games"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type Round struct {
@@ -22,35 +23,29 @@ func NewRound(round games.Round, teamAName, teamBName string) Round {
 	}
 }
 
-func (r Round) View() string {
-	teamAStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#A5F2F3")).Bold(true).Width(10).Align(lipgloss.Right)
-	teamBStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF")).Bold(true).Width(10).Align(lipgloss.Left)
-	playerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#87CEEB"))
-	separatorStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#555555"))
-	laneLabelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#888888")).PaddingLeft(2)
-
+func (r Round) View(theme styles.IceTheme) string {
 	renderPlayers := func(count int, align lipgloss.Position) string {
 		dots := strings.TrimSpace(strings.Repeat("● ", count))
-		content := playerStyle.Render(dots)
+		content := theme.Player.Render(dots)
 		return lipgloss.NewStyle().Width(10).Align(align).Render(content)
 	}
 
 	header := lipgloss.JoinHorizontal(lipgloss.Top,
-		teamAStyle.Render(r.teamAName),
-		separatorStyle.Render(" | "),
-		teamBStyle.Render(r.teamBName),
+		theme.TeamA.Render(r.teamAName),
+		theme.Separator.Render(" | "),
+		theme.TeamB.Render(r.teamBName),
 	)
 
-	divider := separatorStyle.Render(strings.Repeat("-", 10) + "-|-" + strings.Repeat("-", 10))
+	divider := theme.Separator.Render(strings.Repeat("-", 10) + "-|-" + strings.Repeat("-", 10))
 
 	renderLane := func(laneNum int) string {
 		aPlayers := renderPlayers(len(r.round.TeamA.Lanes[laneNum-1]), lipgloss.Right)
 		bPlayers := renderPlayers(len(r.round.TeamB.Lanes[laneNum-1]), lipgloss.Left)
 		return lipgloss.JoinHorizontal(lipgloss.Top,
 			aPlayers,
-			separatorStyle.Render(" | "),
+			theme.Separator.Render(" | "),
 			bPlayers,
-			laneLabelStyle.Render(fmt.Sprintf("Lane %d", laneNum)),
+			theme.Label.Render(fmt.Sprintf("Lane %d", laneNum)),
 		)
 	}
 
@@ -63,9 +58,5 @@ func (r Round) View() string {
 		renderLane(3),
 	)
 
-	return lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#87CEEB")).
-		Padding(1).
-		Render(view)
+	return theme.RoundBorder.Render(view)
 }

@@ -5,8 +5,8 @@ import (
 
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type FormationItem struct {
@@ -37,7 +37,7 @@ type FormationListConfig struct {
 	ShowDescription bool
 }
 
-func NewFormationList(config FormationListConfig) FormationList {
+func NewFormationList(config FormationListConfig, theme styles.IceTheme) FormationList {
 	items := make([]list.Item, len(config.Items))
 	for i, f := range config.Items {
 		items[i] = FormationItem{
@@ -47,15 +47,14 @@ func NewFormationList(config FormationListConfig) FormationList {
 	}
 
 	delegate := list.NewDefaultDelegate()
-	// Match PlaybookList styling
-	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("#A5F2F3")).BorderForeground(lipgloss.Color("#A5F2F3"))
-	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#87CEEB")).BorderForeground(lipgloss.Color("#A5F2F3"))
+	delegate.Styles.SelectedTitle = theme.SelectedTitle
+	delegate.Styles.SelectedDesc = theme.SelectedDesc
 
 	l := list.New(items, delegate, 0, 0)
 	l.Title = config.Title
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(config.EnableFiltering)
-	l.Styles.Title = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color("#A5F2F3")).Bold(true)
+	l.Styles.Title = theme.Title
 
 	return FormationList{
 		list: l,
@@ -71,12 +70,11 @@ func (l *FormationList) Update(msg tea.Msg) (FormationList, tea.Cmd) {
 	return *l, cmd
 }
 
-func (l *FormationList) View() string {
-	style := lipgloss.NewStyle().Padding(1).Border(lipgloss.RoundedBorder())
+func (l *FormationList) View(theme styles.IceTheme) string {
 	if l.active {
-		style = style.BorderForeground(lipgloss.Color("#A5F2F3"))
+		return theme.ActiveBorder.Render(l.list.View())
 	}
-	return style.Render(l.list.View())
+	return theme.InactiveBorder.Render(l.list.View())
 }
 
 func (l *FormationList) SelectedItem() playbooks.Formation {

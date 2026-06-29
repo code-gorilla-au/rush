@@ -8,6 +8,7 @@ import (
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 func TestModelNewBattleSelection_Rendering(t *testing.T) {
@@ -17,8 +18,9 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		state := &GlobalState{
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
+		theme := styles.NewIceTheme()
 
-		m := NewModelNewBattleSelection(state, nil, nil, nil)
+		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
 		m.width = 100
 		m.height = 40
 		m.Update(tea.WindowSizeMsg{Width: 100, Height: 40})
@@ -49,7 +51,8 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		state := &GlobalState{
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
-		m := NewModelNewBattleSelection(state, nil, nil, nil)
+		theme := styles.NewIceTheme()
+		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
 		m.Update(tea.WindowSizeMsg{Width: 100, Height: 40})
 		m.Update(msgDataLoaded{
 			playbooks: []playbooks.Playbook{{ID: 1, Name: "Playbook 1"}},
@@ -84,7 +87,8 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 
 	group.Test("should handle back navigation to title", func(t *testing.T) {
 		state := &GlobalState{}
-		m := NewModelNewBattleSelection(state, nil, nil, nil)
+		theme := styles.NewIceTheme()
+		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
 
 		_, cmd := m.Update(tea.KeyPressMsg{Text: "esc"})
 
@@ -102,7 +106,8 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		state := &GlobalState{
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
-		m := NewModelNewBattleSelection(state, nil, nil, nil)
+		theme := styles.NewIceTheme()
+		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
 
 		// 1. Set some state
 		m.state = stateConfirming

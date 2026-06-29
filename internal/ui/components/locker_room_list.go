@@ -2,7 +2,7 @@ package components
 
 import (
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type LockerRoomItem int
@@ -52,13 +52,13 @@ func (l *LockerRoomList) Update(msg tea.Msg) {
 	}
 }
 
-func (l *LockerRoomList) View(itemStyle lipgloss.Style, selectedStyle lipgloss.Style) string {
+func (l *LockerRoomList) View(theme styles.IceTheme) string {
 	var s string
 	for i, item := range l.items {
 		if i == l.cursor {
-			s += selectedStyle.Render("> " + item.String())
+			s += theme.ListSelected.Render("> " + item.String())
 		} else {
-			s += itemStyle.Render("  " + item.String())
+			s += theme.Base.Render("  " + item.String())
 		}
 		if i < len(l.items)-1 {
 			s += "\n"

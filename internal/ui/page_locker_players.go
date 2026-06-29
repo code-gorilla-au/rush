@@ -62,10 +62,10 @@ type ModelLockerPlayers struct {
 	playerList  components.PlayerList
 }
 
-func NewModelLockerPlayers(state *GlobalState, teamsSvc *teams.Service) *ModelLockerPlayers {
+func NewModelLockerPlayers(state *GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelLockerPlayers {
 	keys := newLockerPlayersKeyMap()
 	return &ModelLockerPlayers{
-		theme:       styles.NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		teamsSvc:    teamsSvc,
 		keys:        keys,
@@ -138,7 +138,7 @@ func (m *ModelLockerPlayers) View() tea.View {
 
 	playersView := "No players found"
 	if len(m.playerList.Items) > 0 {
-		playersView = m.playerList.View(lipgloss.NewStyle(), m.theme.ListSelected)
+		playersView = m.playerList.View(m.theme)
 	}
 
 	content := lipgloss.JoinVertical(
@@ -147,7 +147,7 @@ func (m *ModelLockerPlayers) View() tea.View {
 		"",
 		playersView,
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

@@ -10,6 +10,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/database"
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type mockStore struct {
@@ -49,6 +50,7 @@ func TestGameComponent(t *testing.T) {
 	}
 
 	group.Test("should resolve round after tick", func(t *testing.T) {
+		theme := styles.NewIceTheme()
 		svc := games.NewService(&mockStore{})
 		game, err := svc.NewGame(context.Background(), games.NewGameParams{
 			TeamA: teamA,
@@ -60,7 +62,7 @@ func TestGameComponent(t *testing.T) {
 
 		// Initial state
 		odize.AssertFalse(t, gComp.resolved)
-		view := gComp.View()
+		view := gComp.View(theme)
 		odize.AssertTrue(t, strings.Contains(view, "ROUND 1"))
 		odize.AssertTrue(t, strings.Contains(view, "Resolving..."))
 
@@ -70,7 +72,7 @@ func TestGameComponent(t *testing.T) {
 		odize.AssertTrue(t, gComp.resolved)
 
 		// Resolved state
-		view = gComp.View()
+		view = gComp.View(theme)
 		odize.AssertTrue(t, strings.Contains(view, "WINNER: Team A"))
 		odize.AssertTrue(t, strings.Contains(view, "Press Enter for next round..."))
 

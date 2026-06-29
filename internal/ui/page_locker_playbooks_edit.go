@@ -64,9 +64,9 @@ type ModelLockerPlaybooksEdit struct {
 	err                   error
 }
 
-func NewModelLockerPlaybooksEdit(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooksEdit {
+func NewModelLockerPlaybooksEdit(state *GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksEdit {
 	return &ModelLockerPlaybooksEdit{
-		theme:       styles.NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		playbookSvc: playbookSvc,
 		keys:        newLockerPlaybooksEditKeyMap(),
@@ -76,13 +76,13 @@ func NewModelLockerPlaybooksEdit(state *GlobalState, playbookSvc *playbooks.Serv
 			Items:           playbooks.Formations(),
 			EnableFiltering: true,
 			ShowDescription: true,
-		}),
+		}, theme),
 		selectedFormationList: components.NewFormationList(components.FormationListConfig{
 			Title:           "Selected Formations (Max 10)",
 			Items:           []playbooks.Formation{},
 			EnableFiltering: false,
 			ShowDescription: false,
-		}),
+		}, theme),
 	}
 }
 
@@ -249,11 +249,11 @@ func (m *ModelLockerPlaybooksEdit) View() tea.View {
 
 		content = lipgloss.JoinHorizontal(
 			lipgloss.Top,
-			m.formationList.View(),
+			m.formationList.View(m.theme),
 			lipgloss.NewStyle().Width(2).Render(""),
-			m.selectedFormationList.View(),
+			m.selectedFormationList.View(m.theme),
 		)
-		content += "\n\n" + m.theme.Footer.Render(fmt.Sprintf("%d/10 formations • Tab: switch • Enter: add/remove • 's': save", len(m.newFormations)))
+		content += "\n\n" + m.theme.Muted.Render(fmt.Sprintf("%d/10 formations • Tab: switch • Enter: add/remove • 's': save", len(m.newFormations)))
 	}
 
 	mainContent := lipgloss.JoinVertical(
@@ -262,7 +262,7 @@ func (m *ModelLockerPlaybooksEdit) View() tea.View {
 		"",
 		content,
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

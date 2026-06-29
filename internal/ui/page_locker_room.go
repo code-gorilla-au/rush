@@ -49,13 +49,13 @@ type ModelLockerRoom struct {
 	list        components.LockerRoomList
 }
 
-func NewModelLockerRoom(globalState *GlobalState) *ModelLockerRoom {
+func NewModelLockerRoom(globalState *GlobalState, theme styles.IceTheme) *ModelLockerRoom {
 	keys := newLockerRoomKeyMap()
 	return &ModelLockerRoom{
 		globalState: globalState,
 		keys:        keys,
 		footer:      components.NewFooter(keys),
-		theme:       styles.NewIceTheme(),
+		theme:       theme,
 		list:        components.NewLockerRoomList(),
 	}
 }
@@ -108,9 +108,9 @@ func (m *ModelLockerRoom) View() tea.View {
 		lipgloss.Center,
 		m.theme.Logo.Render("LOCKER ROOM"),
 		"",
-		m.list.View(m.theme.Base, m.theme.ListSelected),
+		m.list.View(m.theme),
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

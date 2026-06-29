@@ -5,6 +5,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 // CoachAvatar component displays team name and coach name.
@@ -22,13 +23,13 @@ func NewCoachAvatar(coach *teams.Coach, team *teams.Team) CoachAvatar {
 }
 
 // View renders the CoachAvatar component.
-func (c CoachAvatar) View(teamStyle lipgloss.Style, coachStyle lipgloss.Style) string {
+func (c CoachAvatar) View(theme styles.IceTheme) string {
 	if c.Coach == nil || c.Team == nil {
 		return ""
 	}
 
-	teamName := teamStyle.Render(c.Team.Name)
-	coachName := coachStyle.Render(fmt.Sprintf("Coach: %s", c.Coach.Name))
+	teamName := theme.CoachTeam.Render(c.Team.Name)
+	coachName := theme.CoachName.Render(fmt.Sprintf("Coach: %s", c.Coach.Name))
 
 	return lipgloss.JoinVertical(lipgloss.Left, teamName, coachName)
 }

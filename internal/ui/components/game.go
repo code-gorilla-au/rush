@@ -8,6 +8,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/games"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 // Game component handles the UI for a single round of a game.
@@ -92,20 +93,15 @@ func (g *Game) handleRound() {
 }
 
 // View renders the Game component.
-func (g *Game) View() string {
-	roundView := g.roundComp.View()
+func (g *Game) View(theme styles.IceTheme) string {
+	roundView := g.roundComp.View(theme)
 
 	roundNum := g.game.CurrentRound()
 	if !g.resolved {
 		roundNum++
 	}
 
-	headerStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#A5F2F3")).
-		Bold(true).
-		MarginBottom(1)
-
-	roundInfo := headerStyle.Render(fmt.Sprintf("ROUND %d", roundNum))
+	roundInfo := theme.Header.Render(fmt.Sprintf("ROUND %d", roundNum))
 
 	var footer string
 	if g.resolved {
@@ -116,23 +112,16 @@ func (g *Game) View() string {
 			winner = "Draw"
 		}
 
-		winnerStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFD700")).
-			Bold(true).
-			MarginTop(1)
-
-		winnerInfo := winnerStyle.Render(fmt.Sprintf("WINNER: %s! (%d players remaining)", winner, g.result.RemainingPlayers))
-		prompt := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#888888")).
+		winnerInfo := theme.Winner.Render(fmt.Sprintf("WINNER: %s! (%d players remaining)", winner, g.result.RemainingPlayers))
+		prompt := theme.Muted.
 			MarginTop(1).
 			Render("Press Enter for next round...")
 
 		footer = lipgloss.JoinVertical(lipgloss.Center, winnerInfo, prompt)
 	} else {
-		footer = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#888888")).
+		footer = theme.Muted.
 			MarginTop(1).
-			Render("Resolving...")
+			Render("Dual in progress...")
 	}
 
 	content := lipgloss.JoinVertical(lipgloss.Center,

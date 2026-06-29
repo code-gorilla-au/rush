@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/odize"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 func TestFooter(t *testing.T) {
@@ -26,9 +26,9 @@ func TestFooter(t *testing.T) {
 		}).
 		Test("View should render help text", func(t *testing.T) {
 			footer := NewFooter(NewCommonKeys())
-			style := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF"))
+			theme := styles.NewIceTheme()
 
-			rendered := footer.View(style)
+			rendered := footer.View(theme)
 
 			odize.AssertTrue(t, len(rendered) > 0)
 			odize.AssertTrue(t, strings.Contains(rendered, "q"))

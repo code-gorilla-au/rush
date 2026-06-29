@@ -25,9 +25,9 @@ type PageGameCompleteModel struct {
 	err         error
 }
 
-func NewPageGameComplete(state *GlobalState, teamsSvc *teams.Service, gameSvc *games.Service) *PageGameCompleteModel {
+func NewPageGameComplete(state *GlobalState, teamsSvc *teams.Service, gameSvc *games.Service, theme styles.IceTheme) *PageGameCompleteModel {
 	return &PageGameCompleteModel{
-		theme:       styles.NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		teamsSvc:    teamsSvc,
 		gameSvc:     gameSvc,
@@ -132,23 +132,19 @@ func (m *PageGameCompleteModel) View() tea.View {
 }
 
 func (m *PageGameCompleteModel) renderMainContent(content string) string {
-	winMsg := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#A5F2F3")).
-		Bold(true).
+	winMsg := m.theme.Logo.
 		Padding(1, 0).
 		Render("🏆 GAME COMPLETE 🏆")
 
 	var mainContent string
 	if m.isDraw {
-		mainContent = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFFFF")).
-			Bold(true).
+		mainContent = m.theme.SecondaryHeader.
 			Render("It's a DRAW!")
 	} else {
 		if m.winnerCoach.IsHuman {
-			mainContent = components.NewCoachWinnerHuman(m.winnerTeam, m.winnerCoach).View(m.theme.CoachName)
+			mainContent = components.NewCoachWinnerHuman(m.winnerTeam, m.winnerCoach).View(m.theme)
 		} else {
-			mainContent = components.NewCoachWinnerAI(m.winnerTeam, m.winnerCoach).View(m.theme.CoachName)
+			mainContent = components.NewCoachWinnerAI(m.winnerTeam, m.winnerCoach).View(m.theme)
 		}
 	}
 

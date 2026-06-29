@@ -1,5 +1,5 @@
 -- name: GetCoach :one
-SELECT * FROM teams WHERE id = ?;
+SELECT * FROM coaches WHERE id = ?;
 
 -- name: GetDefaultCoach :one
 SELECT * FROM coaches WHERE is_default = true LIMIT 1;

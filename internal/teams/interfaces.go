@@ -15,6 +15,7 @@ type Store interface {
 }
 
 type CoachStore interface {
+	GetCoach(ctx context.Context, id int64) (database.Coach, error)
 	GetDefaultCoach(ctx context.Context) (database.Coach, error)
 	ClearDefaultCoach(ctx context.Context) error
 	CreateCoach(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error)
@@ -31,6 +32,7 @@ type PlayerStore interface {
 }
 
 type TeamStore interface {
+	GetTeam(ctx context.Context, id int64) (database.Team, error)
 	CreateTeam(ctx context.Context, arg database.CreateTeamParams) (database.Team, error)
 	GetTeamByCoachID(ctx context.Context, coachID sql.NullInt64) (database.Team, error)
 	DeleteTeam(ctx context.Context, id int64) error

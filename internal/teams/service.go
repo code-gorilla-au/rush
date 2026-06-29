@@ -100,6 +100,57 @@ func (s *Service) GetTeamByCoachID(ctx context.Context, id int64) (Team, error) 
 	return fromTeamModel(model, pModel), nil
 }
 
+func (s *Service) GetTeamByID(ctx context.Context, id int64) (Team, error) {
+	model, err := s.store.GetTeam(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Team{}, ErrTeamNotFound
+		}
+
+		return Team{}, fmt.Errorf("GetTeamByID: %w", err)
+	}
+
+	pModel, err := s.store.GetTeamMembers(ctx, sql.NullInt64{
+		Int64: model.ID,
+		Valid: true,
+	})
+	if err != nil {
+		return Team{}, fmt.Errorf("GetTeamByID team members: %w", err)
+	}
+
+	return fromTeamModel(model, pModel), nil
+}
+
+func (s *Service) GetCoachByID(ctx context.Context, id int64) (Coach, error) {
+	model, err := s.store.GetCoach(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Coach{}, ErrCoachNotFound
+		}
+
+		return Coach{}, fmt.Errorf("GetCoachByID: %w", err)
+	}
+
+	return fromCoachModel(model), nil
+}
+
+func (s *Service) getTeamPlayers(ctx context.Context, teamID int64) ([]Player, error) {
+	models, err := s.store.GetTeamMembers(ctx, sql.NullInt64{
+		Int64: teamID,
+		Valid: true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("getting team players: %w", err)
+	}
+
+	players := make([]Player, len(models))
+	for i, model := range models {
+		players[i] = fromPlayerModel(model)
+	}
+
+	return players, nil
+}
+
 func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
 	model, err := s.store.CreateTeam(ctx, database.CreateTeamParams{
 		Name: name,

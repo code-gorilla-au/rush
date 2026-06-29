@@ -160,17 +160,17 @@ func (q *Queries) GetAICoaches(ctx context.Context) ([]Coach, error) {
 }
 
 const getCoach = `-- name: GetCoach :one
-SELECT id, name, is_default, coach_id, created_at, updated_at FROM teams WHERE id = ?
+SELECT id, name, is_default, is_human, created_at, updated_at FROM coaches WHERE id = ?
 `
 
-func (q *Queries) GetCoach(ctx context.Context, id int64) (Team, error) {
+func (q *Queries) GetCoach(ctx context.Context, id int64) (Coach, error) {
 	row := q.db.QueryRowContext(ctx, getCoach, id)
-	var i Team
+	var i Coach
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.IsDefault,
-		&i.CoachID,
+		&i.IsHuman,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

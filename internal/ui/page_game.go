@@ -86,7 +86,10 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if err != nil {
 					return MsgGameError{Err: err}
 				}
-				return nil
+				return MsgSwitchPage{
+					NewPage: PageGameComplete,
+					GameID:  m.game.ID(),
+				}
 			})
 		}
 	default:

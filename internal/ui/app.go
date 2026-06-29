@@ -34,6 +34,7 @@ const (
 	PageNewBattleSelection
 	PageTitleSettings
 	PageGame
+	PageGameComplete
 )
 
 type GlobalState struct {
@@ -62,6 +63,7 @@ type RootModel struct {
 	pageNewBattleSelection    tea.Model
 	pageTitleSettings         tea.Model
 	pageGame                  tea.Model
+	pageGameComplete          tea.Model
 	globalState               *GlobalState
 	teamsSvc                  *teams.Service
 	playbookSvc               *playbooks.Service
@@ -93,6 +95,7 @@ func New(deps Dependencies) *RootModel {
 		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc),
 		pageTitleSettings:         NewModelTitleSettings(state),
 		pageGame:                  NewModelGame(state, deps.GameSvc),
+		pageGameComplete:          NewPageGameComplete(state, deps.TeamsSvc, deps.GameSvc),
 		globalState:               state,
 		teamsSvc:                  deps.TeamsSvc,
 		playbookSvc:               deps.PlaybookSvc,
@@ -139,6 +142,11 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				page.SetGameID(msg.GameID)
 			}
 			cmd = m.pageGame.Init()
+		case PageGameComplete:
+			if page, ok := m.pageGameComplete.(*PageGameCompleteModel); ok {
+				page.SetGameID(msg.GameID)
+			}
+			cmd = m.pageGameComplete.Init()
 		}
 		cmds = append(cmds, cmd)
 	case tea.WindowSizeMsg:
@@ -167,6 +175,8 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageGame, cmd = m.pageGame.Update(msg)
 		cmds = append(cmds, cmd)
+		m.pageGameComplete, cmd = m.pageGameComplete.Update(msg)
+		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
 	}
 
@@ -194,6 +204,8 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 	case PageGame:
 		m.pageGame, cmd = m.pageGame.Update(msg)
+	case PageGameComplete:
+		m.pageGameComplete, cmd = m.pageGameComplete.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 
@@ -228,6 +240,8 @@ func (m *RootModel) View() tea.View {
 		return m.pageTitleSettings.View()
 	case PageGame:
 		return m.pageGame.View()
+	case PageGameComplete:
+		return m.pageGameComplete.View()
 	}
 
 	return tea.NewView("unknown page")

@@ -97,7 +97,7 @@ func (m *ModelLockerPlayers) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Back):
 			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageLockerRoom}
+				return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
 			}
 		}
 	case tea.WindowSizeMsg:

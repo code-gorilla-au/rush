@@ -13,10 +13,7 @@ import (
 )
 
 type titleKeyMap struct {
-	components.CommonKeys
-	Up    key.Binding
-	Down  key.Binding
-	Enter key.Binding
+	uistate.KeyMap
 }
 
 func (k titleKeyMap) ShortHelp() []key.Binding {
@@ -31,19 +28,7 @@ func (k titleKeyMap) FullHelp() [][]key.Binding {
 
 func newTitleKeyMap() titleKeyMap {
 	return titleKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Up: key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "up"),
-		),
-		Down: key.NewBinding(
-			key.WithKeys("down", "j"),
-			key.WithHelp("↓/j", "down"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 

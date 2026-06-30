@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 func TestFooter(t *testing.T) {
@@ -14,18 +15,18 @@ func TestFooter(t *testing.T) {
 
 	err := group.
 		Test("NewFooter should initialize with given KeyMap", func(t *testing.T) {
-			keys := NewCommonKeys()
+			keys := uistate.NewKeyMap()
 			footer := NewFooter(keys)
 			odize.AssertEqual(t, keys, footer.KeyMap)
 		}).
 		Test("Update should set width from WindowSizeMsg", func(t *testing.T) {
-			footer := NewFooter(NewCommonKeys())
+			footer := NewFooter(uistate.NewKeyMap())
 			msg := tea.WindowSizeMsg{Width: 100, Height: 50}
 			footer.Update(msg)
 			odize.AssertEqual(t, 100, footer.Width)
 		}).
 		Test("View should render help text", func(t *testing.T) {
-			footer := NewFooter(NewCommonKeys())
+			footer := NewFooter(uistate.NewKeyMap())
 			theme := styles.NewIceTheme()
 
 			rendered := footer.View(theme)
@@ -39,23 +40,23 @@ func TestFooter(t *testing.T) {
 	odize.AssertNoError(t, err)
 }
 
-func TestCommonKeys(t *testing.T) {
+func TestKeyMap(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	err := group.
-		Test("NewCommonKeys should have Quit binding", func(t *testing.T) {
-			keys := NewCommonKeys()
+		Test("NewKeyMap should have Quit binding", func(t *testing.T) {
+			keys := uistate.NewKeyMap()
 			odize.AssertTrue(t, keys.Quit.Enabled())
 			odize.AssertEqual(t, "q", keys.Quit.Keys()[0])
 		}).
 		Test("ShortHelp should contain Quit", func(t *testing.T) {
-			keys := NewCommonKeys()
+			keys := uistate.NewKeyMap()
 			shortHelp := keys.ShortHelp()
 			odize.AssertEqual(t, 1, len(shortHelp))
 			odize.AssertEqual(t, keys.Quit, shortHelp[0])
 		}).
 		Test("FullHelp should contain Quit in the first row", func(t *testing.T) {
-			keys := NewCommonKeys()
+			keys := uistate.NewKeyMap()
 			fullHelp := keys.FullHelp()
 			odize.AssertEqual(t, 1, len(fullHelp))
 			odize.AssertEqual(t, 1, len(fullHelp[0]))

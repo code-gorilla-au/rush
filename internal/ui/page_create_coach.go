@@ -12,13 +12,7 @@ import (
 )
 
 type createCoachKeyMap struct {
-	components.CommonKeys
-	Back     key.Binding
-	Enter    key.Binding
-	Up       key.Binding
-	Down     key.Binding
-	Tab      key.Binding
-	ShiftTab key.Binding
+	uistate.KeyMap
 }
 
 func (k createCoachKeyMap) ShortHelp() []key.Binding {
@@ -35,31 +29,7 @@ func (k createCoachKeyMap) FullHelp() [][]key.Binding {
 
 func newCreateCoachKeyMap() createCoachKeyMap {
 	return createCoachKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "continue"),
-		),
-		Up: key.NewBinding(
-			key.WithKeys("up"),
-			key.WithHelp("↑", "up"),
-		),
-		Down: key.NewBinding(
-			key.WithKeys("down"),
-			key.WithHelp("↓", "down"),
-		),
-		Tab: key.NewBinding(
-			key.WithKeys("tab"),
-			key.WithHelp("tab", "next"),
-		),
-		ShiftTab: key.NewBinding(
-			key.WithKeys("shift+tab"),
-			key.WithHelp("shift+tab", "prev"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 

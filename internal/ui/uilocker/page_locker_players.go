@@ -12,11 +12,7 @@ import (
 )
 
 type lockerPlayersKeyMap struct {
-	components.CommonKeys
-	Back  key.Binding
-	Enter key.Binding
-	Up    key.Binding
-	Down  key.Binding
+	uistate.KeyMap
 }
 
 func (k lockerPlayersKeyMap) ShortHelp() []key.Binding {
@@ -32,23 +28,7 @@ func (k lockerPlayersKeyMap) FullHelp() [][]key.Binding {
 
 func newLockerPlayersKeyMap() lockerPlayersKeyMap {
 	return lockerPlayersKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back to locker room"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "edit/save"),
-		),
-		Up: key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "up"),
-		),
-		Down: key.NewBinding(
-			key.WithKeys("down", "j"),
-			key.WithHelp("↓/j", "down"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 

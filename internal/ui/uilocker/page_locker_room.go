@@ -11,9 +11,7 @@ import (
 )
 
 type lockerRoomKeyMap struct {
-	components.CommonKeys
-	Back   key.Binding
-	Select key.Binding
+	uistate.KeyMap
 }
 
 func (k lockerRoomKeyMap) ShortHelp() []key.Binding {
@@ -28,15 +26,7 @@ func (k lockerRoomKeyMap) FullHelp() [][]key.Binding {
 
 func newLockerRoomKeyMap() lockerRoomKeyMap {
 	return lockerRoomKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back to title"),
-		),
-		Select: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 

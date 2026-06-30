@@ -13,9 +13,7 @@ import (
 )
 
 type lockerPlaybooksCreateKeyMap struct {
-	components.CommonKeys
-	Back  key.Binding
-	Enter key.Binding
+	uistate.KeyMap
 }
 
 func (k lockerPlaybooksCreateKeyMap) ShortHelp() []key.Binding {
@@ -30,15 +28,7 @@ func (k lockerPlaybooksCreateKeyMap) FullHelp() [][]key.Binding {
 
 func newLockerPlaybooksCreateKeyMap() lockerPlaybooksCreateKeyMap {
 	return lockerPlaybooksCreateKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "confirm"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 

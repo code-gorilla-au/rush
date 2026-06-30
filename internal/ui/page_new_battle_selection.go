@@ -21,9 +21,7 @@ type msgDataLoaded struct {
 }
 
 type battleSelectionKeyMap struct {
-	components.CommonKeys
-	Back   key.Binding
-	Select key.Binding
+	uistate.KeyMap
 }
 
 func (k battleSelectionKeyMap) ShortHelp() []key.Binding {
@@ -38,15 +36,7 @@ func (k battleSelectionKeyMap) FullHelp() [][]key.Binding {
 
 func newBattleSelectionKeyMap() battleSelectionKeyMap {
 	return battleSelectionKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back"),
-		),
-		Select: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 

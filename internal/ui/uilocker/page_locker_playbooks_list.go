@@ -13,11 +13,7 @@ import (
 )
 
 type lockerPlaybooksListKeyMap struct {
-	components.CommonKeys
-	Back   key.Binding
-	Enter  key.Binding
-	New    key.Binding
-	Delete key.Binding
+	uistate.KeyMap
 }
 
 func (k lockerPlaybooksListKeyMap) ShortHelp() []key.Binding {
@@ -32,22 +28,7 @@ func (k lockerPlaybooksListKeyMap) FullHelp() [][]key.Binding {
 
 func newLockerPlaybooksListKeyMap() lockerPlaybooksListKeyMap {
 	return lockerPlaybooksListKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
-		),
-		New: key.NewBinding(
-			key.WithKeys("n"),
-			key.WithHelp("n", "new playbook"),
-		),
-		Delete: key.NewBinding(
-			key.WithKeys("d"),
-			key.WithHelp("d", "delete")),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 

@@ -124,6 +124,24 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		odize.AssertTrue(t, m.selectedAITeam == nil)
 	})
 
+	group.Test("should call Init on MsgSwitchPage", func(t *testing.T) {
+		state := &uistate.GlobalState{
+			Team: &teams.Team{ID: 1, Name: "My Team"},
+		}
+		theme := styles.NewIceTheme()
+		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
+
+		// 1. Set some state to verify reset
+		m.state = stateConfirming
+
+		// 2. Send MsgSwitchPage
+		_, cmd := m.Update(uistate.MsgSwitchPage{NewPage: uistate.PageNewBattleSelection})
+
+		// 3. Verify it's reset and returns loadData command
+		odize.AssertEqual(t, stateSelectingPlaybook, m.state)
+		odize.AssertTrue(t, cmd != nil)
+	})
+
 	err := group.Run()
 	odize.AssertNoError(t, err)
 }

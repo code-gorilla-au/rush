@@ -79,6 +79,10 @@ func (m *ModelCreateCoach) Init() tea.Cmd {
 
 func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case uistate.MsgSwitchPage:
+		if msg.NewPage == uistate.PageCreateCoach {
+			return m, m.Init()
+		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height

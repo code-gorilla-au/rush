@@ -54,6 +54,11 @@ func (m *LockerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case uistate.MsgSwitchPage:
+		if msg.NewPage == uistate.PageLockerRoom {
+			m.currentPage = SubPageLockerRoom
+			return m, m.Init()
+		}
 	case MsgSwitchLockerPage:
 		switch msg.NewPage {
 		case SubPageLockerRoom, SubPageLockerPlayers, SubPageLockerPlaybooksList, SubPageLockerPlaybooksCreate, SubPageLockerPlaybooksEdit:

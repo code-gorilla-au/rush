@@ -112,14 +112,18 @@ func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case uistate.MsgSwitchPage:
+		if msg.NewPage == uistate.PageNewBattleSelection {
+			return m, m.Init()
+		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		m.playbookList.SetSize(m.width/2-4, m.height-20)
 		m.aiTeamList.SetSize(m.width/2-4, m.height-20)
 	case msgDataLoaded:
-		m.playbookList.SetItems(msg.playbooks)
-		m.aiTeamList.SetItems(msg.aiTeams)
+		cmds = append(cmds, m.playbookList.SetItems(msg.playbooks))
+		cmds = append(cmds, m.aiTeamList.SetItems(msg.aiTeams))
 	case error:
 		m.err = msg
 	case tea.KeyMsg:

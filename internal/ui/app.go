@@ -7,6 +7,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/iugame"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
 	"github.com/code-gorilla-au/rush/internal/ui/uilocker"
 	"github.com/code-gorilla-au/rush/internal/ui/uistate"
@@ -25,7 +26,6 @@ type RootModel struct {
 	pageNewBattleSelection tea.Model
 	pageTitleSettings      tea.Model
 	pageGame               tea.Model
-	pageGameComplete       tea.Model
 	globalState            *uistate.GlobalState
 	teamsSvc               *teams.Service
 	playbookSvc            *playbooks.Service
@@ -53,8 +53,7 @@ func New(deps Dependencies) *RootModel {
 		pageNewTournament:      NewModelNewTournament(state, theme),
 		pageNewBattleSelection: NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
 		pageTitleSettings:      NewModelTitleSettings(state, theme),
-		pageGame:               NewModelGame(state, deps.GameSvc, theme),
-		pageGameComplete:       NewPageGameComplete(state, deps.TeamsSvc, deps.GameSvc, theme),
+		pageGame:               iugame.NewGameModel(state, deps.TeamsSvc, deps.GameSvc, theme),
 		globalState:            state,
 		teamsSvc:               deps.TeamsSvc,
 		playbookSvc:            deps.PlaybookSvc,
@@ -92,22 +91,7 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case uistate.MsgSwitchPage:
 		m.currentPage = msg.NewPage
-		var cmd tea.Cmd
-		switch m.currentPage {
-		case uistate.PageNewBattleSelection:
-			cmd = m.pageNewBattleSelection.Init()
-		case uistate.PageGame:
-			if page, ok := m.pageGame.(*PageGameModel); ok {
-				page.SetGameID(msg.GameID)
-			}
-			cmd = m.pageGame.Init()
-		case uistate.PageGameComplete:
-			if page, ok := m.pageGameComplete.(*PageGameCompleteModel); ok {
-				page.SetGameID(msg.GameID)
-			}
-			cmd = m.pageGameComplete.Init()
-		}
-		cmds = append(cmds, cmd)
+
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -125,8 +109,6 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 		cmds = append(cmds, cmd)
 		m.pageGame, cmd = m.pageGame.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageGameComplete, cmd = m.pageGameComplete.Update(msg)
 		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
 	}
@@ -147,8 +129,6 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 	case uistate.PageGame:
 		m.pageGame, cmd = m.pageGame.Update(msg)
-	case uistate.PageGameComplete:
-		m.pageGameComplete, cmd = m.pageGameComplete.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 
@@ -175,8 +155,6 @@ func (m *RootModel) View() tea.View {
 		return m.pageTitleSettings.View()
 	case uistate.PageGame:
 		return m.pageGame.View()
-	case uistate.PageGameComplete:
-		return m.pageGameComplete.View()
 	}
 
 	return tea.NewView("unknown page")

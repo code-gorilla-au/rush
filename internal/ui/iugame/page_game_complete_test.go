@@ -1,4 +1,4 @@
-package ui
+package iugame
 
 import (
 	"testing"

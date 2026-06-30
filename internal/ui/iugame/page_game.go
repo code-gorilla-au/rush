@@ -1,4 +1,4 @@
-package ui
+package iugame
 
 import (
 	"strings"
@@ -88,8 +88,8 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if err != nil {
 					return MsgGameError{Err: err}
 				}
-				return uistate.MsgSwitchPage{
-					NewPage: uistate.PageGameComplete,
+				return MsgSwitchGamePage{
+					NewPage: SubPageGameComplete,
 					GameID:  m.game.ID(),
 				}
 			})

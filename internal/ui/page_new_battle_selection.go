@@ -91,7 +91,7 @@ func (m *ModelNewBattleSelection) loadData() tea.Msg {
 		return fmt.Errorf("no team loaded")
 	}
 
-	playbooks, err := m.playbookSvc.GetTeamPlaybooks(m.globalState.Context(), m.globalState.Team.ID)
+	pb, err := m.playbookSvc.GetTeamPlaybooks(m.globalState.Context(), m.globalState.Team.ID)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (m *ModelNewBattleSelection) loadData() tea.Msg {
 	}
 
 	return msgDataLoaded{
-		playbooks: playbooks,
+		playbooks: pb,
 		aiTeams:   aiTeams,
 	}
 }

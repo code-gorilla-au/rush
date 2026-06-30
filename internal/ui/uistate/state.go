@@ -28,7 +28,6 @@ const (
 	PageNewBattleSelection
 	PageTitleSettings
 	PageGame
-	PageGameComplete
 )
 
 type GlobalState struct {

@@ -9,13 +9,14 @@ import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type PageGameCompleteModel struct {
 	width       int
 	height      int
 	theme       styles.IceTheme
-	globalState *GlobalState
+	globalState *uistate.GlobalState
 	teamsSvc    *teams.Service
 	gameSvc     *games.Service
 	gameID      int64
@@ -25,7 +26,7 @@ type PageGameCompleteModel struct {
 	err         error
 }
 
-func NewPageGameComplete(state *GlobalState, teamsSvc *teams.Service, gameSvc *games.Service, theme styles.IceTheme) *PageGameCompleteModel {
+func NewPageGameComplete(state *uistate.GlobalState, teamsSvc *teams.Service, gameSvc *games.Service, theme styles.IceTheme) *PageGameCompleteModel {
 	return &PageGameCompleteModel{
 		theme:       theme,
 		globalState: state,
@@ -90,7 +91,7 @@ func (m *PageGameCompleteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "enter":
 			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageTitle}
+				return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 			}
 		}
 	}

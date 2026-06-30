@@ -1,9 +1,10 @@
-package ui
+package uilocker
 
 import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -55,14 +56,14 @@ type ModelLockerPlayers struct {
 	width       int
 	height      int
 	theme       styles.IceTheme
-	globalState *GlobalState
+	globalState *uistate.GlobalState
 	teamsSvc    *teams.Service
 	keys        lockerPlayersKeyMap
 	footer      components.Footer
 	playerList  components.PlayerList
 }
 
-func NewModelLockerPlayers(state *GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelLockerPlayers {
+func NewModelLockerPlayers(state *uistate.GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelLockerPlayers {
 	keys := newLockerPlayersKeyMap()
 	return &ModelLockerPlayers{
 		theme:       theme,
@@ -81,7 +82,7 @@ func (m *ModelLockerPlayers) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		if m.globalState.Team != nil {
 			m.playerList = components.NewPlayerList(m.globalState.Team.Players)
 		}

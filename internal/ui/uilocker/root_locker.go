@@ -1,10 +1,11 @@
-package ui
+package uilocker
 
 import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type SubPageLocker int
@@ -32,15 +33,11 @@ type LockerModel struct {
 	subPageLockerPlaybooksList   tea.Model
 	subPageLockerPlaybooksCreate tea.Model
 	subPageLockerPlaybooksEdit   tea.Model
-	globalState                  *GlobalState
-	theme                        styles.IceTheme
 }
 
 // NewLockerModel returns a new LockerModel.
-func NewLockerModel(state *GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, theme styles.IceTheme) *LockerModel {
+func NewLockerModel(state *uistate.GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, theme styles.IceTheme) *LockerModel {
 	return &LockerModel{
-		globalState:                  state,
-		theme:                        theme,
 		subPageLockerRoom:            NewModelLockerRoom(state, theme),
 		subPageLockerPlayers:         NewModelLockerPlayers(state, teamsSvc, theme),
 		subPageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, playbookSvc, theme),

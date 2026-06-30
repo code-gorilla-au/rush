@@ -8,6 +8,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type createCoachKeyMap struct {
@@ -66,7 +67,7 @@ type ModelCreateCoach struct {
 	width       int
 	height      int
 	theme       styles.IceTheme
-	globalState *GlobalState
+	globalState *uistate.GlobalState
 	teamsSvc    *teams.Service
 
 	coachInput textinput.Model
@@ -77,7 +78,7 @@ type ModelCreateCoach struct {
 	footer     components.Footer
 }
 
-func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelCreateCoach {
+func NewModelCreateCoach(state *uistate.GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelCreateCoach {
 	c := textinput.New()
 	c.Placeholder = "Coach Name"
 	c.Focus()
@@ -118,7 +119,7 @@ func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		return m.handleStateUpdated(msg)
 	}
 
@@ -156,19 +157,19 @@ func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
 
 	case key.Matches(msg, m.keys.Back):
 		return func() tea.Msg {
-			return MsgSwitchPage{NewPage: PageTitle}
+			return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 		}, true
 	}
 
 	return nil, false
 }
 
-func (m *ModelCreateCoach) handleStateUpdated(msg MsgStateUpdated) (tea.Model, tea.Cmd) {
+func (m *ModelCreateCoach) handleStateUpdated(msg uistate.MsgStateUpdated) (tea.Model, tea.Cmd) {
 	m.globalState.Coach = msg.Coach
 	m.globalState.Team = msg.Team
 
 	return m, func() tea.Msg {
-		return MsgSwitchPage{NewPage: PageLockerRoom}
+		return uistate.MsgSwitchPage{NewPage: uistate.PageLockerRoom}
 	}
 }
 
@@ -212,7 +213,7 @@ func (m *ModelCreateCoach) submit() tea.Cmd {
 			return err
 		}
 
-		return MsgStateUpdated{
+		return uistate.MsgStateUpdated{
 			Coach: &coach,
 			Team:  &team,
 		}

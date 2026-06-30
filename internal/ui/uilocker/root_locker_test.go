@@ -1,18 +1,20 @@
-package ui
+package uilocker
 
 import (
 	"testing"
 
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
+	"github.com/code-gorilla-au/rush/internal/ui/uitest"
 )
 
 func TestLockerModel_SwitchPage(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
-	state := &GlobalState{}
+	state := &uistate.GlobalState{}
 	theme := styles.NewIceTheme()
-	ts, ps, _ := setupServices(t)
+	ts, ps, _ := uitest.SetupServices(t)
 	m := NewLockerModel(state, ts, ps, theme)
 
 	group.Test("should update current page on MsgSwitchPage", func(t *testing.T) {
@@ -25,7 +27,7 @@ func TestLockerModel_SwitchPage(t *testing.T) {
 
 	group.Test("should not update current page for non-locker pages", func(t *testing.T) {
 		m.currentPage = SubPageLockerRoom
-		m.Update(MsgSwitchPage{NewPage: PageTitle})
+		m.Update(uistate.MsgSwitchPage{NewPage: uistate.PageTitle})
 		odize.AssertEqual(t, SubPageLockerRoom, m.currentPage)
 	})
 

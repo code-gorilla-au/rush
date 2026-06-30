@@ -1,4 +1,4 @@
-package ui
+package uilocker
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type lockerPlaybooksEditKeyMap struct {
@@ -50,7 +51,7 @@ type ModelLockerPlaybooksEdit struct {
 	width                 int
 	height                int
 	theme                 styles.IceTheme
-	globalState           *GlobalState
+	globalState           *uistate.GlobalState
 	playbookSvc           *playbooks.Service
 	keys                  lockerPlaybooksEditKeyMap
 	footer                components.Footer
@@ -64,7 +65,7 @@ type ModelLockerPlaybooksEdit struct {
 	err                   error
 }
 
-func NewModelLockerPlaybooksEdit(state *GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksEdit {
+func NewModelLockerPlaybooksEdit(state *uistate.GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksEdit {
 	return &ModelLockerPlaybooksEdit{
 		theme:       theme,
 		globalState: state,
@@ -94,7 +95,7 @@ func (m *ModelLockerPlaybooksEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case MsgSwitchLockerPage:

@@ -8,20 +8,21 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type PageGameModel struct {
 	width       int
 	height      int
 	theme       styles.IceTheme
-	globalState *GlobalState
+	globalState *uistate.GlobalState
 	gameSvc     *games.Service
 	gameID      int64
 	game        *games.Game
 	gameComp    components.Game
 }
 
-func NewModelGame(state *GlobalState, gameSvc *games.Service, theme styles.IceTheme) *PageGameModel {
+func NewModelGame(state *uistate.GlobalState, gameSvc *games.Service, theme styles.IceTheme) *PageGameModel {
 	return &PageGameModel{
 		theme:       theme,
 		globalState: state,
@@ -55,7 +56,7 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case tea.WindowSizeMsg:
@@ -87,8 +88,8 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if err != nil {
 					return MsgGameError{Err: err}
 				}
-				return MsgSwitchPage{
-					NewPage: PageGameComplete,
+				return uistate.MsgSwitchPage{
+					NewPage: uistate.PageGameComplete,
 					GameID:  m.game.ID(),
 				}
 			})

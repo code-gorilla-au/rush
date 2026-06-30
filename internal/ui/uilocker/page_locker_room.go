@@ -1,8 +1,9 @@
-package ui
+package uilocker
 
 import (
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -43,13 +44,13 @@ type ModelLockerRoom struct {
 	width       int
 	height      int
 	theme       styles.IceTheme
-	globalState *GlobalState
+	globalState *uistate.GlobalState
 	keys        lockerRoomKeyMap
 	footer      components.Footer
 	list        components.LockerRoomList
 }
 
-func NewModelLockerRoom(globalState *GlobalState, theme styles.IceTheme) *ModelLockerRoom {
+func NewModelLockerRoom(globalState *uistate.GlobalState, theme styles.IceTheme) *ModelLockerRoom {
 	keys := newLockerRoomKeyMap()
 	return &ModelLockerRoom{
 		globalState: globalState,
@@ -68,7 +69,7 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case tea.KeyMsg:
@@ -77,7 +78,7 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Back):
 			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageTitle}
+				return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 			}
 		case key.Matches(msg, m.keys.Select):
 			switch m.list.SelectedItem() {

@@ -8,6 +8,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -61,7 +62,7 @@ type ModelNewBattleSelection struct {
 	width            int
 	height           int
 	theme            styles.IceTheme
-	globalState      *GlobalState
+	globalState      *uistate.GlobalState
 	teamsSvc         *teams.Service
 	playbookSvc      *playbooks.Service
 	gameSvc          *games.Service
@@ -75,7 +76,7 @@ type ModelNewBattleSelection struct {
 	err              error
 }
 
-func NewModelNewBattleSelection(globalState *GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, gameSvc *games.Service, theme styles.IceTheme) *ModelNewBattleSelection {
+func NewModelNewBattleSelection(globalState *uistate.GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, gameSvc *games.Service, theme styles.IceTheme) *ModelNewBattleSelection {
 	keys := newBattleSelectionKeyMap()
 	return &ModelNewBattleSelection{
 		globalState:  globalState,
@@ -166,7 +167,7 @@ func (m *ModelNewBattleSelection) handleKey(msg tea.KeyMsg) (*ModelNewBattleSele
 			return m, nil
 		}
 		return m, func() tea.Msg {
-			return MsgSwitchPage{NewPage: PageTitle}
+			return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 		}
 	case key.Matches(msg, m.keys.Select):
 		if m.state == stateSelectingPlaybook {
@@ -215,8 +216,8 @@ func (m *ModelNewBattleSelection) createGame() tea.Msg {
 
 	m.reset()
 
-	return MsgSwitchPage{
-		NewPage: PageGame,
+	return uistate.MsgSwitchPage{
+		NewPage: uistate.PageGame,
 		GameID:  game.ID(),
 	}
 }

@@ -1,4 +1,4 @@
-package ui
+package uilocker
 
 import (
 	"testing"
@@ -7,13 +7,14 @@ import (
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 func TestModelLockerRoom_Selection(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	group.Test("should route to locker players when players item is selected", func(t *testing.T) {
-		state := &GlobalState{}
+		state := &uistate.GlobalState{}
 		theme := styles.NewIceTheme()
 		m := NewModelLockerRoom(state, theme)
 
@@ -34,7 +35,7 @@ func TestModelLockerRoom_Selection(t *testing.T) {
 	})
 
 	group.Test("should route to locker playbooks when playbooks item is selected", func(t *testing.T) {
-		state := &GlobalState{}
+		state := &uistate.GlobalState{}
 		theme := styles.NewIceTheme()
 		m := NewModelLockerRoom(state, theme)
 

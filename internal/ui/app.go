@@ -8,47 +8,16 @@ import (
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uilocker"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
-
-type MsgStateUpdated struct {
-	Coach *teams.Coach
-	Team  *teams.Team
-}
-
-type MsgSwitchPage struct {
-	NewPage  Page
-	Playbook *playbooks.Playbook
-	GameID   int64
-}
-
-type Page int
-
-const (
-	PageTitle Page = iota + 1
-	PageCreateCoach
-	PageLockerRoom
-	PageNewTournament
-	PageNewBattleSelection
-	PageTitleSettings
-	PageGame
-	PageGameComplete
-)
-
-type GlobalState struct {
-	Coach *teams.Coach
-	Team  *teams.Team
-}
-
-func (m *GlobalState) Context() context.Context {
-	return context.Background()
-}
 
 type RootModel struct {
 	ctx                    context.Context
 	width                  int
 	height                 int
 	theme                  styles.IceTheme
-	currentPage            Page
+	currentPage            uistate.Page
 	pageTitle              tea.Model
 	pageCreateCoach        tea.Model
 	pageLocker             tea.Model
@@ -57,7 +26,7 @@ type RootModel struct {
 	pageTitleSettings      tea.Model
 	pageGame               tea.Model
 	pageGameComplete       tea.Model
-	globalState            *GlobalState
+	globalState            *uistate.GlobalState
 	teamsSvc               *teams.Service
 	playbookSvc            *playbooks.Service
 	gameSvc                *games.Service
@@ -71,16 +40,16 @@ type Dependencies struct {
 
 // New returns a new UI model.
 func New(deps Dependencies) *RootModel {
-	state := &GlobalState{}
+	state := &uistate.GlobalState{}
 	theme := styles.NewIceTheme()
 
 	return &RootModel{
 		ctx:                    context.Background(),
 		theme:                  theme,
-		currentPage:            PageTitle,
+		currentPage:            uistate.PageTitle,
 		pageTitle:              NewModelTitle(state, theme),
 		pageCreateCoach:        NewModelCreateCoach(state, deps.TeamsSvc, theme),
-		pageLocker:             NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, theme),
+		pageLocker:             uilocker.NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, theme),
 		pageNewTournament:      NewModelNewTournament(state, theme),
 		pageNewBattleSelection: NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
 		pageTitleSettings:      NewModelTitleSettings(state, theme),
@@ -97,15 +66,15 @@ func (m *RootModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		coach, err := m.teamsSvc.GetDefaultCoach(m.ctx)
 		if err != nil {
-			return MsgStateUpdated{Coach: nil}
+			return uistate.MsgStateUpdated{Coach: nil}
 		}
 
 		team, err := m.teamsSvc.GetTeamByCoachID(m.ctx, coach.ID)
 		if err != nil {
-			return MsgStateUpdated{Coach: &coach, Team: nil}
+			return uistate.MsgStateUpdated{Coach: &coach, Team: nil}
 		}
 
-		return MsgStateUpdated{Coach: &coach, Team: &team}
+		return uistate.MsgStateUpdated{Coach: &coach, Team: &team}
 	}
 }
 
@@ -113,7 +82,7 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case tea.KeyMsg:
@@ -121,18 +90,18 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		}
-	case MsgSwitchPage:
+	case uistate.MsgSwitchPage:
 		m.currentPage = msg.NewPage
 		var cmd tea.Cmd
 		switch m.currentPage {
-		case PageNewBattleSelection:
+		case uistate.PageNewBattleSelection:
 			cmd = m.pageNewBattleSelection.Init()
-		case PageGame:
+		case uistate.PageGame:
 			if page, ok := m.pageGame.(*PageGameModel); ok {
 				page.SetGameID(msg.GameID)
 			}
 			cmd = m.pageGame.Init()
-		case PageGameComplete:
+		case uistate.PageGameComplete:
 			if page, ok := m.pageGameComplete.(*PageGameCompleteModel); ok {
 				page.SetGameID(msg.GameID)
 			}
@@ -164,21 +133,21 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	switch m.currentPage {
-	case PageTitle:
+	case uistate.PageTitle:
 		m.pageTitle, cmd = m.pageTitle.Update(msg)
-	case PageCreateCoach:
+	case uistate.PageCreateCoach:
 		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
-	case PageLockerRoom:
+	case uistate.PageLockerRoom:
 		m.pageLocker, cmd = m.pageLocker.Update(msg)
-	case PageNewTournament:
+	case uistate.PageNewTournament:
 		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
-	case PageNewBattleSelection:
+	case uistate.PageNewBattleSelection:
 		m.pageNewBattleSelection, cmd = m.pageNewBattleSelection.Update(msg)
-	case PageTitleSettings:
+	case uistate.PageTitleSettings:
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
-	case PageGame:
+	case uistate.PageGame:
 		m.pageGame, cmd = m.pageGame.Update(msg)
-	case PageGameComplete:
+	case uistate.PageGameComplete:
 		m.pageGameComplete, cmd = m.pageGameComplete.Update(msg)
 	}
 	cmds = append(cmds, cmd)
@@ -192,21 +161,21 @@ func (m *RootModel) View() tea.View {
 	}
 
 	switch m.currentPage {
-	case PageTitle:
+	case uistate.PageTitle:
 		return m.pageTitle.View()
-	case PageCreateCoach:
+	case uistate.PageCreateCoach:
 		return m.pageCreateCoach.View()
-	case PageLockerRoom:
+	case uistate.PageLockerRoom:
 		return m.pageLocker.View()
-	case PageNewTournament:
+	case uistate.PageNewTournament:
 		return m.pageNewTournament.View()
-	case PageNewBattleSelection:
+	case uistate.PageNewBattleSelection:
 		return m.pageNewBattleSelection.View()
-	case PageTitleSettings:
+	case uistate.PageTitleSettings:
 		return m.pageTitleSettings.View()
-	case PageGame:
+	case uistate.PageGame:
 		return m.pageGame.View()
-	case PageGameComplete:
+	case uistate.PageGameComplete:
 		return m.pageGameComplete.View()
 	}
 

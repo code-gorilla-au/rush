@@ -11,6 +11,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type pageGameMockStore struct {
@@ -47,7 +48,7 @@ func (m *pageGameMockStore) UpdateGame(ctx context.Context, arg database.UpdateG
 func TestPageGameModel(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
-	state := &GlobalState{}
+	state := &uistate.GlobalState{}
 	store := &pageGameMockStore{}
 	gameSvc := games.NewService(store)
 

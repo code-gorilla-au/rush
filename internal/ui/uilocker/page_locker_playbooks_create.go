@@ -1,4 +1,4 @@
-package ui
+package uilocker
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type lockerPlaybooksCreateKeyMap struct {
@@ -45,7 +46,6 @@ type ModelLockerPlaybooksCreate struct {
 	width        int
 	height       int
 	theme        styles.IceTheme
-	globalState  *GlobalState
 	playbookSvc  *playbooks.Service
 	keys         lockerPlaybooksCreateKeyMap
 	footer       components.Footer
@@ -55,10 +55,9 @@ type ModelLockerPlaybooksCreate struct {
 	err          error
 }
 
-func NewModelLockerPlaybooksCreate(state *GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksCreate {
+func NewModelLockerPlaybooksCreate(state *uistate.GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksCreate {
 	return &ModelLockerPlaybooksCreate{
 		theme:        theme,
-		globalState:  state,
 		playbookSvc:  playbookSvc,
 		keys:         newLockerPlaybooksCreateKeyMap(),
 		footer:       components.NewFooter(newLockerPlaybooksCreateKeyMap()),
@@ -74,9 +73,6 @@ func (m *ModelLockerPlaybooksCreate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
-		m.globalState.Coach = msg.Coach
-		m.globalState.Team = msg.Team
 	case MsgSwitchLockerPage:
 		if msg.NewPage == SubPageLockerPlaybooksCreate {
 			if msg.Playbook != nil {

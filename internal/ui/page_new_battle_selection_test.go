@@ -9,13 +9,14 @@ import (
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 func TestModelNewBattleSelection_Rendering(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	group.Test("should load data and render selection", func(t *testing.T) {
-		state := &GlobalState{
+		state := &uistate.GlobalState{
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
 		theme := styles.NewIceTheme()
@@ -48,7 +49,7 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 	})
 
 	group.Test("should handle state transitions", func(t *testing.T) {
-		state := &GlobalState{
+		state := &uistate.GlobalState{
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
 		theme := styles.NewIceTheme()
@@ -86,7 +87,7 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 	})
 
 	group.Test("should handle back navigation to title", func(t *testing.T) {
-		state := &GlobalState{}
+		state := &uistate.GlobalState{}
 		theme := styles.NewIceTheme()
 		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
 
@@ -95,15 +96,15 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		odize.AssertTrue(t, cmd != nil)
 		msg := cmd()
 		switch v := msg.(type) {
-		case MsgSwitchPage:
-			odize.AssertEqual(t, PageTitle, v.NewPage)
+		case uistate.MsgSwitchPage:
+			odize.AssertEqual(t, uistate.PageTitle, v.NewPage)
 		default:
 			t.Fatalf("expected MsgSwitchPage, got %T", msg)
 		}
 	})
 
 	group.Test("should reset state on Init", func(t *testing.T) {
-		state := &GlobalState{
+		state := &uistate.GlobalState{
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
 		theme := styles.NewIceTheme()

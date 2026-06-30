@@ -5,6 +5,7 @@ import (
 
 	"github.com/code-gorilla-au/rush/internal/ui/components"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -50,13 +51,13 @@ type ModelTitle struct {
 	width       int
 	height      int
 	theme       styles.IceTheme
-	globalState *GlobalState
+	globalState *uistate.GlobalState
 	keys        titleKeyMap
 	footer      components.Footer
 	menu        components.TitleMenu
 }
 
-func NewModelTitle(globalState *GlobalState, theme styles.IceTheme) *ModelTitle {
+func NewModelTitle(globalState *uistate.GlobalState, theme styles.IceTheme) *ModelTitle {
 	keys := newTitleKeyMap()
 	return &ModelTitle{
 		globalState: globalState,
@@ -73,7 +74,7 @@ func (m *ModelTitle) Init() tea.Cmd {
 
 func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch vMsg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = vMsg.Coach
 		m.globalState.Team = vMsg.Team
 		m.menu.SetHasCoach(m.globalState.Coach != nil)
@@ -90,23 +91,23 @@ func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch selected {
 			case components.TitleItemCreateCoach:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageCreateCoach}
+					return uistate.MsgSwitchPage{NewPage: uistate.PageCreateCoach}
 				}
 			case components.TitleItemLockerRoom:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerRoom}
+					return uistate.MsgSwitchPage{NewPage: uistate.PageLockerRoom}
 				}
 			case components.TitleItemNewTournament:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageNewTournament}
+					return uistate.MsgSwitchPage{NewPage: uistate.PageNewTournament}
 				}
 			case components.TitleItemNewBattleSelection:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageNewBattleSelection}
+					return uistate.MsgSwitchPage{NewPage: uistate.PageNewBattleSelection}
 				}
 			case components.TitleItemSettings:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageTitleSettings}
+					return uistate.MsgSwitchPage{NewPage: uistate.PageTitleSettings}
 				}
 			}
 		}

@@ -1,35 +1,13 @@
 package ui
 
 import (
-	"database/sql"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
-	"github.com/code-gorilla-au/rush/internal/database"
-	"github.com/code-gorilla-au/rush/internal/games"
-	"github.com/code-gorilla-au/rush/internal/playbooks"
-	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uitest"
 )
-
-func setupServices(t *testing.T) (*teams.Service, *playbooks.Service, *games.Service) {
-	db, err := sql.Open("sqlite", ":memory:")
-	if err != nil {
-		t.Fatalf("failed to open database: %v", err)
-	}
-
-	migrator := database.NewMigrator(db, database.SchemaFS)
-	if err := migrator.Migrate(t.Context()); err != nil {
-		t.Fatalf("failed to migrate database: %v", err)
-	}
-
-	queries := database.New(db)
-	ps := playbooks.NewPlaybooksService(queries)
-	ts := teams.NewTeamsService(queries, ps)
-	gs := games.NewService(queries)
-	return ts, ps, gs
-}
 
 func TestTheme(t *testing.T) {
 	group := odize.NewGroup(t, nil)
@@ -53,7 +31,7 @@ func TestNew(t *testing.T) {
 
 	err := group.
 		Test("New should initialize model with IceTheme", func(t *testing.T) {
-			s, ps, gs := setupServices(t)
+			s, ps, gs := uitest.SetupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
@@ -62,7 +40,7 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, m.theme.Logo.GetForeground() != nil)
 		}).
 		Test("Init should return a command", func(t *testing.T) {
-			s, ps, gs := setupServices(t)
+			s, ps, gs := uitest.SetupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
@@ -72,7 +50,7 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle Quit keys", func(t *testing.T) {
-			s, ps, gs := setupServices(t)
+			s, ps, gs := uitest.SetupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
@@ -85,7 +63,7 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle WindowSizeMsg", func(t *testing.T) {
-			s, ps, gs := setupServices(t)
+			s, ps, gs := uitest.SetupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,

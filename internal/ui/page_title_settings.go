@@ -3,16 +3,17 @@ package ui
 import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type ModelTitleSettings struct {
 	width       int
 	height      int
 	theme       styles.IceTheme
-	globalState *GlobalState
+	globalState *uistate.GlobalState
 }
 
-func NewModelTitleSettings(globalState *GlobalState, theme styles.IceTheme) *ModelTitleSettings {
+func NewModelTitleSettings(globalState *uistate.GlobalState, theme styles.IceTheme) *ModelTitleSettings {
 	return &ModelTitleSettings{
 		globalState: globalState,
 		theme:       theme,
@@ -28,7 +29,7 @@ func (m *ModelTitleSettings) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = vMsg.Width
 		m.height = vMsg.Height
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = vMsg.Coach
 		m.globalState.Team = vMsg.Team
 	}

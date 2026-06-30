@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"database/sql"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
@@ -11,44 +10,25 @@ import (
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
-	_ "modernc.org/sqlite"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
+	"github.com/code-gorilla-au/rush/internal/ui/uitest"
 )
-
-func setupTestDB(t *testing.T) *sql.DB {
-	db, err := sql.Open("sqlite", ":memory:")
-	if err != nil {
-		t.Fatalf("failed to open database: %v", err)
-	}
-
-	migrator := database.NewMigrator(db, database.SchemaFS)
-	if err := migrator.Migrate(t.Context()); err != nil {
-		t.Fatalf("failed to migrate database: %v", err)
-	}
-
-	return db
-}
 
 func TestPageGameCompleteModel(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
-	var db *sql.DB
 	var queries *database.Queries
 	var teamsSvc *teams.Service
 	var gameSvc *games.Service
-	var state *GlobalState
+	var state *uistate.GlobalState
 
 	group.BeforeEach(func() {
-		db = setupTestDB(t)
+		db := uitest.SetupTestDB(t)
+		t.Cleanup(func() { db.Close() })
 		queries = database.New(db)
 		teamsSvc = teams.NewTeamsService(queries, playbooks.NewPlaybooksService(queries))
 		gameSvc = games.NewService(queries)
-		state = &GlobalState{}
-	})
-
-	group.AfterEach(func() {
-		if db != nil {
-			db.Close()
-		}
+		state = &uistate.GlobalState{}
 	})
 
 	err := group.
@@ -139,9 +119,9 @@ func TestPageGameCompleteModel(t *testing.T) {
 
 			odize.AssertTrue(t, cmd != nil)
 			msg := cmd()
-			switchMsg, ok := msg.(MsgSwitchPage)
+			switchMsg, ok := msg.(uistate.MsgSwitchPage)
 			odize.AssertTrue(t, ok)
-			odize.AssertEqual(t, PageTitle, switchMsg.NewPage)
+			odize.AssertEqual(t, uistate.PageTitle, switchMsg.NewPage)
 		}).
 		Run()
 

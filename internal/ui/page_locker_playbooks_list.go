@@ -118,7 +118,7 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageLockerRoom}
+				return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
 			}
 		case key.Matches(msg, m.keys.Enter):
 			model, cmd, done := m.handleRouteEditPlaybook()

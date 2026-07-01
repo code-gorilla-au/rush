@@ -102,7 +102,7 @@ func (m *ModelLockerRoom) View() tea.View {
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
-		m.theme.Logo.Render("LOCKER ROOM"),
+		m.theme.Logo.Render("LOCKER ROOM: "+m.globalState.Team.Name),
 		"",
 		m.list.View(m.theme),
 		"",

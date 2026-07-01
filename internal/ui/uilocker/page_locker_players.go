@@ -124,7 +124,7 @@ func (m *ModelLockerPlayers) View() tea.View {
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
-		m.theme.Logo.Render("PLAYERS"),
+		m.theme.Logo.Render(m.globalState.Team.Name),
 		"",
 		playersView,
 		"",

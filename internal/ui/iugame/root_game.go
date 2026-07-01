@@ -85,9 +85,12 @@ func (m *GameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case SubPageGameRoot, SubPageGameComplete:
 			m.currentPage = msg.NewPage
 		}
+
 		if msg.GameID != 0 {
 			m.SetGameID(msg.GameID)
 		}
+
+		return m, m.Init()
 
 	case tea.WindowSizeMsg:
 		var cmd tea.Cmd

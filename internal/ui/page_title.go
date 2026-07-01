@@ -72,28 +72,9 @@ func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(vMsg, m.keys.Down):
 			m.menu.MoveDown()
 		case key.Matches(vMsg, m.keys.Enter):
-			selected := m.menu.SelectedItem()
-			switch selected {
-			case components.TitleItemCreateCoach:
-				return m, func() tea.Msg {
-					return uistate.MsgSwitchPage{NewPage: uistate.PageCreateCoach}
-				}
-			case components.TitleItemLockerRoom:
-				return m, func() tea.Msg {
-					return uistate.MsgSwitchPage{NewPage: uistate.PageLockerRoom}
-				}
-			case components.TitleItemNewTournament:
-				return m, func() tea.Msg {
-					return uistate.MsgSwitchPage{NewPage: uistate.PageNewTournament}
-				}
-			case components.TitleItemNewBattleSelection:
-				return m, func() tea.Msg {
-					return uistate.MsgSwitchPage{NewPage: uistate.PageNewBattleSelection}
-				}
-			case components.TitleItemSettings:
-				return m, func() tea.Msg {
-					return uistate.MsgSwitchPage{NewPage: uistate.PageTitleSettings}
-				}
+			model, cmd, done := m.handleMenuSelect()
+			if done {
+				return model, cmd
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -103,6 +84,34 @@ func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func (m *ModelTitle) handleMenuSelect() (tea.Model, tea.Cmd, bool) {
+	selected := m.menu.SelectedItem()
+	switch selected {
+	case components.TitleItemCreateCoach:
+		return m, func() tea.Msg {
+			return uistate.MsgSwitchPage{NewPage: uistate.PageCreateCoach}
+		}, true
+	case components.TitleItemLockerRoom:
+		return m, func() tea.Msg {
+			return uistate.MsgSwitchPage{NewPage: uistate.PageLockerRoom}
+		}, true
+	case components.TitleItemNewTournament:
+		return m, func() tea.Msg {
+			return uistate.MsgSwitchPage{NewPage: uistate.PageNewTournament}
+		}, true
+	case components.TitleItemNewBattleSelection:
+		return m, func() tea.Msg {
+			return uistate.MsgSwitchPage{NewPage: uistate.PageNewBattleSelection}
+		}, true
+	case components.TitleItemSettings:
+		return m, func() tea.Msg {
+			return uistate.MsgSwitchPage{NewPage: uistate.PageTitleSettings}
+		}, true
+	}
+
+	return nil, nil, false
 }
 
 const logo = `

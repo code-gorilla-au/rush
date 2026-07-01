@@ -72,16 +72,20 @@ func TestPageBattleSelectionModel_Rendering(t *testing.T) {
 		odize.AssertEqual(t, stateSelectingOpponent, m.state)
 		odize.AssertTrue(t, m.selectedPlaybook != nil)
 
-		// 3. Select opponent -> confirming
-		m.Update(tea.KeyPressMsg{Text: "enter"})
-		odize.AssertEqual(t, stateConfirming, m.state)
-		odize.AssertTrue(t, m.selectedAITeam != nil)
+		// 3. Select opponent -> returns MsgSwitchBattlePage
+		_, cmd := m.Update(tea.KeyPressMsg{Text: "enter"})
+		odize.AssertTrue(t, cmd != nil)
+		msg := cmd()
+		switch v := msg.(type) {
+		case MsgSwitchBattlePage:
+			odize.AssertEqual(t, SubPageBattleConfirm, v.NewPage)
+			odize.AssertEqual(t, m.selectedPlaybook, v.SelectedPlaybook)
+			odize.AssertEqual(t, m.selectedAITeam, v.SelectedAITeam)
+		default:
+			t.Fatalf("expected MsgSwitchBattlePage, got %T", msg)
+		}
 
-		// 4. Back from confirming -> selecting opponent
-		m.Update(tea.KeyPressMsg{Text: "esc"})
-		odize.AssertEqual(t, stateSelectingOpponent, m.state)
-
-		// 5. Back from selecting opponent -> selecting playbook
+		// 4. Back from selecting opponent -> selecting playbook
 		m.Update(tea.KeyPressMsg{Text: "esc"})
 		odize.AssertEqual(t, stateSelectingPlaybook, m.state)
 	})
@@ -111,7 +115,7 @@ func TestPageBattleSelectionModel_Rendering(t *testing.T) {
 		m := NewModelBattleSelection(state, nil, nil, nil, theme)
 
 		// 1. Set some state
-		m.state = stateConfirming
+		m.state = stateSelectingOpponent
 		m.selectedPlaybook = &playbooks.Playbook{ID: 1, Name: "Playbook 1"}
 		m.selectedAITeam = &teams.AITeam{Team: teams.Team{ID: 2, Name: "Team A"}}
 
@@ -134,7 +138,7 @@ func TestPageBattleSelectionModel_Rendering(t *testing.T) {
 
 		// 1. Set some state to verify reset
 		if p, ok := m.subPageBattleSelection.(*PageBattleSelectionModel); ok {
-			p.state = stateConfirming
+			p.state = stateSelectingOpponent
 		}
 
 		// 2. Send MsgSwitchPage

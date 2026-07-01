@@ -45,7 +45,6 @@ type selectionState int
 const (
 	stateSelectingPlaybook selectionState = iota
 	stateSelectingOpponent
-	stateConfirming
 )
 
 type PageBattleSelectionModel struct {
@@ -152,10 +151,6 @@ func (m *PageBattleSelectionModel) handleKey(msg tea.KeyMsg) (*PageBattleSelecti
 			m.state = stateSelectingPlaybook
 			return m, nil
 		}
-		if m.state == stateConfirming {
-			m.state = stateSelectingOpponent
-			return m, nil
-		}
 		return m, func() tea.Msg {
 			return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 		}
@@ -170,46 +165,18 @@ func (m *PageBattleSelectionModel) handleKey(msg tea.KeyMsg) (*PageBattleSelecti
 		if m.state == stateSelectingOpponent {
 			m.selectedAITeam = m.aiTeamList.SelectedItem()
 			if m.selectedAITeam != nil {
-				m.state = stateConfirming
+				return m, func() tea.Msg {
+					return MsgSwitchBattlePage{
+						NewPage:          SubPageBattleConfirm,
+						SelectedPlaybook: m.selectedPlaybook,
+						SelectedAITeam:   m.selectedAITeam,
+					}
+				}
 			}
 			return m, nil
 		}
-		if m.state == stateConfirming {
-			return m, m.createGame
-		}
 	}
 	return m, nil
-}
-
-func (m *PageBattleSelectionModel) createGame() tea.Msg {
-	if m.selectedPlaybook == nil || m.selectedAITeam == nil {
-		return fmt.Errorf("missing playbook or opponent")
-	}
-
-	params := games.NewGameParams{
-		TeamA: games.TeamConfig{
-			TeamID:     m.globalState.Team.ID,
-			TeamName:   m.globalState.Team.Name,
-			Formations: m.selectedPlaybook.Formations,
-		},
-		TeamB: games.TeamConfig{
-			TeamID:     m.selectedAITeam.Team.ID,
-			TeamName:   m.selectedAITeam.Team.Name,
-			Formations: m.selectedAITeam.Playbook.Formations,
-		},
-	}
-
-	game, err := m.gameSvc.NewGame(m.globalState.Context(), params)
-	if err != nil {
-		return err
-	}
-
-	m.reset()
-
-	return uistate.MsgSwitchPage{
-		NewPage: uistate.PageGame,
-		GameID:  game.ID(),
-	}
 }
 
 func (m *PageBattleSelectionModel) reset() {
@@ -234,9 +201,6 @@ func (m *PageBattleSelectionModel) View() tea.View {
 	if m.err != nil {
 		content = m.theme.Logo.Render(fmt.Sprintf("Error: %v", m.err))
 		header = "ERROR"
-	} else if m.state == stateConfirming {
-		content = m.viewConfirmation()
-		header = "STEP 3: CONFIRMATION"
 	} else {
 		content = m.viewSelection()
 		if m.state == stateSelectingPlaybook {
@@ -289,17 +253,5 @@ func (m *PageBattleSelectionModel) viewSelection() string {
 			m.theme.SecondaryHeader.Render("AI TEAMS"),
 			aiTeamView,
 		),
-	)
-}
-
-func (m *PageBattleSelectionModel) viewConfirmation() string {
-	return lipgloss.JoinVertical(lipgloss.Center,
-		m.theme.Logo.Render("CONFIRM BATTLE"),
-		"",
-		fmt.Sprintf("Your Playbook: %s", m.selectedPlaybook.Name),
-		fmt.Sprintf("Opponent: %s", m.selectedAITeam.Team.Name),
-		"",
-		m.theme.ListSelected.Render("Press ENTER to start the game"),
-		"Press ESC to go back",
 	)
 }

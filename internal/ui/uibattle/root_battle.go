@@ -58,7 +58,7 @@ func (m *BattleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case uistate.MsgSwitchPage:
-		if msg.NewPage == uistate.PageNewBattleSelection {
+		if msg.NewPage == uistate.PageNewBattle {
 			m.currentPage = SubPageBattleSelection
 			return m, m.Init()
 		}

@@ -15,22 +15,22 @@ import (
 )
 
 type RootModel struct {
-	ctx                    context.Context
-	width                  int
-	height                 int
-	theme                  styles.IceTheme
-	currentPage            uistate.Page
-	pageTitle              tea.Model
-	pageCreateCoach        tea.Model
-	pageLocker             tea.Model
-	pageNewTournament      tea.Model
-	pageNewBattleSelection tea.Model
-	pageTitleSettings      tea.Model
-	pageGame               tea.Model
-	globalState            *uistate.GlobalState
-	teamsSvc               *teams.Service
-	playbookSvc            *playbooks.Service
-	gameSvc                *games.Service
+	ctx               context.Context
+	width             int
+	height            int
+	theme             styles.IceTheme
+	currentPage       uistate.Page
+	pageTitle         tea.Model
+	pageCreateCoach   tea.Model
+	pageLocker        tea.Model
+	pageNewTournament tea.Model
+	pageNewBattle     tea.Model
+	pageTitleSettings tea.Model
+	pageGame          tea.Model
+	globalState       *uistate.GlobalState
+	teamsSvc          *teams.Service
+	playbookSvc       *playbooks.Service
+	gameSvc           *games.Service
 }
 
 type Dependencies struct {
@@ -45,20 +45,20 @@ func New(deps Dependencies) *RootModel {
 	theme := styles.NewIceTheme()
 
 	return &RootModel{
-		ctx:                    context.Background(),
-		theme:                  theme,
-		currentPage:            uistate.PageTitle,
-		pageTitle:              NewModelTitle(state, theme),
-		pageCreateCoach:        NewModelCreateCoach(state, deps.TeamsSvc, theme),
-		pageLocker:             uilocker.NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, theme),
-		pageNewTournament:      NewModelNewTournament(state, theme),
-		pageNewBattleSelection: uibattle.NewBattleModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
-		pageTitleSettings:      NewModelTitleSettings(state, theme),
-		pageGame:               iugame.NewGameModel(state, deps.TeamsSvc, deps.GameSvc, theme),
-		globalState:            state,
-		teamsSvc:               deps.TeamsSvc,
-		playbookSvc:            deps.PlaybookSvc,
-		gameSvc:                deps.GameSvc,
+		ctx:               context.Background(),
+		theme:             theme,
+		currentPage:       uistate.PageTitle,
+		pageTitle:         NewModelTitle(state, theme),
+		pageCreateCoach:   NewModelCreateCoach(state, deps.TeamsSvc, theme),
+		pageLocker:        uilocker.NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, theme),
+		pageNewTournament: NewModelNewTournament(state, theme),
+		pageNewBattle:     uibattle.NewBattleModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
+		pageTitleSettings: NewModelTitleSettings(state, theme),
+		pageGame:          iugame.NewGameModel(state, deps.TeamsSvc, deps.GameSvc, theme),
+		globalState:       state,
+		teamsSvc:          deps.TeamsSvc,
+		playbookSvc:       deps.PlaybookSvc,
+		gameSvc:           deps.GameSvc,
 	}
 }
 
@@ -109,7 +109,7 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
 		cmds = append(cmds, cmd)
-		m.pageNewBattleSelection, cmd = m.pageNewBattleSelection.Update(msg)
+		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
 		cmds = append(cmds, cmd)
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 		cmds = append(cmds, cmd)
@@ -128,8 +128,8 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageLocker, cmd = m.pageLocker.Update(msg)
 	case uistate.PageNewTournament:
 		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
-	case uistate.PageNewBattleSelection:
-		m.pageNewBattleSelection, cmd = m.pageNewBattleSelection.Update(msg)
+	case uistate.PageNewBattle:
+		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
 	case uistate.PageTitleSettings:
 		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 	case uistate.PageGame:
@@ -154,8 +154,8 @@ func (m *RootModel) View() tea.View {
 		return m.pageLocker.View()
 	case uistate.PageNewTournament:
 		return m.pageNewTournament.View()
-	case uistate.PageNewBattleSelection:
-		return m.pageNewBattleSelection.View()
+	case uistate.PageNewBattle:
+		return m.pageNewBattle.View()
 	case uistate.PageTitleSettings:
 		return m.pageTitleSettings.View()
 	case uistate.PageGame:

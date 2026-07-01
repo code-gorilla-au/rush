@@ -107,7 +107,7 @@ func (m *ModelTitle) handleMenuSelect() (tea.Model, tea.Cmd, bool) {
 		}, true
 	case components.TitleItemNewBattleSelection:
 		return m, func() tea.Msg {
-			return uistate.MsgSwitchPage{NewPage: uistate.PageNewBattleSelection}
+			return uistate.MsgSwitchPage{NewPage: uistate.PageNewBattle}
 		}, true
 	case components.TitleItemSettings:
 		return m, func() tea.Msg {

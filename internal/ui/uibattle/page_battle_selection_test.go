@@ -142,7 +142,7 @@ func TestPageBattleSelectionModel_Rendering(t *testing.T) {
 		}
 
 		// 2. Send MsgSwitchPage
-		_, cmd := m.Update(uistate.MsgSwitchPage{NewPage: uistate.PageNewBattleSelection})
+		_, cmd := m.Update(uistate.MsgSwitchPage{NewPage: uistate.PageNewBattle})
 
 		// 3. Verify it's reset and returns loadData command
 		if p, ok := m.subPageBattleSelection.(*PageBattleSelectionModel); ok {

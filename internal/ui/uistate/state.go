@@ -25,7 +25,7 @@ const (
 	PageCreateCoach
 	PageLockerRoom
 	PageNewTournament
-	PageNewBattleSelection
+	PageNewBattle
 	PageTitleSettings
 	PageGame
 )

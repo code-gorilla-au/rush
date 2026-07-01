@@ -9,6 +9,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/iugame"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uibattle"
 	"github.com/code-gorilla-au/rush/internal/ui/uilocker"
 	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
@@ -51,7 +52,7 @@ func New(deps Dependencies) *RootModel {
 		pageCreateCoach:        NewModelCreateCoach(state, deps.TeamsSvc, theme),
 		pageLocker:             uilocker.NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, theme),
 		pageNewTournament:      NewModelNewTournament(state, theme),
-		pageNewBattleSelection: NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
+		pageNewBattleSelection: uibattle.NewBattleModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
 		pageTitleSettings:      NewModelTitleSettings(state, theme),
 		pageGame:               iugame.NewGameModel(state, deps.TeamsSvc, deps.GameSvc, theme),
 		globalState:            state,

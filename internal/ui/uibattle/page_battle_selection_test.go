@@ -1,4 +1,4 @@
-package ui
+package uibattle
 
 import (
 	"strings"
@@ -12,7 +12,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
-func TestModelNewBattleSelection_Rendering(t *testing.T) {
+func TestPageBattleSelectionModel_Rendering(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	group.Test("should load data and render selection", func(t *testing.T) {
@@ -21,14 +21,14 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 		}
 		theme := styles.NewIceTheme()
 
-		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
+		m := NewModelBattleSelection(state, nil, nil, nil, theme)
 		m.width = 100
 		m.height = 40
 		m.Update(tea.WindowSizeMsg{Width: 100, Height: 40})
 
-		msg := msgDataLoaded{
-			playbooks: []playbooks.Playbook{{ID: 1, Name: "Playbook 1"}},
-			aiTeams: []teams.AITeam{
+		msg := MsgBattleSelectionDataLoaded{
+			Playbooks: []playbooks.Playbook{{ID: 1, Name: "Playbook 1"}},
+			AITeams: []teams.AITeam{
 				{
 					Coach: teams.Coach{Name: "Coach A"},
 					Team:  teams.Team{Name: "Team A"},
@@ -53,11 +53,11 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
 		theme := styles.NewIceTheme()
-		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
+		m := NewModelBattleSelection(state, nil, nil, nil, theme)
 		m.Update(tea.WindowSizeMsg{Width: 100, Height: 40})
-		m.Update(msgDataLoaded{
-			playbooks: []playbooks.Playbook{{ID: 1, Name: "Playbook 1"}},
-			aiTeams: []teams.AITeam{
+		m.Update(MsgBattleSelectionDataLoaded{
+			Playbooks: []playbooks.Playbook{{ID: 1, Name: "Playbook 1"}},
+			AITeams: []teams.AITeam{
 				{
 					Team: teams.Team{ID: 2, Name: "Team A"},
 				},
@@ -89,7 +89,7 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 	group.Test("should handle back navigation to title", func(t *testing.T) {
 		state := &uistate.GlobalState{}
 		theme := styles.NewIceTheme()
-		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
+		m := NewModelBattleSelection(state, nil, nil, nil, theme)
 
 		_, cmd := m.Update(tea.KeyPressMsg{Text: "esc"})
 
@@ -108,7 +108,7 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
 		theme := styles.NewIceTheme()
-		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
+		m := NewModelBattleSelection(state, nil, nil, nil, theme)
 
 		// 1. Set some state
 		m.state = stateConfirming
@@ -129,16 +129,21 @@ func TestModelNewBattleSelection_Rendering(t *testing.T) {
 			Team: &teams.Team{ID: 1, Name: "My Team"},
 		}
 		theme := styles.NewIceTheme()
-		m := NewModelNewBattleSelection(state, nil, nil, nil, theme)
+		// We test BattleModel here as it now handles MsgSwitchPage
+		m := NewBattleModel(state, nil, nil, nil, theme)
 
 		// 1. Set some state to verify reset
-		m.state = stateConfirming
+		if p, ok := m.subPageBattleSelection.(*PageBattleSelectionModel); ok {
+			p.state = stateConfirming
+		}
 
 		// 2. Send MsgSwitchPage
 		_, cmd := m.Update(uistate.MsgSwitchPage{NewPage: uistate.PageNewBattleSelection})
 
 		// 3. Verify it's reset and returns loadData command
-		odize.AssertEqual(t, stateSelectingPlaybook, m.state)
+		if p, ok := m.subPageBattleSelection.(*PageBattleSelectionModel); ok {
+			odize.AssertEqual(t, stateSelectingPlaybook, p.state)
+		}
 		odize.AssertTrue(t, cmd != nil)
 	})
 

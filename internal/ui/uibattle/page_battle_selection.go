@@ -1,4 +1,4 @@
-package ui
+package uibattle
 
 import (
 	"fmt"
@@ -15,9 +15,9 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-type msgDataLoaded struct {
-	playbooks []playbooks.Playbook
-	aiTeams   []teams.AITeam
+type MsgBattleSelectionDataLoaded struct {
+	Playbooks []playbooks.Playbook
+	AITeams   []teams.AITeam
 }
 
 type battleSelectionKeyMap struct {
@@ -48,7 +48,7 @@ const (
 	stateConfirming
 )
 
-type ModelNewBattleSelection struct {
+type PageBattleSelectionModel struct {
 	width            int
 	height           int
 	theme            styles.IceTheme
@@ -66,9 +66,9 @@ type ModelNewBattleSelection struct {
 	err              error
 }
 
-func NewModelNewBattleSelection(globalState *uistate.GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, gameSvc *games.Service, theme styles.IceTheme) *ModelNewBattleSelection {
+func NewModelBattleSelection(globalState *uistate.GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, gameSvc *games.Service, theme styles.IceTheme) *PageBattleSelectionModel {
 	keys := newBattleSelectionKeyMap()
-	return &ModelNewBattleSelection{
+	return &PageBattleSelectionModel{
 		globalState:  globalState,
 		teamsSvc:     teamsSvc,
 		playbookSvc:  playbookSvc,
@@ -81,12 +81,12 @@ func NewModelNewBattleSelection(globalState *uistate.GlobalState, teamsSvc *team
 	}
 }
 
-func (m *ModelNewBattleSelection) Init() tea.Cmd {
+func (m *PageBattleSelectionModel) Init() tea.Cmd {
 	m.reset()
 	return m.loadData
 }
 
-func (m *ModelNewBattleSelection) loadData() tea.Msg {
+func (m *PageBattleSelectionModel) loadData() tea.Msg {
 	if m.globalState.Team == nil {
 		return fmt.Errorf("no team loaded")
 	}
@@ -101,29 +101,25 @@ func (m *ModelNewBattleSelection) loadData() tea.Msg {
 		return err
 	}
 
-	return msgDataLoaded{
-		playbooks: pb,
-		aiTeams:   aiTeams,
+	return MsgBattleSelectionDataLoaded{
+		Playbooks: pb,
+		AITeams:   aiTeams,
 	}
 }
 
-func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *PageBattleSelectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.footer.Update(msg)
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case uistate.MsgSwitchPage:
-		if msg.NewPage == uistate.PageNewBattleSelection {
-			return m, m.Init()
-		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		m.playbookList.SetSize(m.width/2-4, m.height-20)
 		m.aiTeamList.SetSize(m.width/2-4, m.height-20)
-	case msgDataLoaded:
-		cmds = append(cmds, m.playbookList.SetItems(msg.playbooks))
-		cmds = append(cmds, m.aiTeamList.SetItems(msg.aiTeams))
+	case MsgBattleSelectionDataLoaded:
+		cmds = append(cmds, m.playbookList.SetItems(msg.Playbooks))
+		cmds = append(cmds, m.aiTeamList.SetItems(msg.AITeams))
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
@@ -147,7 +143,7 @@ func (m *ModelNewBattleSelection) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m *ModelNewBattleSelection) handleKey(msg tea.KeyMsg) (*ModelNewBattleSelection, tea.Cmd) {
+func (m *PageBattleSelectionModel) handleKey(msg tea.KeyMsg) (*PageBattleSelectionModel, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.keys.Quit):
 		return m, tea.Quit
@@ -185,7 +181,7 @@ func (m *ModelNewBattleSelection) handleKey(msg tea.KeyMsg) (*ModelNewBattleSele
 	return m, nil
 }
 
-func (m *ModelNewBattleSelection) createGame() tea.Msg {
+func (m *PageBattleSelectionModel) createGame() tea.Msg {
 	if m.selectedPlaybook == nil || m.selectedAITeam == nil {
 		return fmt.Errorf("missing playbook or opponent")
 	}
@@ -216,7 +212,7 @@ func (m *ModelNewBattleSelection) createGame() tea.Msg {
 	}
 }
 
-func (m *ModelNewBattleSelection) reset() {
+func (m *PageBattleSelectionModel) reset() {
 	m.state = stateSelectingPlaybook
 	m.selectedPlaybook = nil
 	m.selectedAITeam = nil
@@ -225,7 +221,7 @@ func (m *ModelNewBattleSelection) reset() {
 	m.aiTeamList.Reset()
 }
 
-func (m *ModelNewBattleSelection) View() tea.View {
+func (m *PageBattleSelectionModel) View() tea.View {
 	if m.width == 0 || m.height == 0 {
 		return tea.NewView("Initializing...")
 	}
@@ -271,7 +267,7 @@ func (m *ModelNewBattleSelection) View() tea.View {
 	return view
 }
 
-func (m *ModelNewBattleSelection) viewSelection() string {
+func (m *PageBattleSelectionModel) viewSelection() string {
 	playbookView := m.playbookList.View(m.theme)
 	aiTeamView := m.aiTeamList.View(m.theme)
 
@@ -296,7 +292,7 @@ func (m *ModelNewBattleSelection) viewSelection() string {
 	)
 }
 
-func (m *ModelNewBattleSelection) viewConfirmation() string {
+func (m *PageBattleSelectionModel) viewConfirmation() string {
 	return lipgloss.JoinVertical(lipgloss.Center,
 		m.theme.Logo.Render("CONFIRM BATTLE"),
 		"",

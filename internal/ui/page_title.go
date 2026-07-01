@@ -63,6 +63,10 @@ func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.globalState.Coach = vMsg.Coach
 		m.globalState.Team = vMsg.Team
 		m.menu.SetHasCoach(m.globalState.Coach != nil)
+	case uistate.MsgSwitchPage:
+		if vMsg.NewPage == uistate.PageTitle {
+			m.menu.SetHasCoach(m.globalState.Coach != nil)
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(vMsg, m.keys.Quit):

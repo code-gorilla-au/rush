@@ -58,7 +58,7 @@ func NewModelCreateCoach(state *uistate.GlobalState, teamsSvc *teams.Service, th
 	t := textinput.New()
 	t.Placeholder = "Team Name"
 	t.CharLimit = 156
-	c.SetWidth(20)
+	t.SetWidth(20)
 
 	keys := newCreateCoachKeyMap()
 

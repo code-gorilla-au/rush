@@ -25,7 +25,6 @@ type RootModel struct {
 	pageLocker        tea.Model
 	pageNewTournament tea.Model
 	pageNewBattle     tea.Model
-	pageTitleSettings tea.Model
 	pageGame          tea.Model
 	globalState       *uistate.GlobalState
 	teamsSvc          *teams.Service
@@ -53,7 +52,6 @@ func New(deps Dependencies) *RootModel {
 		pageLocker:        uilocker.NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, theme),
 		pageNewTournament: NewModelNewTournament(state, theme),
 		pageNewBattle:     uibattle.NewBattleModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
-		pageTitleSettings: NewModelTitleSettings(state, theme),
 		pageGame:          iugame.NewGameModel(state, deps.TeamsSvc, deps.GameSvc, theme),
 		globalState:       state,
 		teamsSvc:          deps.TeamsSvc,
@@ -111,8 +109,6 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
 		cmds = append(cmds, cmd)
-		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
-		cmds = append(cmds, cmd)
 		m.pageGame, cmd = m.pageGame.Update(msg)
 		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
@@ -130,8 +126,6 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
 	case uistate.PageNewBattle:
 		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
-	case uistate.PageTitleSettings:
-		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
 	case uistate.PageGame:
 		m.pageGame, cmd = m.pageGame.Update(msg)
 	}
@@ -156,8 +150,6 @@ func (m *RootModel) View() tea.View {
 		return m.pageNewTournament.View()
 	case uistate.PageNewBattle:
 		return m.pageNewBattle.View()
-	case uistate.PageTitleSettings:
-		return m.pageTitleSettings.View()
 	case uistate.PageGame:
 		return m.pageGame.View()
 	}

@@ -27,7 +27,6 @@ type MsgSwitchLockerPage struct {
 // LockerModel handles all locker room related pages.
 type LockerModel struct {
 	currentPage                  SubPageLocker
-	subPageLocker                tea.Model
 	subPageLockerRoom            tea.Model
 	subPageLockerPlayers         tea.Model
 	subPageLockerPlaybooksList   tea.Model

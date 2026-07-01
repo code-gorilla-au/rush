@@ -2,7 +2,7 @@
 
 List of features intended for the project.
 
-- [ ] Single battle
+- [X] Single battle
 - [ ] Tournament mode
-- [ ] Record battles
+- [X] Record battles
 - [ ] Team statistics

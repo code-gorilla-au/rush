@@ -12,9 +12,9 @@ func TestLockerRoomList(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 	theme := styles.NewIceTheme()
 
-	group.Test("NewLockerRoomList should have 3 items", func(t *testing.T) {
+	group.Test("NewLockerRoomList should have 2 items", func(t *testing.T) {
 		l := NewLockerRoomList(theme)
-		odize.AssertEqual(t, 3, len(l.Model.Items()))
+		odize.AssertEqual(t, 2, len(l.Model.Items()))
 		odize.AssertEqual(t, ItemPlayers, l.SelectedItem())
 	})
 
@@ -42,9 +42,9 @@ func TestLockerRoomList(t *testing.T) {
 		l.Update(tea.KeyPressMsg{Text: "up"})
 		odize.AssertEqual(t, 0, l.Model.Index())
 
-		l.Model.Select(2)
+		l.Model.Select(1)
 		l.Update(tea.KeyPressMsg{Text: "down"})
-		odize.AssertEqual(t, 2, l.Model.Index())
+		odize.AssertEqual(t, 1, l.Model.Index())
 	})
 
 	err := group.Run()

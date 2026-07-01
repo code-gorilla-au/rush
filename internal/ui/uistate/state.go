@@ -26,7 +26,6 @@ const (
 	PageLockerRoom
 	PageNewTournament
 	PageNewBattle
-	PageTitleSettings
 	PageGame
 )
 

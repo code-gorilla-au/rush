@@ -1,9 +1,11 @@
 package components
 
 import (
+	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
@@ -33,7 +35,7 @@ func TestList(t *testing.T) {
 			odize.AssertTrue(t, ok)
 			odize.AssertEqual(t, "Item 1", selected)
 		}).
-		Test("SetSize updates dimensions with default padding", func(t *testing.T) {
+		Test("SetSize updates dimensions with no default padding", func(t *testing.T) {
 			items := []string{"Item 1"}
 			config := ListConfig[string]{
 				Items: items,
@@ -44,10 +46,9 @@ func TestList(t *testing.T) {
 			l := NewList(config, theme)
 
 			l.SetSize(100, 50)
-			// Defaults: left=2, right=2, top=1, bottom=1
-			// Total X padding = 4, Total Y padding = 2
-			odize.AssertEqual(t, 96, l.Model.Width())
-			odize.AssertEqual(t, 48, l.Model.Height())
+			// Defaults are now 0
+			odize.AssertEqual(t, 100, l.Model.Width())
+			odize.AssertEqual(t, 50, l.Model.Height())
 		}).
 		Test("Update handles tea.WindowSizeMsg when AutoResize is enabled", func(t *testing.T) {
 			items := []string{"Item 1"}
@@ -62,8 +63,8 @@ func TestList(t *testing.T) {
 
 			newModel, _ := l.Update(tea.WindowSizeMsg{Width: 80, Height: 40})
 
-			odize.AssertEqual(t, 76, newModel.Model.Width())
-			odize.AssertEqual(t, 38, newModel.Model.Height())
+			odize.AssertEqual(t, 80, newModel.Model.Width())
+			odize.AssertEqual(t, 40, newModel.Model.Height())
 		}).
 		Test("Update ignores tea.WindowSizeMsg when AutoResize is disabled", func(t *testing.T) {
 			items := []string{"Item 1"}
@@ -123,6 +124,37 @@ func TestList(t *testing.T) {
 
 			// Just check that it's not empty and has some length.
 			odize.AssertTrue(t, len(view) > 0)
+		}).
+		Test("View fills the available width", func(t *testing.T) {
+			items := []string{"Item 1"}
+			config := ListConfig[string]{
+				Items: items,
+				ItemMapper: func(s string) ListItem[string] {
+					return ListItem[string]{Data: s, TitleVal: s}
+				},
+				LeftPadding:  0,
+				RightPadding: 0,
+			}
+			theme := styles.NewIceTheme()
+			l := NewList(config, theme)
+			l.SetSize(50, 10)
+
+			view := l.View()
+			lines := strings.Split(view, "\n")
+			// Find a line that should have content (bubbles list might have some empty lines at start/end depending on padding)
+			// But since we enforced Width(50) on the style (well, we want to), every line should be 50 chars.
+
+			// For now, let's just see what it currently does.
+			maxWidth := 0
+			for _, line := range lines {
+				w := lipgloss.Width(line)
+				if w > maxWidth {
+					maxWidth = w
+				}
+			}
+			// If it's not enforcing width, maxWidth will likely be the width of "Item 1" + some padding
+			// which is much less than 50.
+			odize.AssertEqual(t, 50, maxWidth)
 		}).
 		Run()
 

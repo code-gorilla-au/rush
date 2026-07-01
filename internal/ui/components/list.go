@@ -1,8 +1,6 @@
 package components
 
 import (
-	"cmp"
-
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -61,6 +59,7 @@ func NewList[T any](config ListConfig[T], theme styles.IceTheme) List[T] {
 
 	l := list.New(items, delegate, 0, 0)
 	l.Title = config.Title
+	l.SetShowTitle(config.Title != "")
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(config.EnableFiltering)
 	l.SetShowHelp(false)
@@ -71,10 +70,10 @@ func NewList[T any](config ListConfig[T], theme styles.IceTheme) List[T] {
 		Active:        true,
 		AutoResize:    !config.DisableAutoResize,
 		ItemMapper:    config.ItemMapper,
-		topPadding:    cmp.Or(config.TopPadding, 1),
-		bottomPadding: cmp.Or(config.BottomPadding, 1),
-		leftPadding:   cmp.Or(config.LeftPadding, 2),
-		rightPadding:  cmp.Or(config.RightPadding, 2),
+		topPadding:    config.TopPadding,
+		bottomPadding: config.BottomPadding,
+		leftPadding:   config.LeftPadding,
+		rightPadding:  config.RightPadding,
 	}
 }
 
@@ -84,21 +83,31 @@ func (l *List[T]) Update(msg tea.Msg) (List[T], tea.Cmd) {
 	}
 	var cmd tea.Cmd
 
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
+	l.Model, cmd = l.Model.Update(msg)
+
+	if wm, ok := msg.(tea.WindowSizeMsg); ok {
 		if l.AutoResize {
-			l.SetSize(msg.Width, msg.Height)
+			l.SetSize(wm.Width, wm.Height)
+		} else {
+			l.SetSize(l.width, l.height)
 		}
 	}
 
-	l.Model, cmd = l.Model.Update(msg)
 	return *l, cmd
 }
 
 func (l *List[T]) View() string {
-	return lipgloss.NewStyle().
-		Padding(l.topPadding, l.rightPadding, l.bottomPadding, l.leftPadding).
-		Render(l.Model.View())
+	style := lipgloss.NewStyle().
+		Padding(l.topPadding, l.rightPadding, l.bottomPadding, l.leftPadding)
+
+	if l.width > 0 {
+		style = style.Width(l.width)
+	}
+	if l.height > 0 {
+		style = style.Height(l.height)
+	}
+
+	return style.Render(l.Model.View())
 }
 
 func (l *List[T]) SetSize(width, height int) {
@@ -161,4 +170,5 @@ func (l *List[T]) SetActive(active bool) {
 
 func (l *List[T]) SetTitle(title string) {
 	l.Model.Title = title
+	l.Model.SetShowTitle(title != "")
 }

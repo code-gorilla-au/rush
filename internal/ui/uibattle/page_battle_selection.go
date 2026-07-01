@@ -114,8 +114,10 @@ func (m *PageBattleSelectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.playbookList.SetSize(m.width/2-4, m.height-20)
-		m.aiTeamList.SetSize(m.width/2-4, m.height-20)
+		listWidth := (m.width - 10) / 2
+		listHeight := m.height - 20
+		m.playbookList.SetSize(listWidth, listHeight)
+		m.aiTeamList.SetSize(listWidth, listHeight)
 	case MsgBattleSelectionDataLoaded:
 		cmds = append(cmds, m.playbookList.SetItems(msg.Playbooks))
 		cmds = append(cmds, m.aiTeamList.SetItems(msg.AITeams))

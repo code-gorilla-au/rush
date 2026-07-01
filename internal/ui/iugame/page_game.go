@@ -43,6 +43,7 @@ func (m *PageGameModel) SetGameID(id int64) {
 }
 
 func (m *PageGameModel) Init() tea.Cmd {
+	m.game = nil
 	return func() tea.Msg {
 		game, err := m.gameSvc.GetGame(m.globalState.Context(), m.gameID)
 		if err != nil {

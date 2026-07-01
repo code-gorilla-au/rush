@@ -69,6 +69,23 @@ func TestGameModel(t *testing.T) {
 			_, ok := resMsg.(MsgGameError)
 			odize.AssertTrue(t, ok)
 		}).
+		Test("uistate.MsgSwitchPage to PageGame should reset to SubPageGameRoot", func(t *testing.T) {
+			theme := styles.NewIceTheme()
+			m := NewGameModel(state, teamsSvc, gameSvc, theme)
+
+			// Manually set to SubPageGameComplete
+			m.currentPage = SubPageGameComplete
+
+			// Send MsgSwitchPage to PageGame
+			msg := uistate.MsgSwitchPage{
+				NewPage: uistate.PageGame,
+				GameID:  123,
+			}
+
+			m.Update(msg)
+
+			odize.AssertEqual(t, SubPageGameRoot, m.currentPage)
+		}).
 		Run()
 
 	odize.AssertNoError(t, err)

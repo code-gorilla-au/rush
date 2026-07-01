@@ -77,6 +77,7 @@ func (m *GameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case uistate.MsgSwitchPage:
 		if msg.NewPage == uistate.PageGame {
+			m.currentPage = SubPageGameRoot
 			m.SetGameID(msg.GameID)
 			return m, m.Init()
 		}

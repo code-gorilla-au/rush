@@ -51,8 +51,9 @@ func (g *Game) ResolveRound(roll RollFn) (Result, error) {
 
 func (g *Game) CalculateWinner() (int64, error) {
 	if g.status != StatusComplete {
-		return 0, ErrGameNotComplete
+		return 0, fmt.Errorf("%d: %w", g.id, ErrGameNotComplete)
 	}
+
 	teamA := 0
 	teamB := 0
 

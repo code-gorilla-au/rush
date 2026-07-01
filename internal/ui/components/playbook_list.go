@@ -22,7 +22,8 @@ func NewPlaybookList(items []playbooks.Playbook, theme styles.IceTheme) Playbook
 					FilterVal: item.Name,
 				}
 			},
-			EnableFiltering: true,
+			EnableFiltering:   true,
+			DisableAutoResize: true,
 		}, theme),
 	}
 }

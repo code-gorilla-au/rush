@@ -23,9 +23,10 @@ type FormationListConfig struct {
 func NewFormationList(config FormationListConfig, theme styles.IceTheme) FormationList {
 	l := FormationList{
 		List: NewList(ListConfig[playbooks.Formation]{
-			Title:           config.Title,
-			Items:           config.Items,
-			EnableFiltering: config.EnableFiltering,
+			Title:             config.Title,
+			Items:             config.Items,
+			EnableFiltering:   config.EnableFiltering,
+			DisableAutoResize: true,
 			ItemMapper: func(f playbooks.Formation) ListItem[playbooks.Formation] {
 				desc := ""
 				if config.ShowDescription {

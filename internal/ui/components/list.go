@@ -1,15 +1,25 @@
 package components
 
 import (
+	"cmp"
+
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type List[T any] struct {
-	Model      list.Model
-	Active     bool
-	ItemMapper func(T) ListItem[T]
+	Model         list.Model
+	Active        bool
+	AutoResize    bool
+	ItemMapper    func(T) ListItem[T]
+	width         int
+	height        int
+	topPadding    int
+	bottomPadding int
+	leftPadding   int
+	rightPadding  int
 }
 
 type ListItem[T any] struct {
@@ -24,10 +34,15 @@ func (i ListItem[T]) Description() string { return i.DescVal }
 func (i ListItem[T]) FilterValue() string { return i.FilterVal }
 
 type ListConfig[T any] struct {
-	Title           string
-	Items           []T
-	ItemMapper      func(T) ListItem[T]
-	EnableFiltering bool
+	Title             string
+	Items             []T
+	ItemMapper        func(T) ListItem[T]
+	EnableFiltering   bool
+	DisableAutoResize bool
+	TopPadding        int
+	BottomPadding     int
+	LeftPadding       int
+	RightPadding      int
 }
 
 func NewList[T any](config ListConfig[T], theme styles.IceTheme) List[T] {
@@ -52,9 +67,14 @@ func NewList[T any](config ListConfig[T], theme styles.IceTheme) List[T] {
 	l.Styles.Title = theme.Title
 
 	return List[T]{
-		Model:      l,
-		Active:     true,
-		ItemMapper: config.ItemMapper,
+		Model:         l,
+		Active:        true,
+		AutoResize:    !config.DisableAutoResize,
+		ItemMapper:    config.ItemMapper,
+		topPadding:    cmp.Or(config.TopPadding, 1),
+		bottomPadding: cmp.Or(config.BottomPadding, 1),
+		leftPadding:   cmp.Or(config.LeftPadding, 2),
+		rightPadding:  cmp.Or(config.RightPadding, 2),
 	}
 }
 
@@ -63,16 +83,42 @@ func (l *List[T]) Update(msg tea.Msg) (List[T], tea.Cmd) {
 		return *l, nil
 	}
 	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		if l.AutoResize {
+			l.SetSize(msg.Width, msg.Height)
+		}
+	}
+
 	l.Model, cmd = l.Model.Update(msg)
 	return *l, cmd
 }
 
 func (l *List[T]) View() string {
-	return l.Model.View()
+	return lipgloss.NewStyle().
+		Padding(l.topPadding, l.rightPadding, l.bottomPadding, l.leftPadding).
+		Render(l.Model.View())
 }
 
 func (l *List[T]) SetSize(width, height int) {
-	l.Model.SetSize(width, height)
+	l.width = width
+	l.height = height
+	l.Model.SetSize(
+		max(0, width-l.leftPadding-l.rightPadding),
+		max(0, height-l.topPadding-l.bottomPadding),
+	)
+}
+
+func (l *List[T]) SetPadding(top, right, bottom, left int) {
+	l.topPadding = top
+	l.rightPadding = right
+	l.bottomPadding = bottom
+	l.leftPadding = left
+	l.Model.SetSize(
+		max(0, l.width-l.leftPadding-l.rightPadding),
+		max(0, l.height-l.topPadding-l.bottomPadding),
+	)
 }
 
 func (l *List[T]) SetItems(items []T) tea.Cmd {

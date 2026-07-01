@@ -22,7 +22,8 @@ func NewAITeamList(items []teams.AITeam, theme styles.IceTheme) AITeamList {
 					FilterVal: item.Team.Name,
 				}
 			},
-			EnableFiltering: true,
+			EnableFiltering:   true,
+			DisableAutoResize: true,
 		}, theme),
 	}
 }

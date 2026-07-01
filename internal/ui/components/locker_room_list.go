@@ -36,7 +36,8 @@ func NewLockerRoomList(theme styles.IceTheme) LockerRoomList {
 					TitleVal: i.String(),
 				}
 			},
-			EnableFiltering: false,
+			EnableFiltering:   false,
+			DisableAutoResize: true,
 		}, theme),
 	}
 }

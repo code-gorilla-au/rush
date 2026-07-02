@@ -14,12 +14,15 @@ func TestLockerModel_SwitchPage(t *testing.T) {
 
 	state := &uistate.GlobalState{}
 	theme := styles.NewIceTheme()
-	ts, ps, _ := uitest.SetupServices(t)
-	m := NewLockerModel(state, ts, ps, theme)
+	ts, ps, gs := uitest.SetupServices(t)
+	m := NewLockerModel(state, ts, ps, gs, theme)
 
 	group.Test("should update current page on MsgSwitchPage", func(t *testing.T) {
 		m.Update(MsgSwitchLockerPage{NewPage: SubPageLockerPlayers})
 		odize.AssertEqual(t, SubPageLockerPlayers, m.currentPage)
+
+		m.Update(MsgSwitchLockerPage{NewPage: SubPageLockerTeamStatistics})
+		odize.AssertEqual(t, SubPageLockerTeamStatistics, m.currentPage)
 
 		m.Update(MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList})
 		odize.AssertEqual(t, SubPageLockerPlaybooksList, m.currentPage)

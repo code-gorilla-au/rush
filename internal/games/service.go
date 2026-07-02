@@ -108,3 +108,54 @@ func (s *Service) CompleteGame(ctx context.Context, game Game) (Game, error) {
 
 	return updatedGame, nil
 }
+
+func (s *Service) GetTeamStatistics(ctx context.Context, teamID int64) (TeamStatistics, error) {
+	teamIDArg := sql.NullInt64{Int64: teamID, Valid: true}
+
+	models, err := s.Store.ListCompletedGamesByTeam(ctx, database.ListCompletedGamesByTeamParams{
+		TeamA: teamIDArg,
+		TeamB: teamIDArg,
+	})
+	if err != nil {
+		return TeamStatistics{}, fmt.Errorf("listing completed games: %w", err)
+	}
+
+	stats := TeamStatistics{}
+	for _, model := range models {
+		stats.GamesPlayed++
+
+		switch {
+		case !model.Winner.Valid || model.Winner.Int64 == 0:
+			stats.Draws++
+		case model.Winner.Int64 == teamID:
+			stats.Wins++
+		default:
+			stats.Losses++
+		}
+
+		var results []Result
+		if err := json.Unmarshal(model.ResultsLog, &results); err != nil {
+			return TeamStatistics{}, fmt.Errorf("parsing game %d results: %w", model.ID, err)
+		}
+
+		teamRoundsWon := len(filterResultsByTeam(ResultTeamA, results))
+		teamRoundsLost := len(filterResultsByTeam(ResultTeamB, results))
+		if model.TeamB.Valid && model.TeamB.Int64 == teamID {
+			teamRoundsWon, teamRoundsLost = teamRoundsLost, teamRoundsWon
+		}
+
+		stats.RoundsWon += teamRoundsWon
+		stats.RoundsLost += teamRoundsLost
+	}
+
+	if stats.GamesPlayed == 0 {
+		return stats, nil
+	}
+
+	stats.WinRate = (float64(stats.Wins) / float64(stats.GamesPlayed)) * 100
+	stats.RoundDifferential = stats.RoundsWon - stats.RoundsLost
+	stats.AverageRoundsWon = float64(stats.RoundsWon) / float64(stats.GamesPlayed)
+	stats.AverageRoundsLost = float64(stats.RoundsLost) / float64(stats.GamesPlayed)
+
+	return stats, nil
+}

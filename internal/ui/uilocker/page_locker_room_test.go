@@ -39,7 +39,8 @@ func TestModelLockerRoom_Selection(t *testing.T) {
 		theme := styles.NewIceTheme()
 		m := NewModelLockerRoom(state, theme)
 
-		// Select Playbooks (it's the second item)
+		// Select Playbooks (it's the third item)
+		m.Update(tea.KeyPressMsg{Text: "down"})
 		m.Update(tea.KeyPressMsg{Text: "down"})
 		odize.AssertEqual(t, components.ItemPlaybooks, m.list.SelectedItem())
 
@@ -51,6 +52,26 @@ func TestModelLockerRoom_Selection(t *testing.T) {
 		switch v := msg.(type) {
 		case MsgSwitchLockerPage:
 			odize.AssertEqual(t, SubPageLockerPlaybooksList, v.NewPage)
+		default:
+			t.Fatalf("expected MsgSwitchLockerPage, got %T", msg)
+		}
+	})
+
+	group.Test("should route to locker team statistics when team statistics item is selected", func(t *testing.T) {
+		state := &uistate.GlobalState{}
+		theme := styles.NewIceTheme()
+		m := NewModelLockerRoom(state, theme)
+
+		m.Update(tea.KeyPressMsg{Text: "down"})
+		odize.AssertEqual(t, components.ItemTeamStatistics, m.list.SelectedItem())
+
+		_, cmd := m.Update(tea.KeyPressMsg{Text: "enter"})
+
+		odize.AssertTrue(t, cmd != nil)
+		msg := cmd()
+		switch v := msg.(type) {
+		case MsgSwitchLockerPage:
+			odize.AssertEqual(t, SubPageLockerTeamStatistics, v.NewPage)
 		default:
 			t.Fatalf("expected MsgSwitchLockerPage, got %T", msg)
 		}

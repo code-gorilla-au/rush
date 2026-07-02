@@ -2,6 +2,7 @@ package uilocker
 
 import (
 	tea "charm.land/bubbletea/v2"
+	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
@@ -13,6 +14,7 @@ type SubPageLocker int
 const (
 	SubPageLockerRoom SubPageLocker = iota
 	SubPageLockerPlayers
+	SubPageLockerTeamStatistics
 	SubPageLockerPlaybooksList
 	SubPageLockerPlaybooksCreate
 	SubPageLockerPlaybooksEdit
@@ -29,16 +31,18 @@ type LockerModel struct {
 	currentPage                  SubPageLocker
 	subPageLockerRoom            tea.Model
 	subPageLockerPlayers         tea.Model
+	subPageLockerTeamStatistics  tea.Model
 	subPageLockerPlaybooksList   tea.Model
 	subPageLockerPlaybooksCreate tea.Model
 	subPageLockerPlaybooksEdit   tea.Model
 }
 
 // NewLockerModel returns a new LockerModel.
-func NewLockerModel(state *uistate.GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, theme styles.IceTheme) *LockerModel {
+func NewLockerModel(state *uistate.GlobalState, teamsSvc *teams.Service, playbookSvc *playbooks.Service, gameSvc *games.Service, theme styles.IceTheme) *LockerModel {
 	return &LockerModel{
 		subPageLockerRoom:            NewModelLockerRoom(state, theme),
 		subPageLockerPlayers:         NewModelLockerPlayers(state, teamsSvc, theme),
+		subPageLockerTeamStatistics:  NewModelLockerTeamStatistics(state, gameSvc, theme),
 		subPageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, playbookSvc, theme),
 		subPageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, playbookSvc, theme),
 		subPageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, playbookSvc, theme),
@@ -60,7 +64,7 @@ func (m *LockerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case MsgSwitchLockerPage:
 		switch msg.NewPage {
-		case SubPageLockerRoom, SubPageLockerPlayers, SubPageLockerPlaybooksList, SubPageLockerPlaybooksCreate, SubPageLockerPlaybooksEdit:
+		case SubPageLockerRoom, SubPageLockerPlayers, SubPageLockerTeamStatistics, SubPageLockerPlaybooksList, SubPageLockerPlaybooksCreate, SubPageLockerPlaybooksEdit:
 			m.currentPage = msg.NewPage
 		}
 
@@ -69,6 +73,8 @@ func (m *LockerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.subPageLockerRoom, cmd = m.subPageLockerRoom.Update(msg)
 		cmds = append(cmds, cmd)
 		m.subPageLockerPlayers, cmd = m.subPageLockerPlayers.Update(msg)
+		cmds = append(cmds, cmd)
+		m.subPageLockerTeamStatistics, cmd = m.subPageLockerTeamStatistics.Update(msg)
 		cmds = append(cmds, cmd)
 		m.subPageLockerPlaybooksList, cmd = m.subPageLockerPlaybooksList.Update(msg)
 		cmds = append(cmds, cmd)
@@ -84,6 +90,8 @@ func (m *LockerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.subPageLockerRoom, cmd = m.subPageLockerRoom.Update(msg)
 	case SubPageLockerPlayers:
 		m.subPageLockerPlayers, cmd = m.subPageLockerPlayers.Update(msg)
+	case SubPageLockerTeamStatistics:
+		m.subPageLockerTeamStatistics, cmd = m.subPageLockerTeamStatistics.Update(msg)
 	case SubPageLockerPlaybooksList:
 		m.subPageLockerPlaybooksList, cmd = m.subPageLockerPlaybooksList.Update(msg)
 	case SubPageLockerPlaybooksCreate:
@@ -102,6 +110,8 @@ func (m *LockerModel) View() tea.View {
 		return m.subPageLockerRoom.View()
 	case SubPageLockerPlayers:
 		return m.subPageLockerPlayers.View()
+	case SubPageLockerTeamStatistics:
+		return m.subPageLockerTeamStatistics.View()
 	case SubPageLockerPlaybooksList:
 		return m.subPageLockerPlaybooksList.View()
 	case SubPageLockerPlaybooksCreate:

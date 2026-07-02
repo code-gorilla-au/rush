@@ -76,6 +76,10 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, func() tea.Msg {
 					return MsgSwitchLockerPage{NewPage: SubPageLockerPlayers}
 				}
+			case components.ItemTeamStatistics:
+				return m, func() tea.Msg {
+					return MsgSwitchLockerPage{NewPage: SubPageLockerTeamStatistics}
+				}
 			case components.ItemPlaybooks:
 				return m, func() tea.Msg {
 					return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList}

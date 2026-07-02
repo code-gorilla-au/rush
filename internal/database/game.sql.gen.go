@@ -95,6 +95,55 @@ func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
 	return i, err
 }
 
+const listCompletedGamesByTeam = `-- name: ListCompletedGamesByTeam :many
+select id, name, tournament_id, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
+from games
+where status = 'complete'
+  and (team_a = ? or team_b = ?)
+order by updated_at desc
+`
+
+type ListCompletedGamesByTeamParams struct {
+	TeamA sql.NullInt64
+	TeamB sql.NullInt64
+}
+
+func (q *Queries) ListCompletedGamesByTeam(ctx context.Context, arg ListCompletedGamesByTeamParams) ([]Game, error) {
+	rows, err := q.db.QueryContext(ctx, listCompletedGamesByTeam, arg.TeamA, arg.TeamB)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Game
+	for rows.Next() {
+		var i Game
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.TournamentID,
+			&i.TeamA,
+			&i.TeamB,
+			&i.Winner,
+			&i.Status,
+			&i.Rounds,
+			&i.CurrentRound,
+			&i.ResultsLog,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateGame = `-- name: UpdateGame :one
 update games
 set name          = ?,

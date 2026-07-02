@@ -47,6 +47,19 @@ type Round struct {
 	TeamB TeamFormation
 }
 
+type TeamStatistics struct {
+	GamesPlayed       int
+	Wins              int
+	Draws             int
+	Losses            int
+	WinRate           float64
+	RoundsWon         int
+	RoundsLost        int
+	RoundDifferential int
+	AverageRoundsWon  float64
+	AverageRoundsLost float64
+}
+
 type TeamConfig struct {
 	TeamID     int64
 	TeamName   string

@@ -49,7 +49,7 @@ func New(deps Dependencies) *RootModel {
 		currentPage:       uistate.PageTitle,
 		pageTitle:         NewModelTitle(state, theme),
 		pageCreateCoach:   NewModelCreateCoach(state, deps.TeamsSvc, theme),
-		pageLocker:        uilocker.NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, theme),
+		pageLocker:        uilocker.NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
 		pageNewTournament: NewModelNewTournament(state, theme),
 		pageNewBattle:     uibattle.NewBattleModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
 		pageGame:          iugame.NewGameModel(state, deps.TeamsSvc, deps.GameSvc, theme),

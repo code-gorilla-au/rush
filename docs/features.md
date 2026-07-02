@@ -3,7 +3,8 @@
 List of features intended for the project.
 
 - [X] Single battle
-- [ ] Battle confirmation upgrade
+- [X] Battle confirmation upgrade
+- [ ] Better player names
 - [ ] Events emitted for lane battles
 - [ ] Settings to clear game data
 - [ ] Tournament mode

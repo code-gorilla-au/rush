@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/go-faker/faker/v4"
 )
 
 type Service struct {
@@ -175,17 +176,28 @@ func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, is
 	return fromTeamModel(model, playersModel), nil
 }
 
+type createPlayerParams struct {
+	name string `faker:"name"`
+}
+
 func (s *Service) createPlayers(ctx context.Context, teamID int64) ([]database.Player, error) {
 	modelPlayers := make([]database.Player, 5)
 
 	for i := 0; i < 5; i++ {
+		playerName := createPlayerParams{}
+
+		if err := faker.FakeData(&playerName); err != nil {
+			return modelPlayers, fmt.Errorf("creating player: %w", err)
+		}
+
 		model, err := s.store.CreatePlayer(ctx, database.CreatePlayerParams{
-			Name: "Player " + fmt.Sprint(i+1),
+			Name: playerName.name,
 			TeamID: sql.NullInt64{
 				Int64: teamID,
 				Valid: true,
 			},
 		})
+
 		if err != nil {
 			return modelPlayers, fmt.Errorf("creating player: %w", err)
 		}

@@ -97,6 +97,28 @@ func (g *Game) Name() string {
 	return g.name
 }
 
+func (g *Game) TeamAScore() int {
+	teamA := filterResultsByTeam(ResultTeamA, g.results)
+	return len(teamA)
+}
+
+func (g *Game) TeamBScore() int {
+	teamB := filterResultsByTeam(ResultTeamB, g.results)
+	return len(teamB)
+}
+
+func filterResultsByTeam(team ResultOutcome, results []Result) []Result {
+	var filteredResults []Result
+
+	for _, result := range results {
+		if result.Outcome == team {
+			filteredResults = append(filteredResults, result)
+		}
+	}
+
+	return filteredResults
+}
+
 func fromGameModel(m database.Game) (Game, error) {
 
 	var rounds [10]Round

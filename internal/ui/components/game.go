@@ -102,6 +102,9 @@ func (g *Game) View(theme styles.IceTheme) string {
 	}
 
 	roundInfo := theme.Header.Render(fmt.Sprintf("ROUND %d", roundNum))
+	scoreInfo := theme.SecondaryHeader.Render(
+		fmt.Sprintf("%s %d - %d %s", g.teamAName, g.game.TeamAScore(), g.game.TeamBScore(), g.teamBName),
+	)
 
 	var footer string
 	if g.resolved {
@@ -126,6 +129,7 @@ func (g *Game) View(theme styles.IceTheme) string {
 
 	content := lipgloss.JoinVertical(lipgloss.Center,
 		roundInfo,
+		scoreInfo,
 		roundView,
 		footer,
 	)

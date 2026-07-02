@@ -36,19 +36,19 @@ func TestRound(t *testing.T) {
 			odize.AssertEqual(t, "Team A", rComp.teamAName)
 			odize.AssertEqual(t, "Team B", rComp.teamBName)
 		}).
-		Test("View should render team names and players in side-by-side formation", func(t *testing.T) {
+		Test("View should render players in side-by-side formation", func(t *testing.T) {
 			rComp := NewRound(round, "Team A", "Team B")
 			theme := styles.NewIceTheme()
 			rendered := rComp.View(theme)
 
-			odize.AssertTrue(t, strings.Contains(rendered, "Team A"))
-			odize.AssertTrue(t, strings.Contains(rendered, "Team B"))
-			odize.AssertTrue(t, strings.Contains(rendered, "|"))
+			odize.AssertFalse(t, strings.Contains(rendered, "Team A"))
+			odize.AssertFalse(t, strings.Contains(rendered, "Team B"))
+			odize.AssertTrue(t, strings.Contains(rendered, "┃"))
 			odize.AssertTrue(t, strings.Contains(rendered, "Lane 1"))
 			odize.AssertTrue(t, strings.Contains(rendered, "Lane 2"))
 			odize.AssertTrue(t, strings.Contains(rendered, "Lane 3"))
 			// Check for player icons (dots)
-			odize.AssertTrue(t, strings.Contains(rendered, "●"))
+			odize.AssertTrue(t, strings.Contains(rendered, "⬤"))
 		}).
 		Run()
 

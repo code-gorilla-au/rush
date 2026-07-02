@@ -10,4 +10,4 @@ List of features intended for the project.
 - [ ] Settings to clear game data
 - [ ] Tournament mode
 - [X] Record battles
-- [ ] Team statistics
+- [X] Team statistics

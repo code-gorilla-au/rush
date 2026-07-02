@@ -4,7 +4,8 @@ List of features intended for the project.
 
 - [X] Single battle
 - [X] Battle confirmation upgrade
-- [ ] Better player names
+- [X] Better player names
+- [ ] Better coach creation journey
 - [ ] Events emitted for lane battles
 - [ ] Settings to clear game data
 - [ ] Tournament mode

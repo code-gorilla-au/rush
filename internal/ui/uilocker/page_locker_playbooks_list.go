@@ -84,7 +84,7 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case MsgPlaybooksLoaded:
 		m.playbooksLoaded = true
 		m.playbookList = components.NewPlaybookList(msg.Playbooks, m.theme)
-		m.playbookList.SetSize(m.width, m.height-10)
+		m.playbookList.SetSize(m.width/2, m.height-10)
 	case MsgSwitchLockerPage:
 		if msg.NewPage == SubPageLockerPlaybooksList {
 			cmds = append(cmds, m.loadPlaybooks)

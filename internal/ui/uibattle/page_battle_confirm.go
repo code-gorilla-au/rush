@@ -117,15 +117,7 @@ func (m *PageBattleConfirmModel) View() tea.View {
 		content = m.theme.Logo.Render(fmt.Sprintf("Error: %v", m.err))
 		header = "ERROR"
 	} else {
-		content = lipgloss.JoinVertical(lipgloss.Center,
-			m.theme.Logo.Render("CONFIRM BATTLE"),
-			"",
-			fmt.Sprintf("Your Playbook: %s", m.selectedPlaybook.Name),
-			fmt.Sprintf("Opponent: %s", m.selectedAITeam.Team.Name),
-			"",
-			m.theme.ListSelected.Render("Press ENTER to start the game"),
-			"Press ESC to go back",
-		)
+		content = m.viewConfirmation()
 	}
 
 	centeredContent := lipgloss.Place(
@@ -147,4 +139,71 @@ func (m *PageBattleConfirmModel) View() tea.View {
 		Render(centeredContent)
 
 	return view
+}
+
+func (m *PageBattleConfirmModel) viewConfirmation() string {
+	userTeamName := ""
+	userCoachName := ""
+	userPlayerNames := []string{}
+	if m.globalState.Team != nil {
+		userTeamName = m.globalState.Team.Name
+		userPlayerNames = getPlayerNames(m.globalState.Team.Players)
+	}
+	if m.globalState.Coach != nil {
+		userCoachName = m.globalState.Coach.Name
+	}
+
+	userPlaybookName := ""
+	if m.selectedPlaybook != nil {
+		userPlaybookName = m.selectedPlaybook.Name
+	}
+
+	opponentTeamName := ""
+	opponentCoachName := ""
+	opponentPlaybookName := ""
+	opponentPlayerNames := []string{}
+	if m.selectedAITeam != nil {
+		opponentTeamName = m.selectedAITeam.Team.Name
+		opponentCoachName = m.selectedAITeam.Coach.Name
+		opponentPlaybookName = m.selectedAITeam.Playbook.Name
+		opponentPlayerNames = getPlayerNames(m.selectedAITeam.Team.Players)
+	}
+
+	yourTile := components.NewTeamTile(userTeamName, userCoachName, userPlaybookName, userPlayerNames)
+	opponentTile := components.NewTeamTile(opponentTeamName, opponentCoachName, opponentPlaybookName, opponentPlayerNames)
+
+	vs := m.theme.Highlight.Render("VS")
+	vsWidth := max(4, lipgloss.Width(vs)+2)
+	tilesWidth := max(20, m.width-10)
+	tileWidth := max(20, (tilesWidth-vsWidth)/2)
+
+	leftTileView := yourTile.View(m.theme, tileWidth)
+	rightTileView := opponentTile.View(m.theme, tileWidth)
+	vsView := lipgloss.Place(
+		vsWidth,
+		max(lipgloss.Height(leftTileView), lipgloss.Height(rightTileView)),
+		lipgloss.Center,
+		lipgloss.Center,
+		vs,
+	)
+
+	tiles := lipgloss.JoinHorizontal(lipgloss.Top, leftTileView, vsView, rightTileView)
+
+	return lipgloss.JoinVertical(lipgloss.Center,
+		m.theme.Logo.Render("CONFIRM BATTLE"),
+		"",
+		tiles,
+		"",
+		m.theme.ListSelected.Render("Press ENTER to start the game"),
+		"Press ESC to go back",
+	)
+}
+
+func getPlayerNames(players []teams.Player) []string {
+	names := make([]string, len(players))
+	for i, player := range players {
+		names[i] = player.Name
+	}
+
+	return names
 }

@@ -50,7 +50,6 @@ func (m *PageBattleConfirmModel) Init() tea.Cmd {
 
 func (m *PageBattleConfirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.footer.Update(msg)
-	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -71,12 +70,16 @@ func (m *PageBattleConfirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	return m, tea.Batch(cmds...)
+	return m, nil
 }
 
 func (m *PageBattleConfirmModel) createGame() tea.Msg {
-	if m.selectedPlaybook == nil || m.selectedAITeam == nil {
-		return fmt.Errorf("missing playbook or opponent")
+	if m.globalState == nil || m.globalState.Team == nil || m.selectedPlaybook == nil || m.selectedAITeam == nil {
+		return fmt.Errorf("missing team, playbook, or opponent")
+	}
+
+	if m.gameSvc == nil {
+		return fmt.Errorf("game service is not configured")
 	}
 
 	params := games.NewGameParams{
@@ -142,36 +145,30 @@ func (m *PageBattleConfirmModel) View() tea.View {
 }
 
 func (m *PageBattleConfirmModel) viewConfirmation() string {
-	userTeamName := ""
-	userCoachName := ""
-	userPlayerNames := []string{}
-	if m.globalState.Team != nil {
-		userTeamName = m.globalState.Team.Name
-		userPlayerNames = getPlayerNames(m.globalState.Team.Players)
-	}
-	if m.globalState.Coach != nil {
-		userCoachName = m.globalState.Coach.Name
+	var userTeam *teams.Team
+	var userCoach *teams.Coach
+	if m.globalState != nil {
+		userTeam = m.globalState.Team
+		userCoach = m.globalState.Coach
 	}
 
-	userPlaybookName := ""
-	if m.selectedPlaybook != nil {
-		userPlaybookName = m.selectedPlaybook.Name
-	}
+	opponentTeam, opponentCoach, opponentPlaybook := m.opponentSelection()
 
-	opponentTeamName := ""
-	opponentCoachName := ""
-	opponentPlaybookName := ""
-	opponentPlayerNames := []string{}
-	if m.selectedAITeam != nil {
-		opponentTeamName = m.selectedAITeam.Team.Name
-		opponentCoachName = m.selectedAITeam.Coach.Name
-		opponentPlaybookName = m.selectedAITeam.Playbook.Name
-		opponentPlayerNames = getPlayerNames(m.selectedAITeam.Team.Players)
-	}
+	yourTile := newTeamTile(userTeam, userCoach, m.selectedPlaybook)
+	opponentTile := newTeamTile(opponentTeam, opponentCoach, opponentPlaybook)
+	tiles := m.viewVSTiles(yourTile, opponentTile)
 
-	yourTile := components.NewTeamTile(userTeamName, userCoachName, userPlaybookName, userPlayerNames)
-	opponentTile := components.NewTeamTile(opponentTeamName, opponentCoachName, opponentPlaybookName, opponentPlayerNames)
+	return lipgloss.JoinVertical(lipgloss.Center,
+		m.theme.Logo.Render("CONFIRM BATTLE"),
+		"",
+		tiles,
+		"",
+		m.theme.ListSelected.Render("Press ENTER to start the game"),
+		"Press ESC to go back",
+	)
+}
 
+func (m *PageBattleConfirmModel) viewVSTiles(yourTile, opponentTile components.TeamTile) string {
 	vs := m.theme.Highlight.Render("VS")
 	vsWidth := max(4, lipgloss.Width(vs)+2)
 	tilesWidth := max(20, m.width-10)
@@ -188,15 +185,37 @@ func (m *PageBattleConfirmModel) viewConfirmation() string {
 	)
 
 	tiles := lipgloss.JoinHorizontal(lipgloss.Top, leftTileView, vsView, rightTileView)
+	return tiles
+}
 
-	return lipgloss.JoinVertical(lipgloss.Center,
-		m.theme.Logo.Render("CONFIRM BATTLE"),
-		"",
-		tiles,
-		"",
-		m.theme.ListSelected.Render("Press ENTER to start the game"),
-		"Press ESC to go back",
-	)
+func (m *PageBattleConfirmModel) opponentSelection() (*teams.Team, *teams.Coach, *playbooks.Playbook) {
+	if m.selectedAITeam == nil {
+		return nil, nil, nil
+	}
+
+	return &m.selectedAITeam.Team, &m.selectedAITeam.Coach, &m.selectedAITeam.Playbook
+}
+
+func newTeamTile(team *teams.Team, coach *teams.Coach, playbook *playbooks.Playbook) components.TeamTile {
+	teamName := ""
+	coachName := ""
+	playbookName := ""
+	var playerNames []string
+
+	if team != nil {
+		teamName = team.Name
+		playerNames = getPlayerNames(team.Players)
+	}
+
+	if coach != nil {
+		coachName = coach.Name
+	}
+
+	if playbook != nil {
+		playbookName = playbook.Name
+	}
+
+	return components.NewTeamTile(teamName, coachName, playbookName, playerNames)
 }
 
 func getPlayerNames(players []teams.Player) []string {

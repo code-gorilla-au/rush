@@ -93,6 +93,9 @@ func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
+	case error:
+		m.err = msg
+
 	case uistate.MsgStateUpdated:
 		return m.handleStateUpdated(msg)
 	}
@@ -198,6 +201,11 @@ func (m *ModelCreateCoach) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
 
+	errorView := ""
+	if m.err != nil {
+		errorView = m.theme.Muted.Render(m.err.Error())
+	}
+
 	form := lipgloss.JoinVertical(
 		lipgloss.Left,
 		m.theme.Logo.Render("RUSH - NEW CAREER"),
@@ -207,6 +215,8 @@ func (m *ModelCreateCoach) View() tea.View {
 		"",
 		m.theme.SecondaryHeader.Render("Team Details"),
 		m.teamInput.View(),
+		"",
+		errorView,
 		"",
 		m.footer.View(m.theme),
 	)

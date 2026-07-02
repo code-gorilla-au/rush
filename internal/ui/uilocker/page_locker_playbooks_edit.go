@@ -32,6 +32,12 @@ func newLockerPlaybooksEditKeyMap() lockerPlaybooksEditKeyMap {
 	}
 }
 
+const (
+	availableFormationListIndex = iota
+	selectedFormationListIndex
+	maxFormationsPerPlaybook = 10
+)
+
 type ModelLockerPlaybooksEdit struct {
 	width                 int
 	height                int
@@ -51,12 +57,13 @@ type ModelLockerPlaybooksEdit struct {
 }
 
 func NewModelLockerPlaybooksEdit(state *uistate.GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksEdit {
-	return &ModelLockerPlaybooksEdit{
+	keys := newLockerPlaybooksEditKeyMap()
+	model := &ModelLockerPlaybooksEdit{
 		theme:       theme,
 		globalState: state,
 		playbookSvc: playbookSvc,
-		keys:        newLockerPlaybooksEditKeyMap(),
-		footer:      components.NewFooter(newLockerPlaybooksEditKeyMap()),
+		keys:        keys,
+		footer:      components.NewFooter(keys),
 		formationList: components.NewFormationList(components.FormationListConfig{
 			Title:           "Available Formations",
 			Items:           playbooks.Formations(),
@@ -70,13 +77,16 @@ func NewModelLockerPlaybooksEdit(state *uistate.GlobalState, playbookSvc *playbo
 			ShowDescription: false,
 		}, theme),
 	}
+	model.setActiveList(availableFormationListIndex)
+	return model
 }
 
 func (m *ModelLockerPlaybooksEdit) Init() tea.Cmd {
-	return nil
+	return m.reset()
 }
 
 func (m *ModelLockerPlaybooksEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m.footer.Update(msg)
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -86,106 +96,27 @@ func (m *ModelLockerPlaybooksEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case MsgSwitchLockerPage:
 		if msg.NewPage == SubPageLockerPlaybooksEdit {
 			if msg.Playbook != nil {
-				m.load(msg.Playbook)
+				cmds = append(cmds, m.load(msg.Playbook))
 			} else {
-				m.reset()
+				cmds = append(cmds, m.reset())
 			}
 		}
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Back):
-			if m.formationList.IsFiltering() {
-				break
-			}
-			return m, func() tea.Msg {
-				return MsgSwitchLockerPage{
-					NewPage: SubPageLockerPlaybooksCreate,
-					Playbook: &playbooks.Playbook{
-						ID:          m.playbookID,
-						Name:        m.playbookName,
-						Description: m.playbookDescription,
-						Formations:  m.newFormations,
-					},
-				}
-			}
+		model, cmd, handled := m.handleKey(msg)
+		if handled {
+			cmds = append(cmds, cmd)
+			return model, tea.Batch(cmds...)
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.formationList.SetSize(msg.Width/2-4, msg.Height-15)
-		m.selectedFormationList.SetSize(msg.Width/2-4, msg.Height-15)
-		m.footer.Update(msg)
+		listWidth := (m.width - 10) / 2
+		listHeight := m.height - 20
+		m.formationList.SetSize(listWidth, listHeight)
+		m.selectedFormationList.SetSize(listWidth, listHeight)
 	}
-
-	cmds = append(cmds, m.updateAddFormations(msg))
-
-	return m, tea.Batch(cmds...)
-}
-
-func (m *ModelLockerPlaybooksEdit) reset() {
-	m.newFormations = nil
-	m.playbookID = 0
-	m.playbookName = ""
-	m.playbookDescription = ""
-	m.selectedFormationList.SetItems(nil)
-	m.err = nil
-}
-
-func (m *ModelLockerPlaybooksEdit) load(p *playbooks.Playbook) {
-	m.newFormations = p.Formations
-	m.playbookID = p.ID
-	m.playbookName = p.Name
-	m.playbookDescription = p.Description
-	m.selectedFormationList.SetItems(m.newFormations)
-	m.err = nil
-}
-
-func (m *ModelLockerPlaybooksEdit) updateAddFormations(msg tea.Msg) tea.Cmd {
-	var cmds []tea.Cmd
-
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if m.formationList.IsFiltering() {
-			break
-		}
-		switch msg.String() {
-		case "tab":
-			m.activeList = (m.activeList + 1) % 2
-			m.formationList.SetActive(m.activeList == 0)
-			m.selectedFormationList.SetActive(m.activeList == 1)
-			return nil
-		case "enter":
-			if m.activeList == 0 {
-				if len(m.newFormations) < 10 {
-					f := m.formationList.SelectedItem()
-					if f.Name != "" {
-						m.newFormations = append(m.newFormations, f)
-						cmds = append(cmds, m.selectedFormationList.SetItems(m.newFormations))
-					}
-				}
-			} else {
-				if len(m.newFormations) > 0 {
-					idx := m.selectedFormationList.SelectedIndex()
-					if idx >= 0 && idx < len(m.newFormations) {
-						m.newFormations = append(m.newFormations[:idx], m.newFormations[idx+1:]...)
-						cmds = append(cmds, m.selectedFormationList.SetItems(m.newFormations))
-					}
-				}
-			}
-			return tea.Batch(cmds...)
-		case "s": // Save
-			if len(m.newFormations) > 0 {
-				return m.savePlaybook
-			}
-		}
-	}
-
-	m.formationList.SetActive(m.activeList == 0)
-	m.selectedFormationList.SetActive(m.activeList == 1)
 
 	var cmd tea.Cmd
 	m.formationList, cmd = m.formationList.Update(msg)
@@ -194,7 +125,108 @@ func (m *ModelLockerPlaybooksEdit) updateAddFormations(msg tea.Msg) tea.Cmd {
 	m.selectedFormationList, cmd = m.selectedFormationList.Update(msg)
 	cmds = append(cmds, cmd)
 
-	return tea.Batch(cmds...)
+	return m, tea.Batch(cmds...)
+}
+
+func (m *ModelLockerPlaybooksEdit) reset() tea.Cmd {
+	m.newFormations = nil
+	m.playbookID = 0
+	m.playbookName = ""
+	m.playbookDescription = ""
+	m.formationList.Reset()
+	m.selectedFormationList.Reset()
+	m.setActiveList(availableFormationListIndex)
+	m.err = nil
+	return m.selectedFormationList.SetItems(nil)
+}
+
+func (m *ModelLockerPlaybooksEdit) load(p *playbooks.Playbook) tea.Cmd {
+	m.newFormations = p.Formations
+	m.playbookID = p.ID
+	m.playbookName = p.Name
+	m.playbookDescription = p.Description
+	m.formationList.Reset()
+	m.selectedFormationList.Reset()
+	m.setActiveList(availableFormationListIndex)
+	m.err = nil
+	return m.selectedFormationList.SetItems(m.newFormations)
+}
+
+func (m *ModelLockerPlaybooksEdit) handleKey(msg tea.KeyMsg) (*ModelLockerPlaybooksEdit, tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit, true
+	case key.Matches(msg, m.keys.Back):
+		if m.formationList.IsFiltering() {
+			return m, nil, false
+		}
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{
+				NewPage: SubPageLockerPlaybooksCreate,
+				Playbook: &playbooks.Playbook{
+					ID:          m.playbookID,
+					Name:        m.playbookName,
+					Description: m.playbookDescription,
+					Formations:  m.newFormations,
+				},
+			}
+		}, true
+	case key.Matches(msg, m.keys.Tab):
+		if m.formationList.IsFiltering() {
+			return m, nil, false
+		}
+		if m.activeList == availableFormationListIndex {
+			m.setActiveList(selectedFormationListIndex)
+		} else {
+			m.setActiveList(availableFormationListIndex)
+		}
+		return m, nil, true
+	case key.Matches(msg, m.keys.Enter):
+		if m.formationList.IsFiltering() {
+			return m, nil, false
+		}
+		return m, m.toggleFormationSelection(), true
+	case key.Matches(msg, m.keys.Save):
+		if len(m.newFormations) > 0 {
+			return m, m.savePlaybook, true
+		}
+	}
+
+	return m, nil, false
+}
+
+func (m *ModelLockerPlaybooksEdit) setActiveList(activeList int) {
+	m.activeList = activeList
+	m.formationList.SetActive(activeList == availableFormationListIndex)
+	m.selectedFormationList.SetActive(activeList == selectedFormationListIndex)
+}
+
+func (m *ModelLockerPlaybooksEdit) toggleFormationSelection() tea.Cmd {
+	if m.activeList == availableFormationListIndex {
+		if len(m.newFormations) >= maxFormationsPerPlaybook {
+			return nil
+		}
+
+		formation := m.formationList.SelectedItem()
+		if formation.Name == "" {
+			return nil
+		}
+
+		m.newFormations = append(m.newFormations, formation)
+		return m.selectedFormationList.SetItems(m.newFormations)
+	}
+
+	if len(m.newFormations) == 0 {
+		return nil
+	}
+
+	idx := m.selectedFormationList.SelectedIndex()
+	if idx < 0 || idx >= len(m.newFormations) {
+		return nil
+	}
+
+	m.newFormations = append(m.newFormations[:idx], m.newFormations[idx+1:]...)
+	return m.selectedFormationList.SetItems(m.newFormations)
 }
 
 func (m *ModelLockerPlaybooksEdit) savePlaybook() tea.Msg {
@@ -221,6 +253,10 @@ func (m *ModelLockerPlaybooksEdit) savePlaybook() tea.Msg {
 }
 
 func (m *ModelLockerPlaybooksEdit) View() tea.View {
+	if m.width == 0 || m.height == 0 {
+		return tea.NewView("Initializing...")
+	}
+
 	view := tea.NewView("")
 	view.AltScreen = true
 
@@ -230,13 +266,10 @@ func (m *ModelLockerPlaybooksEdit) View() tea.View {
 	if m.err != nil {
 		content = m.theme.Logo.Render(fmt.Sprintf("Error: %v", m.err))
 	} else {
-		m.formationList.SetSize(m.width/2-4, m.height-15)
-		m.selectedFormationList.SetSize(m.width/2-4, m.height-15)
-
 		availableView := m.formationList.View(m.theme)
 		selectedView := m.selectedFormationList.View(m.theme)
 
-		if m.activeList == 0 {
+		if m.activeList == availableFormationListIndex {
 			availableView = m.theme.ActiveBorder.Render(availableView)
 			selectedView = m.theme.InactiveBorder.Render(selectedView)
 		} else {
@@ -256,7 +289,7 @@ func (m *ModelLockerPlaybooksEdit) View() tea.View {
 				selectedView,
 			),
 		)
-		content += "\n\n" + m.theme.Muted.Render(fmt.Sprintf("%d/10 formations • Tab: switch • Enter: add/remove • 's': save", len(m.newFormations)))
+		content += "\n\n" + m.theme.Muted.Render(fmt.Sprintf("%d/%d formations • Tab: switch • Enter: add/remove • 's': save", len(m.newFormations), maxFormationsPerPlaybook))
 	}
 
 	mainContent := lipgloss.JoinVertical(

@@ -5,7 +5,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
+	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 	"github.com/code-gorilla-au/rush/internal/ui/uitest"
 )
 
@@ -73,6 +75,26 @@ func TestNew(t *testing.T) {
 			updatedModel := newModel.(*RootModel)
 			odize.AssertTrue(t, updatedModel.width == 100)
 			odize.AssertTrue(t, updatedModel.height == 50)
+		}).
+		Test("Update should route from create coach to locker room when state is updated", func(t *testing.T) {
+			s, ps, gs := uitest.SetupServices(t)
+			m := New(Dependencies{
+				TeamsSvc:    s,
+				PlaybookSvc: ps,
+				GameSvc:     gs,
+			})
+
+			_, _ = m.Update(uistate.MsgSwitchPage{NewPage: uistate.PageCreateCoach})
+
+			coach := teams.Coach{ID: 1}
+			team := teams.Team{ID: 1}
+
+			_, cmd := m.Update(uistate.MsgStateUpdated{Coach: &coach, Team: &team})
+			odize.AssertTrue(t, cmd != nil)
+
+			routedMsg, ok := cmd().(uistate.MsgSwitchPage)
+			odize.AssertTrue(t, ok)
+			odize.AssertEqual(t, uistate.PageLockerRoom, routedMsg.NewPage)
 		}).
 		Run()
 

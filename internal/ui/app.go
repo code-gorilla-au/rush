@@ -86,6 +86,10 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.pageTitle, cmd = m.pageTitle.Update(msg)
 		cmds = append(cmds, cmd)
+		if m.currentPage == uistate.PageCreateCoach {
+			m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
+			cmds = append(cmds, cmd)
+		}
 		return m, tea.Batch(cmds...)
 	case tea.KeyMsg:
 		switch msg.String() {

@@ -177,7 +177,7 @@ func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, is
 }
 
 type createPlayerParams struct {
-	name string `faker:"name"`
+	Name string `faker:"name"`
 }
 
 func (s *Service) createPlayers(ctx context.Context, teamID int64) ([]database.Player, error) {
@@ -191,7 +191,7 @@ func (s *Service) createPlayers(ctx context.Context, teamID int64) ([]database.P
 		}
 
 		model, err := s.store.CreatePlayer(ctx, database.CreatePlayerParams{
-			Name: playerName.name,
+			Name: playerName.Name,
 			TeamID: sql.NullInt64{
 				Int64: teamID,
 				Valid: true,

@@ -12,7 +12,7 @@ const totalTeams = 12
 
 type AIGenerationParams struct {
 	CoachName  string `faker:"name"`
-	TeamName   string `faker:"username"`
+	TeamName   string
 	Persona    string
 	Formations []playbooks.Formation
 }
@@ -230,12 +230,17 @@ func generateAITeams() ([]AIGenerationParams, error) {
 		formationMap[f.Name] = f
 	}
 
+	nameGen := NewTeamNameGenerator()
+	teamNames := nameGen.GenerateUnique(totalTeams)
+
 	for i := 0; i < totalTeams; i++ {
 		tmpTeam := AIGenerationParams{}
 
 		if err := faker.FakeData(&tmpTeam); err != nil {
 			return nil, fmt.Errorf("generating team: %w", err)
 		}
+
+		tmpTeam.TeamName = teamNames[i]
 
 		persona := personas[i%len(personas)]
 		tmpTeam.Persona = persona.Name

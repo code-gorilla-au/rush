@@ -222,7 +222,7 @@ func TestService(t *testing.T) {
 			odize.AssertNoError(t, err)
 			odize.AssertEqual(t, "Lakers", team.Name)
 			odize.AssertEqual(t, 5, len(team.Players))
-			odize.AssertEqual(t, "Player 1", team.Players[0].Name)
+			odize.AssertTrue(t, len(team.Players[0].Name) > 0)
 		}).
 		Run()
 

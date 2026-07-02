@@ -1,7 +1,6 @@
 package teams
 
 import (
-	"fmt"
 	"math/rand/v2"
 	"strings"
 )
@@ -11,8 +10,6 @@ type TeamNameGenerator struct {
 }
 
 func NewTeamNameGenerator() *TeamNameGenerator {
-	// Using a fixed seed for determinism across runs if desired,
-	// or we could pass one in. For now, let's just use a new RNG.
 	return &TeamNameGenerator{
 		rng: rand.New(rand.NewPCG(42, 42)),
 	}
@@ -53,59 +50,60 @@ var (
 	professions = []string{
 		"Cook", "Smith", "Baker", "Butcher", "Slayer", "Reaper", "Whacker", "Crusher", "Believer", "Denier",
 	}
+
+	namePatterns = []func(*TeamNameGenerator) string{
+		func(g *TeamNameGenerator) string {
+			return "The " + g.pick(adjectives) + " " + g.pick(teamNouns)
+		},
+		func(g *TeamNameGenerator) string {
+			return g.pick(places) + " " + g.pick(teamNouns)
+		},
+		func(g *TeamNameGenerator) string {
+			return g.pick(adjectives) + " " + g.pick(teamNouns)
+		},
+		func(g *TeamNameGenerator) string {
+			noun := g.pick(teamNouns)
+			if singular, ok := strings.CutSuffix(noun, "s"); ok {
+				noun = singular
+			}
+
+			return noun + " of " + g.pick(doomThings)
+		},
+		func(g *TeamNameGenerator) string {
+			return g.pick(dockerAdjectives) + "-" + g.pick(dockerNouns)
+		},
+		func(g *TeamNameGenerator) string {
+			return g.pick(professions) + " " + g.pick(teamNouns)
+		},
+	}
 )
 
 func (g *TeamNameGenerator) Generate() string {
-	templates := []string{
-		"The %s %s", // The {Adjective} {Noun}s
-		"%s %s",     // {Place} {Noun}s
-		"%s %s",     // {Adjective} {Creature}s (reusing Nouns)
-		"%s of %s",  // {Noun} of {DoomThing}
-		"%s-%s",     // {DockerAdjective}-{DockerNoun}
-		"%s %s",     // {Profession} {PluralNoun} (reusing Nouns)
-	}
-
-	templateIdx := g.rng.IntN(len(templates))
-	template := templates[templateIdx]
-
-	switch templateIdx {
-	case 0: // The {Adjective} {Noun}s
-		return fmt.Sprintf(template, g.randomString(adjectives), g.randomString(teamNouns))
-	case 1: // {Place} {Noun}s
-		return fmt.Sprintf(template, g.randomString(places), g.randomString(teamNouns))
-	case 2: // {Adjective} {Creature}s
-		return fmt.Sprintf(template, g.randomString(adjectives), g.randomString(teamNouns))
-	case 3: // {Noun} of {DoomThing}
-		// Singularize noun for "X of Y"? Or keep plural? Example "Snacklords of Doom".
-		// Let's singularize some nouns if they end in 's'.
-		noun := g.randomString(teamNouns)
-		if strings.HasSuffix(noun, "s") {
-			noun = strings.TrimSuffix(noun, "s")
-		}
-		return fmt.Sprintf(template, noun, g.randomString(doomThings))
-	case 4: // {DockerAdjective}-{DockerNoun}
-		return fmt.Sprintf(template, g.randomString(dockerAdjectives), g.randomString(dockerNouns))
-	case 5: // {Profession} {PluralNoun}
-		return fmt.Sprintf(template, g.randomString(professions), g.randomString(teamNouns))
-	default:
-		return "Unknown Team"
-	}
+	pattern := namePatterns[g.rng.IntN(len(namePatterns))]
+	return pattern(g)
 }
 
-func (g *TeamNameGenerator) randomString(list []string) string {
+func (g *TeamNameGenerator) pick(list []string) string {
 	return list[g.rng.IntN(len(list))]
 }
 
 func (g *TeamNameGenerator) GenerateUnique(count int) []string {
-	seen := make(map[string]bool)
+	if count <= 0 {
+		return []string{}
+	}
+
+	seen := make(map[string]struct{}, count)
 	names := make([]string, 0, count)
 
 	for len(names) < count {
 		name := g.Generate()
-		if !seen[name] {
-			seen[name] = true
-			names = append(names, name)
+		if _, exists := seen[name]; exists {
+			continue
 		}
+
+		seen[name] = struct{}{}
+		names = append(names, name)
 	}
+
 	return names
 }

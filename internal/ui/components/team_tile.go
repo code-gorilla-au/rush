@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
@@ -26,41 +25,16 @@ func NewTeamTile(teamName, coachName, playbookName string, playerNames []string)
 }
 
 func (t TeamTile) View(theme styles.IceTheme, width int) string {
-	renderField := func(label, value string) string {
-		return lipgloss.JoinHorizontal(
-			lipgloss.Top,
-			theme.Muted.Render(fmt.Sprintf("%s: ", label)),
-			theme.Base.Render(nonEmpty(value, "Unknown")),
-		)
-	}
-
-	players := make([]string, 0, len(t.PlayerNames))
-	for _, playerName := range t.PlayerNames {
-		trimmedName := strings.TrimSpace(playerName)
-		if trimmedName == "" {
-			continue
-		}
-
-		players = append(players, theme.Player.Render(fmt.Sprintf("• %s", trimmedName)))
-	}
-
-	playerView := theme.Muted.Render("No players")
-	if len(players) > 0 {
-		playerView = lipgloss.JoinVertical(lipgloss.Left, players...)
-	}
-
-	tileBody := lipgloss.JoinVertical(
-		lipgloss.Left,
-		theme.SecondaryHeader.Render(nonEmpty(t.TeamName, "Unknown Team")),
-		renderField("Coach", t.CoachName),
-		renderField("Playbook", t.PlaybookName),
+	tileBody := lipgloss.JoinVertical(lipgloss.Left,
+		theme.SecondaryHeader.Render(valueOrDefault(t.TeamName, "Unknown Team")),
+		renderField(theme, "Coach", t.CoachName),
+		renderField(theme, "Playbook", t.PlaybookName),
 		"",
 		theme.Muted.Render("Players"),
-		playerView,
+		renderPlayers(theme, t.PlayerNames),
 	)
 
-	tileStyle := theme.RoundBorder
-	tileStyle.Align(lipgloss.Left)
+	tileStyle := theme.RoundBorder.Copy().Align(lipgloss.Left)
 
 	if width > 0 {
 		tileStyle = tileStyle.Width(width)
@@ -69,7 +43,33 @@ func (t TeamTile) View(theme styles.IceTheme, width int) string {
 	return tileStyle.Render(tileBody)
 }
 
-func nonEmpty(value, fallback string) string {
+func renderField(theme styles.IceTheme, label, value string) string {
+	return lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		theme.Muted.Render(label+": "),
+		theme.Base.Render(valueOrDefault(value, "Unknown")),
+	)
+}
+
+func renderPlayers(theme styles.IceTheme, playerNames []string) string {
+	players := make([]string, 0, len(playerNames))
+	for _, playerName := range playerNames {
+		name := strings.TrimSpace(playerName)
+		if name == "" {
+			continue
+		}
+
+		players = append(players, theme.Player.Render("• "+name))
+	}
+
+	if len(players) == 0 {
+		return theme.Muted.Render("No players")
+	}
+
+	return lipgloss.JoinVertical(lipgloss.Left, players...)
+}
+
+func valueOrDefault(value, fallback string) string {
 	trimmed := strings.TrimSpace(value)
 	if trimmed == "" {
 		return fallback

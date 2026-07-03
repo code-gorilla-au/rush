@@ -67,7 +67,7 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.game = new(games.Game)
 		*m.game = msg.Game
 		teamA, teamB := getTeamNames(m.game.Name())
-		m.gameComp = components.NewGame(m.game, teamA, teamB, nil)
+		m.gameComp = components.NewGame(m.game, teamA, teamB, games.DiceRoll)
 		cmds = append(cmds, m.gameComp.Init())
 	case components.MsgResolveRound:
 		cmds = append(cmds, m.gameComp.Update(msg))
@@ -81,7 +81,7 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case components.MsgNextRound:
 		if !m.game.IsGameComplete() {
 			teamA, teamB := getTeamNames(m.game.Name())
-			m.gameComp = components.NewGame(m.game, teamA, teamB, nil)
+			m.gameComp = components.NewGame(m.game, teamA, teamB, games.DiceRoll)
 			cmds = append(cmds, m.gameComp.Init())
 		} else {
 			cmds = append(cmds, func() tea.Msg {

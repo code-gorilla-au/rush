@@ -2,7 +2,6 @@ package components
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -31,9 +30,7 @@ type MsgNextRound struct{}
 // NewGame creates a new Game component.
 func NewGame(game *games.Game, teamAName, teamBName string, rollFn games.RollFn) Game {
 	if rollFn == nil {
-		rollFn = func() int {
-			return rand.IntN(10) + 1 // 1-10
-		}
+		rollFn = games.DiceRoll
 	}
 
 	currentRoundIdx := game.CurrentRound()

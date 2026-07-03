@@ -1,6 +1,9 @@
 package games
 
-import "errors"
+import (
+	"errors"
+	"math/rand/v2"
+)
 
 func NewRound() Round {
 	return Round{
@@ -132,4 +135,8 @@ func (s *TeamFormation) LaneFill(lane int, players int) {
 	for i := 0; i < players; i++ {
 		s.Lanes[lane] = append(s.Lanes[lane], i)
 	}
+}
+
+func DiceRoll() int {
+	return rand.IntN(6) + 1
 }

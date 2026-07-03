@@ -18,7 +18,13 @@ The playtest focus is strictly on high-impact token decisions and coach identity
 3. **Reveal**: Results are revealed.
 4. **Reaction Window**: Eligible Reaction tokens may be declared.
 5. **Resolution Window**: Eligible Resolution tokens may be declared.
-6. **Lane Update**: Apply final outcome for the duel.
+6. **Lane Update**: Apply a final outcome for the duel.
+
+#### Duel Definition and Token Scope
+*   A **duel** is one complete lane interaction between the two opposing players, from Pre-roll Window through Lane Update.
+*   A lane may contain multiple duels across a match (for example, if a lane remains unresolved and is contested again later).
+*   Unless a token explicitly says otherwise, a token affects **only the current duel** in that lane.
+*   Token effects apply to all rolls that occur inside that duel (for example, replacement re-rolls), but never carry into future duels or other lanes.
 
 #### Global Token Constraints
 *   Each coach equips exactly **3 tokens** per match.

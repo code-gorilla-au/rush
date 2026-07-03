@@ -122,30 +122,9 @@ func (s *Service) GetTeamStatistics(ctx context.Context, teamID int64) (TeamStat
 
 	stats := TeamStatistics{}
 	for _, model := range models {
-		stats.GamesPlayed++
-
-		switch {
-		case !model.Winner.Valid || model.Winner.Int64 == 0:
-			stats.Draws++
-		case model.Winner.Int64 == teamID:
-			stats.Wins++
-		default:
-			stats.Losses++
+		if err = s.processGameForStats(&stats, model, teamID); err != nil {
+			return TeamStatistics{}, err
 		}
-
-		var results []Result
-		if err := json.Unmarshal(model.ResultsLog, &results); err != nil {
-			return TeamStatistics{}, fmt.Errorf("parsing game %d results: %w", model.ID, err)
-		}
-
-		teamRoundsWon := len(filterResultsByTeam(ResultTeamA, results))
-		teamRoundsLost := len(filterResultsByTeam(ResultTeamB, results))
-		if model.TeamB.Valid && model.TeamB.Int64 == teamID {
-			teamRoundsWon, teamRoundsLost = teamRoundsLost, teamRoundsWon
-		}
-
-		stats.RoundsWon += teamRoundsWon
-		stats.RoundsLost += teamRoundsLost
 	}
 
 	if stats.GamesPlayed == 0 {
@@ -158,4 +137,32 @@ func (s *Service) GetTeamStatistics(ctx context.Context, teamID int64) (TeamStat
 	stats.AverageRoundsLost = float64(stats.RoundsLost) / float64(stats.GamesPlayed)
 
 	return stats, nil
+}
+
+func (s *Service) processGameForStats(stats *TeamStatistics, model database.Game, teamID int64) error {
+	stats.GamesPlayed++
+
+	switch {
+	case !model.Winner.Valid || model.Winner.Int64 == 0:
+		stats.Draws++
+	case model.Winner.Int64 == teamID:
+		stats.Wins++
+	default:
+		stats.Losses++
+	}
+
+	var results []Result
+	if err := json.Unmarshal(model.ResultsLog, &results); err != nil {
+		return fmt.Errorf("parsing game %d results: %w", model.ID, err)
+	}
+
+	teamRoundsWon := len(filterResultsByTeam(ResultTeamA, results))
+	teamRoundsLost := len(filterResultsByTeam(ResultTeamB, results))
+	if model.TeamB.Valid && model.TeamB.Int64 == teamID {
+		teamRoundsWon, teamRoundsLost = teamRoundsLost, teamRoundsWon
+	}
+
+	stats.RoundsWon += teamRoundsWon
+	stats.RoundsLost += teamRoundsLost
+	return nil
 }

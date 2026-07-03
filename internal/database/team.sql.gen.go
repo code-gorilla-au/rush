@@ -29,21 +29,28 @@ func (q *Queries) ClearDefaultTeam(ctx context.Context) error {
 }
 
 const createCoach = `-- name: CreateCoach :one
-INSERT INTO coaches (name, is_human, is_default) VALUES (?, ?, ?) RETURNING id, name, is_default, is_human, created_at, updated_at
+INSERT INTO coaches (name, persona, is_human, is_default) VALUES (?, ?, ?, ?) RETURNING id, name, persona, is_default, is_human, created_at, updated_at
 `
 
 type CreateCoachParams struct {
 	Name      string
+	Persona   string
 	IsHuman   sql.NullBool
 	IsDefault sql.NullBool
 }
 
 func (q *Queries) CreateCoach(ctx context.Context, arg CreateCoachParams) (Coach, error) {
-	row := q.db.QueryRowContext(ctx, createCoach, arg.Name, arg.IsHuman, arg.IsDefault)
+	row := q.db.QueryRowContext(ctx, createCoach,
+		arg.Name,
+		arg.Persona,
+		arg.IsHuman,
+		arg.IsDefault,
+	)
 	var i Coach
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Persona,
 		&i.IsDefault,
 		&i.IsHuman,
 		&i.CreatedAt,
@@ -126,7 +133,7 @@ func (q *Queries) DeleteTeam(ctx context.Context, id int64) error {
 }
 
 const getAICoaches = `-- name: GetAICoaches :many
-SELECT id, name, is_default, is_human, created_at, updated_at FROM coaches WHERE is_human = false
+SELECT id, name, persona, is_default, is_human, created_at, updated_at FROM coaches WHERE is_human = false
 `
 
 func (q *Queries) GetAICoaches(ctx context.Context) ([]Coach, error) {
@@ -141,6 +148,7 @@ func (q *Queries) GetAICoaches(ctx context.Context) ([]Coach, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Persona,
 			&i.IsDefault,
 			&i.IsHuman,
 			&i.CreatedAt,
@@ -160,7 +168,7 @@ func (q *Queries) GetAICoaches(ctx context.Context) ([]Coach, error) {
 }
 
 const getCoach = `-- name: GetCoach :one
-SELECT id, name, is_default, is_human, created_at, updated_at FROM coaches WHERE id = ?
+SELECT id, name, persona, is_default, is_human, created_at, updated_at FROM coaches WHERE id = ?
 `
 
 func (q *Queries) GetCoach(ctx context.Context, id int64) (Coach, error) {
@@ -169,6 +177,7 @@ func (q *Queries) GetCoach(ctx context.Context, id int64) (Coach, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Persona,
 		&i.IsDefault,
 		&i.IsHuman,
 		&i.CreatedAt,
@@ -178,7 +187,7 @@ func (q *Queries) GetCoach(ctx context.Context, id int64) (Coach, error) {
 }
 
 const getCoaches = `-- name: GetCoaches :many
-SELECT id, name, is_default, is_human, created_at, updated_at FROM coaches
+SELECT id, name, persona, is_default, is_human, created_at, updated_at FROM coaches
 `
 
 func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
@@ -193,6 +202,7 @@ func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Persona,
 			&i.IsDefault,
 			&i.IsHuman,
 			&i.CreatedAt,
@@ -212,7 +222,7 @@ func (q *Queries) GetCoaches(ctx context.Context) ([]Coach, error) {
 }
 
 const getDefaultCoach = `-- name: GetDefaultCoach :one
-SELECT id, name, is_default, is_human, created_at, updated_at FROM coaches WHERE is_default = true LIMIT 1
+SELECT id, name, persona, is_default, is_human, created_at, updated_at FROM coaches WHERE is_default = true LIMIT 1
 `
 
 func (q *Queries) GetDefaultCoach(ctx context.Context) (Coach, error) {
@@ -221,6 +231,7 @@ func (q *Queries) GetDefaultCoach(ctx context.Context) (Coach, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Persona,
 		&i.IsDefault,
 		&i.IsHuman,
 		&i.CreatedAt,

@@ -51,13 +51,23 @@ func TestService(t *testing.T) {
 
 			coach, err := s.CreateCoach(ctx, CreateCoachParams{
 				Name:    name,
+				Persona: CoachPersonaBastion,
 				IsHuman: false,
 			})
 			odize.AssertNoError(t, err)
 			odize.AssertTrue(t, coach.ID > 0)
 			odize.AssertEqual(t, name, coach.Name)
+			odize.AssertEqual(t, CoachPersonaBastion, coach.Persona)
 			odize.AssertFalse(t, coach.CreatedAt.IsZero())
 			odize.AssertFalse(t, coach.UpdatedAt.IsZero())
+		}).
+		Test("CreateCoach should default persona to wildcard when not provided", func(t *testing.T) {
+			coach, err := s.CreateCoach(t.Context(), CreateCoachParams{
+				Name:    "Coach Without Persona",
+				IsHuman: true,
+			})
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, CoachPersonaWildcard, coach.Persona)
 		}).
 		Test("SetDefaultCoach should set the default coach", func(t *testing.T) {
 			ctx := t.Context()

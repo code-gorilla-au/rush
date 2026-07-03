@@ -1,6 +1,7 @@
 package teams
 
 import (
+	"cmp"
 	"context"
 	"database/sql"
 	"errors"
@@ -24,13 +25,15 @@ func NewTeamsService(store Store, playbookSvc PlaybookCreatGetter) *Service {
 
 type CreateCoachParams struct {
 	Name      string
+	Persona   CoachPersona
 	IsHuman   bool
 	IsDefault bool
 }
 
 func (s *Service) CreateCoach(ctx context.Context, params CreateCoachParams) (Coach, error) {
 	model, err := s.store.CreateCoach(ctx, database.CreateCoachParams{
-		Name: params.Name,
+		Name:    params.Name,
+		Persona: string(cmp.Or(params.Persona, CoachPersonaWildcard)),
 		IsHuman: sql.NullBool{
 			Bool:  params.IsHuman,
 			Valid: true,

@@ -8,6 +8,7 @@ func fromCoachModel(m database.Coach) Coach {
 	return Coach{
 		ID:        m.ID,
 		Name:      m.Name,
+		Persona:   CoachPersona(m.Persona),
 		IsDefault: m.IsDefault.Bool,
 		IsHuman:   m.IsHuman.Bool,
 		CreatedAt: m.CreatedAt.Time,

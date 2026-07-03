@@ -17,7 +17,7 @@ SELECT * FROM coaches;
 SELECT * FROM coaches WHERE is_human = false;
 
 -- name: CreateCoach :one
-INSERT INTO coaches (name, is_human, is_default) VALUES (?, ?, ?) RETURNING *;
+INSERT INTO coaches (name, persona, is_human, is_default) VALUES (?, ?, ?, ?) RETURNING *;
 
 -- name: DeleteCoach :exec
 DELETE FROM coaches WHERE id = ?;

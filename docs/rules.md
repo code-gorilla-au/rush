@@ -10,8 +10,10 @@ Rush is a five-player lane battle game. Rush takes some elements from risk and b
 
 - A match is ten rounds.
 - At the battle selection screen, a human coach picks an opponent.
+- Human coaches select a coach persona (Vanguard, Bastion, Trickster, or Wildcard).
 - Human coaches must select one of their created playbooks before the match starts.
 - A playbook defines how the coach assigns players to lanes and how those assignments are prioritised each round.
+- Coaches equip exactly three single-use tokens from their persona's allowed list.
 
 ## Round flow
 
@@ -25,8 +27,15 @@ Each round is resolved in this order:
    - Assignments are made according to the selected playbook.
 
 3. **Lane duels**
-   - Players in the same lane duel and roll `1d6`. Highest score wins.
-   - If dice rolls are equal, immediately re-roll.
+   - A duel is one complete lane interaction between two opposing players.
+   - Each duel follows these windows:
+     1. **Pre-roll Window**: Coaches may declare one Pre-roll token.
+     2. **Roll**: Both players roll `1d6`.
+     3. **Reveal**: Results are revealed. Highest score wins.
+     4. **Reaction Window**: Eligible Reaction tokens may be declared.
+     5. **Resolution Window**: Eligible Resolution tokens may be declared.
+     6. **Lane Update**: Apply the final outcome.
+   - If dice rolls are equal and no tokens resolve the tie, immediately re-roll.
    - The losing player is eliminated for the round.
    - Lane duels continue until no opposing players remain in that lane.
 
@@ -56,15 +65,41 @@ To keep the game simple but add meaningful decisions, playbooks and coaches shou
   - **Control play**: spread players to contest all lanes and reduce variance.
 - This creates different risk profiles across rounds instead of repeating one optimal pattern.
 
-### 3) Tactical resources per match
+### 3) Tactical Tokens
 
-- Give each coach a small tactical resource pool (for example, `2` tokens per match).
-- A token can be spent on effects such as:
-  - `+1` to a single duel roll (declared before rolling), or
-  - one re-roll in a chosen lane.
-- Limited resources force long-term planning across ten rounds.
+Coaches use tokens to influence the outcome of duels. 
+- Each token is **single-use** per match.
+- Max **one token per coach per duel**.
+- Tokens do not stack for the same coach in a single duel.
 
-### 4) Lane outcome value beyond score
+#### Token Library
+
+| Token | Timing | Effect |
+| :--- | :--- | :--- |
+| **Twist of Fate** | Pre-roll | Roll 2d6 and keep the highest. |
+| **Overpower** | Pre-roll | Gain +1 to your roll total this duel. |
+| **Hamstring** | Pre-roll | Opponent gets -1 to their roll total this duel. |
+| **Jamming Signal** | Pre-roll | Cancel the opponent's declared Pre-roll token. |
+| **Momentum Surge** | Pre-roll | If you won your previous duel, gain +2 this duel. |
+| **Second Chance** | Reaction | Re-roll your own die once; second result replaces the first. |
+| **Precision Strike** | Reaction | Add +1 to your revealed total (usually if losing by 1). |
+| **Last Stand** | Resolution | Prevent your elimination; lane remains unresolved for this duel. |
+| **Ice in Veins** | Resolution | Convert a tie into a win for your side. |
+
+### 4) Coach Personas
+
+At match start, the player selects one coach persona. Each persona restricts which tokens can be equipped for that match.
+
+- **Vanguard Coach (Aggressive)**: Focuses on tempo and lane conversion.
+  - *Allowed*: Twist of Fate, Overpower, Momentum Surge, Precision Strike, Ice in Veins.
+- **Bastion Coach (Defensive)**: Focuses on attrition, denial, and mistake recovery.
+  - *Allowed*: Second Chance, Hamstring, Last Stand, Jamming Signal, Ice in Veins.
+- **Trickster Coach (Control)**: Focuses on information and timing traps.
+  - *Allowed*: Jamming Signal, Precision Strike, Second Chance, Overpower.
+- **Wildcard Coach (Flexible)**: Broad adaptability with reduced extreme effects.
+  - *Allowed*: Twist of Fate, Second Chance, Overpower, Hamstring, Precision Strike, Jamming Signal, Ice in Veins.
+
+### 5) Lane outcome value beyond score
 
 - Keep round scoring at `1` point, but track lane-level performance for tie context and future tournament systems:
   - lanes won,

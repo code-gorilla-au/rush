@@ -86,7 +86,7 @@ var _repository = map[Name]Effect{
 	},
 	IceInVeins: {
 		Name:     IceInVeins,
-		Category: CategoryOffense,
+		Category: CategorySabotage,
 		Trigger:  TriggerConditionOnDraw,
 		Effect:   "Convert tie into a win for your side.",
 		Intent:   "Tie-state control and clutch finish potential.",

@@ -34,9 +34,9 @@ func TestRepository(t *testing.T) {
 				counts[effect.Category]++
 			}
 
-			odize.AssertEqual(t, 5, counts[CategoryOffense])
+			odize.AssertEqual(t, 4, counts[CategoryOffense])
 			odize.AssertEqual(t, 2, counts[CategoryDefense])
-			odize.AssertEqual(t, 2, counts[CategorySabotage])
+			odize.AssertEqual(t, 3, counts[CategorySabotage])
 		}).
 		Run()
 

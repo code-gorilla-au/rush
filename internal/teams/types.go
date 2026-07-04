@@ -44,26 +44,11 @@ var (
 	ErrTeamNotFound  = errors.New("team not found")
 )
 
-type TokenName string
-
-const (
-	TokenTwistOfFate     TokenName = "Twist of Fate"
-	TokenSecondChance    TokenName = "Second Chance"
-	TokenPowerPlay       TokenName = "Power Play"
-	TokenBrace           TokenName = "Brace"
-	TokenPrecisionStrike TokenName = "Precision Strike"
-	TokenJammingSignal   TokenName = "Jamming Signal"
-	TokenLastStand       TokenName = "Last Stand"
-	TokenMomentumSurge   TokenName = "Momentum Surge"
-	TokenIceInVeins      TokenName = "Ice in Veins"
-	TokenSmokeScreen     TokenName = "Smoke Screen"
-)
-
 type CoachPersona string
 
 const (
-	CoachPersonaVanguard  CoachPersona = "Vanguard Coach"
-	CoachPersonaBastion   CoachPersona = "Bastion Coach"
-	CoachPersonaTrickster CoachPersona = "Trickster Coach"
-	CoachPersonaWildcard  CoachPersona = "Wildcard Coach"
+	CoachPersonaVanguard  CoachPersona = "Vanguard"
+	CoachPersonaBastion   CoachPersona = "Bastion"
+	CoachPersonaTrickster CoachPersona = "Trickster"
+	CoachPersonaWildcard  CoachPersona = "Wildcard"
 )

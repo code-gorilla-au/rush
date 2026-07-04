@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/code-gorilla-au/odize"
+	"github.com/code-gorilla-au/rush/internal/augments"
 )
 
 func TestCoachPersona_AvailableTokens(t *testing.T) {
@@ -11,29 +12,29 @@ func TestCoachPersona_AvailableTokens(t *testing.T) {
 
 	err := group.
 		Test("returns expected tokens for known persona", func(t *testing.T) {
-			tokens := CoachPersonaBastion.AvailableTokens()
+			tokens := CoachPersonaBastion.Augments()
 
-			expected := []TokenName{
-				TokenSecondChance,
-				TokenBrace,
-				TokenLastStand,
-				TokenJammingSignal,
-				TokenIceInVeins,
+			expected := []augments.Name{
+				augments.SecondChance,
+				augments.Hamstring,
+				augments.LastStand,
+				augments.JammingSignal,
+				augments.IceInVeins,
 			}
 
 			odize.AssertEqual(t, expected, tokens)
 		}).
 		Test("returns cloned slice to prevent mutation leaks", func(t *testing.T) {
-			first := CoachPersonaVanguard.AvailableTokens()
-			second := CoachPersonaVanguard.AvailableTokens()
+			first := CoachPersonaVanguard.Augments()
+			second := CoachPersonaVanguard.Augments()
 
-			first[0] = TokenSmokeScreen
+			first[0] = augments.SmokeScreen
 
-			odize.AssertEqual(t, TokenTwistOfFate, second[0])
+			odize.AssertEqual(t, augments.TwistOfFate, second[0])
 		}).
-		Test("returns nil for unknown persona", func(t *testing.T) {
-			tokens := CoachPersona("Unknown Coach").AvailableTokens()
-			odize.AssertTrue(t, tokens == nil)
+		Test("returns empty slice for unknown persona", func(t *testing.T) {
+			tokens := CoachPersona("Unknown Coach").Augments()
+			odize.AssertTrue(t, len(tokens) == 0)
 		}).
 		Run()
 
@@ -47,8 +48,8 @@ func TestCoach_AvailableTokens(t *testing.T) {
 		Test("returns tokens from coach persona", func(t *testing.T) {
 			coach := Coach{Persona: CoachPersonaTrickster}
 
-			expected := CoachPersonaTrickster.AvailableTokens()
-			actual := coach.AvailableTokens()
+			expected := CoachPersonaTrickster.Augments()
+			actual := coach.AvailableAugments()
 
 			odize.AssertEqual(t, expected, actual)
 		}).

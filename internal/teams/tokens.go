@@ -1,50 +1,54 @@
 package teams
 
-import "slices"
+import (
+	"slices"
 
-var coachPersonaTokens = map[CoachPersona][]TokenName{
+	"github.com/code-gorilla-au/rush/internal/augments"
+)
+
+var coachPersonaTokens = map[CoachPersona][]augments.Name{
 	CoachPersonaVanguard: {
-		TokenTwistOfFate,
-		TokenPowerPlay,
-		TokenMomentumSurge,
-		TokenPrecisionStrike,
-		TokenIceInVeins,
+		augments.TwistOfFate,
+		augments.Overpower,
+		augments.MomentumSurge,
+		augments.PrecisionStrike,
+		augments.IceInVeins,
 	},
 	CoachPersonaBastion: {
-		TokenSecondChance,
-		TokenBrace,
-		TokenLastStand,
-		TokenJammingSignal,
-		TokenIceInVeins,
+		augments.SecondChance,
+		augments.Hamstring,
+		augments.LastStand,
+		augments.JammingSignal,
+		augments.IceInVeins,
 	},
 	CoachPersonaTrickster: {
-		TokenJammingSignal,
-		TokenSmokeScreen,
-		TokenPrecisionStrike,
-		TokenSecondChance,
-		TokenPowerPlay,
+		augments.JammingSignal,
+		augments.SmokeScreen,
+		augments.PrecisionStrike,
+		augments.SecondChance,
+		augments.Overpower,
 	},
 	CoachPersonaWildcard: {
-		TokenTwistOfFate,
-		TokenSecondChance,
-		TokenPowerPlay,
-		TokenBrace,
-		TokenPrecisionStrike,
-		TokenJammingSignal,
-		TokenIceInVeins,
-		TokenSmokeScreen,
+		augments.TwistOfFate,
+		augments.SecondChance,
+		augments.Overpower,
+		augments.Hamstring,
+		augments.PrecisionStrike,
+		augments.JammingSignal,
+		augments.IceInVeins,
+		augments.SmokeScreen,
 	},
 }
 
-func (p CoachPersona) AvailableTokens() []TokenName {
+func (p CoachPersona) Augments() []augments.Name {
 	tokens, ok := coachPersonaTokens[p]
 	if !ok {
-		return []TokenName{}
+		return []augments.Name{}
 	}
 
 	return slices.Clone(tokens)
 }
 
-func (c *Coach) AvailableTokens() []TokenName {
-	return c.Persona.AvailableTokens()
+func (c *Coach) AvailableAugments() []augments.Name {
+	return c.Persona.Augments()
 }

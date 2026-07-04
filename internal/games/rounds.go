@@ -6,8 +6,9 @@ import (
 
 func NewRound() Round {
 	return Round{
-		TeamA: TeamFormation{Lanes: [3][]int{}},
-		TeamB: TeamFormation{Lanes: [3][]int{}},
+		TeamA:       TeamFormation{Lanes: [3][]int{}},
+		TeamB:       TeamFormation{Lanes: [3][]int{}},
+		DuelResults: []DuelResults{},
 	}
 }
 
@@ -75,17 +76,32 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 		}
 
 		if aRoll > bRoll {
+			r.DuelResults = append(r.DuelResults, DuelResults{
+				Outcome: ResultTeamA,
+				Roll:    aRoll,
+			})
+
 			_, err := r.TeamB.LanePop(lane)
 			if errors.Is(err, ErrNoPlayer) {
 				break
 			}
 
 		} else if bRoll > aRoll {
+			r.DuelResults = append(r.DuelResults, DuelResults{
+				Outcome: ResultTeamB,
+				Roll:    bRoll,
+			})
+
 			_, err := r.TeamA.LanePop(lane)
 			if errors.Is(err, ErrNoPlayer) {
 				break
 			}
 		}
+
+		r.DuelResults = append(r.DuelResults, DuelResults{
+			Outcome: ResultDraw,
+			Roll:    0,
+		})
 
 	}
 

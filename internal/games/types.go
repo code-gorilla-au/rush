@@ -43,44 +43,50 @@ type Game struct {
 }
 
 type Round struct {
-	TeamA TeamFormation
-	TeamB TeamFormation
+	TeamA       TeamFormation `json:"team_a"`
+	TeamB       TeamFormation `json:"team_b"`
+	DuelResults []DuelResults `json:"duel_results"`
+}
+
+type DuelResults struct {
+	Outcome RoundOutcome `json:"outcome"`
+	Roll    int          `json:"roll"`
 }
 
 type TeamStatistics struct {
-	GamesPlayed       int
-	Wins              int
-	Draws             int
-	Losses            int
-	WinRate           float64
-	RoundsWon         int
-	RoundsLost        int
-	RoundDifferential int
-	AverageRoundsWon  float64
-	AverageRoundsLost float64
+	GamesPlayed       int     `json:"games_played,omitempty"`
+	Wins              int     `json:"wins,omitempty"`
+	Draws             int     `json:"draws,omitempty"`
+	Losses            int     `json:"losses,omitempty"`
+	WinRate           float64 `json:"win_rate,omitempty"`
+	RoundsWon         int     `json:"rounds_won,omitempty"`
+	RoundsLost        int     `json:"rounds_lost,omitempty"`
+	RoundDifferential int     `json:"round_differential,omitempty"`
+	AverageRoundsWon  float64 `json:"average_rounds_won,omitempty"`
+	AverageRoundsLost float64 `json:"average_rounds_lost,omitempty"`
 }
 
 type TeamConfig struct {
-	TeamID     int64
-	TeamName   string
-	Formations []playbooks.Formation
+	TeamID     int64                 `json:"team_id"`
+	TeamName   string                `json:"team_name"`
+	Formations []playbooks.Formation `json:"formations"`
 }
 
 type TeamFormation struct {
-	TeamID int64
-	Lanes  [3][]int
+	TeamID int64    `json:"team_id,omitempty"`
+	Lanes  [3][]int `json:"lanes,omitempty"`
 }
 
 type LanesConfig struct {
-	TeamID int64
-	Lane1  int
-	Lane2  int
-	Lane3  int
+	TeamID int64 `json:"team_id"`
+	Lane1  int   `json:"lane_1"`
+	Lane2  int   `json:"lane_2"`
+	Lane3  int   `json:"lane_3"`
 }
 
 type RoundResult struct {
-	Outcome          RoundOutcome
-	RemainingPlayers int
+	Outcome          RoundOutcome `json:"outcome"`
+	RemainingPlayers int          `json:"remaining_players"`
 }
 
 type RollFn func() int

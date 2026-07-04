@@ -18,7 +18,6 @@ func TestCoachPersona_AvailableTokens(t *testing.T) {
 				augments.SecondChance,
 				augments.Hamstring,
 				augments.LastStand,
-				augments.JammingSignal,
 				augments.IceInVeins,
 			}
 

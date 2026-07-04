@@ -6,40 +6,35 @@ import (
 	"github.com/code-gorilla-au/rush/internal/augments"
 )
 
-var coachPersonaTokens = map[CoachPersona][]augments.Name{
+var _coachPersonaTokens = map[CoachPersona][]augments.Name{
 	CoachPersonaVanguard: {
 		augments.TwistOfFate,
 		augments.Overpower,
 		augments.MomentumSurge,
 		augments.PrecisionStrike,
-		augments.IceInVeins,
 	},
 	CoachPersonaBastion: {
 		augments.SecondChance,
 		augments.Hamstring,
 		augments.LastStand,
-		augments.JammingSignal,
 		augments.IceInVeins,
 	},
 	CoachPersonaTrickster: {
 		augments.JammingSignal,
-		augments.PrecisionStrike,
 		augments.SecondChance,
 		augments.Overpower,
+		augments.IceInVeins,
 	},
 	CoachPersonaWildcard: {
 		augments.TwistOfFate,
-		augments.SecondChance,
 		augments.Overpower,
 		augments.Hamstring,
 		augments.PrecisionStrike,
-		augments.JammingSignal,
-		augments.IceInVeins,
 	},
 }
 
 func (p CoachPersona) Augments() []augments.Name {
-	tokens, ok := coachPersonaTokens[p]
+	tokens, ok := _coachPersonaTokens[p]
 	if !ok {
 		return []augments.Name{}
 	}

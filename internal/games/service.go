@@ -151,7 +151,7 @@ func (s *Service) processGameForStats(stats *TeamStatistics, model database.Game
 		stats.Losses++
 	}
 
-	var results []Result
+	var results []RoundResult
 	if err := json.Unmarshal(model.ResultsLog, &results); err != nil {
 		return fmt.Errorf("parsing game %d results: %w", model.ID, err)
 	}

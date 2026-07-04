@@ -2,7 +2,6 @@ package games
 
 import (
 	"errors"
-	"math/rand/v2"
 )
 
 func NewRound() Round {
@@ -17,8 +16,8 @@ func (r *Round) FillSquad(a LanesConfig, b LanesConfig) {
 	r.TeamB.FillLanes(b)
 }
 
-func (r *Round) ResolveLanes(rollFn RollFn) Result {
-	var result []Result
+func (r *Round) ResolveLanes(rollFn RollFn) RoundResult {
+	var result []RoundResult
 
 	for lane := 0; lane < len(r.TeamA.Lanes); lane++ {
 		laneResult := r.ResolveLane(lane, rollFn)
@@ -29,7 +28,7 @@ func (r *Round) ResolveLanes(rollFn RollFn) Result {
 
 }
 
-func (r *Round) calculateWinner(result []Result) Result {
+func (r *Round) calculateWinner(result []RoundResult) RoundResult {
 
 	teamAPlayers := 0
 	teamBPlayers := 0
@@ -46,26 +45,26 @@ func (r *Round) calculateWinner(result []Result) Result {
 	}
 
 	if teamAPlayers > teamBPlayers {
-		return Result{
+		return RoundResult{
 			Outcome:          ResultTeamA,
 			RemainingPlayers: teamAPlayers,
 		}
 	}
 
 	if teamAPlayers < teamBPlayers {
-		return Result{
+		return RoundResult{
 			Outcome:          ResultTeamB,
 			RemainingPlayers: teamBPlayers,
 		}
 	}
 
-	return Result{
+	return RoundResult{
 		Outcome:          ResultDraw,
 		RemainingPlayers: 0,
 	}
 }
 
-func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {
+func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 	for r.TeamA.LaneHasPlayers(lane) && r.TeamB.LaneHasPlayers(lane) {
 		aRoll := rollFn()
 		bRoll := rollFn()
@@ -91,13 +90,13 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {
 	}
 
 	if r.TeamA.LaneHasPlayers(lane) {
-		return Result{
+		return RoundResult{
 			Outcome:          ResultTeamA,
 			RemainingPlayers: r.TeamA.LaneCount(lane),
 		}
 	}
 
-	return Result{
+	return RoundResult{
 		Outcome:          ResultTeamB,
 		RemainingPlayers: r.TeamB.LaneCount(lane),
 	}
@@ -135,8 +134,4 @@ func (s *TeamFormation) LaneFill(lane int, players int) {
 	for i := 0; i < players; i++ {
 		s.Lanes[lane] = append(s.Lanes[lane], i)
 	}
-}
-
-func DiceRoll() int {
-	return rand.IntN(6) + 1
 }

@@ -35,9 +35,9 @@ func generateRounds(teamA TeamConfig, teamB TeamConfig) [10]Round {
 	return rounds
 }
 
-func (g *Game) ResolveRound(roll RollFn) (Result, error) {
+func (g *Game) ResolveRound(roll RollFn) (RoundResult, error) {
 	if g.currentRound < 0 || g.currentRound >= int64(len(g.rounds)) {
-		return Result{}, ErrNoRounds
+		return RoundResult{}, ErrNoRounds
 	}
 
 	round := &g.rounds[int(g.currentRound)]
@@ -107,8 +107,8 @@ func (g *Game) TeamBScore() int {
 	return len(teamB)
 }
 
-func filterResultsByTeam(team ResultOutcome, results []Result) []Result {
-	var filteredResults []Result
+func filterResultsByTeam(team RoundOutcome, results []RoundResult) []RoundResult {
+	var filteredResults []RoundResult
 
 	for _, result := range results {
 		if result.Outcome == team {
@@ -126,7 +126,7 @@ func fromGameModel(m database.Game) (Game, error) {
 		return Game{}, fmt.Errorf("failed to unmarshal game model: %w", err)
 	}
 
-	var results []Result
+	var results []RoundResult
 	if err := json.Unmarshal(m.ResultsLog, &results); err != nil {
 		return Game{}, fmt.Errorf("failed to unmarshal results log: %w", err)
 	}

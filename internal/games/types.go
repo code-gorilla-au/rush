@@ -19,12 +19,12 @@ const (
 	StatusComplete GameStatus = "complete"
 )
 
-type ResultOutcome string
+type RoundOutcome string
 
 const (
-	ResultDraw  ResultOutcome = "draw"
-	ResultTeamA ResultOutcome = "team_a"
-	ResultTeamB ResultOutcome = "team_b"
+	ResultDraw  RoundOutcome = "draw"
+	ResultTeamA RoundOutcome = "team_a"
+	ResultTeamB RoundOutcome = "team_b"
 )
 
 type Game struct {
@@ -37,7 +37,7 @@ type Game struct {
 	status       GameStatus
 	rounds       [10]Round
 	currentRound int64
-	results      []Result
+	results      []RoundResult
 	createdAt    time.Time
 	updatedAt    time.Time
 }
@@ -78,8 +78,8 @@ type LanesConfig struct {
 	Lane3  int
 }
 
-type Result struct {
-	Outcome          ResultOutcome
+type RoundResult struct {
+	Outcome          RoundOutcome
 	RemainingPlayers int
 }
 

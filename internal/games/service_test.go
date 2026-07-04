@@ -57,19 +57,19 @@ func TestService_GetTeamStatistics(t *testing.T) {
 		targetCfg := TeamConfig{TeamID: targetTeam.ID, TeamName: targetTeam.Name, Formations: make([]playbooks.Formation, 10)}
 		opponentCfg := TeamConfig{TeamID: opponentTeam.ID, TeamName: opponentTeam.Name, Formations: make([]playbooks.Formation, 10)}
 
-		persistCompletedGame(t, gameSvc, ctx, targetCfg, opponentCfg, targetTeam.ID, []Result{
+		persistCompletedGame(t, gameSvc, ctx, targetCfg, opponentCfg, targetTeam.ID, []RoundResult{
 			{Outcome: ResultTeamA},
 			{Outcome: ResultTeamA},
 			{Outcome: ResultTeamB},
 		})
 
-		persistCompletedGame(t, gameSvc, ctx, opponentCfg, targetCfg, opponentTeam.ID, []Result{
+		persistCompletedGame(t, gameSvc, ctx, opponentCfg, targetCfg, opponentTeam.ID, []RoundResult{
 			{Outcome: ResultTeamA},
 			{Outcome: ResultTeamB},
 			{Outcome: ResultTeamA},
 		})
 
-		persistCompletedGame(t, gameSvc, ctx, targetCfg, opponentCfg, 0, []Result{
+		persistCompletedGame(t, gameSvc, ctx, targetCfg, opponentCfg, 0, []RoundResult{
 			{Outcome: ResultTeamA},
 			{Outcome: ResultTeamB},
 		})
@@ -115,7 +115,7 @@ func setupStatsTestServices(t *testing.T) (*teams.Service, *Service) {
 	return teamSvc, gameSvc
 }
 
-func persistCompletedGame(t *testing.T, gameSvc *Service, ctx context.Context, teamA TeamConfig, teamB TeamConfig, winner int64, results []Result) {
+func persistCompletedGame(t *testing.T, gameSvc *Service, ctx context.Context, teamA TeamConfig, teamB TeamConfig, winner int64, results []RoundResult) {
 	game, err := gameSvc.NewGame(ctx, NewGameParams{TeamA: teamA, TeamB: teamB})
 	odize.AssertNoError(t, err)
 

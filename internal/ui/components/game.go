@@ -16,7 +16,7 @@ type Game struct {
 	teamAName string
 	teamBName string
 	resolved  bool
-	result    games.Result
+	result    games.RoundResult
 	rollFn    games.RollFn
 	roundComp Round
 }

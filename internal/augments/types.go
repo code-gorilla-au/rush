@@ -5,14 +5,13 @@ type Name string
 const (
 	TwistOfFate     Name = "Twist of Fate"
 	SecondChance    Name = "Second Chance"
-	Overpower       Name = "Power Play"
-	Hamstring       Name = "Brace"
+	Overpower       Name = "Overpower"
+	Hamstring       Name = "Hamstring"
 	PrecisionStrike Name = "Precision Strike"
 	JammingSignal   Name = "Jamming Signal"
 	LastStand       Name = "Last Stand"
 	MomentumSurge   Name = "Momentum Surge"
 	IceInVeins      Name = "Ice in Veins"
-	SmokeScreen     Name = "Smoke Screen"
 )
 
 type Action string
@@ -40,12 +39,21 @@ const (
 	CategorySabotage Category = "sabotage"
 )
 
+type TriggerCondition string
+
+const (
+	TriggerConditionOnRoll TriggerCondition = "on_roll"
+	TriggerConditionOnLoss TriggerCondition = "on_loss"
+	TriggerConditionOnDraw TriggerCondition = "on_draw"
+)
+
 type Effect struct {
-	Name     Name     `json:"name,omitempty"`
-	Category Category `json:"category,omitempty"`
-	Effect   string   `json:"effect,omitempty"`
-	Intent   string   `json:"intent,omitempty"`
-	Action   Action   `json:"action,omitempty"`
-	Target   Target   `json:"target,omitempty"`
-	Amount   int      `json:"amount,omitempty"`
+	Name     Name             `json:"name,omitempty"`
+	Category Category         `json:"category,omitempty"`
+	Trigger  TriggerCondition `json:"trigger,omitempty"`
+	Effect   string           `json:"effect,omitempty"`
+	Intent   string           `json:"intent,omitempty"`
+	Action   Action           `json:"action,omitempty"`
+	Target   Target           `json:"target,omitempty"`
+	Amount   int              `json:"amount,omitempty"`
 }

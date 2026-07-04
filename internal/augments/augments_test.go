@@ -21,7 +21,6 @@ func TestRepository(t *testing.T) {
 				LastStand,
 				MomentumSurge,
 				IceInVeins,
-				SmokeScreen,
 			}
 
 			for _, name := range expectedTokens {
@@ -37,7 +36,7 @@ func TestRepository(t *testing.T) {
 
 			odize.AssertEqual(t, 5, counts[CategoryOffense])
 			odize.AssertEqual(t, 2, counts[CategoryDefense])
-			odize.AssertEqual(t, 3, counts[CategorySabotage])
+			odize.AssertEqual(t, 2, counts[CategorySabotage])
 		}).
 		Run()
 

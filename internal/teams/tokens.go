@@ -23,7 +23,6 @@ var coachPersonaTokens = map[CoachPersona][]augments.Name{
 	},
 	CoachPersonaTrickster: {
 		augments.JammingSignal,
-		augments.SmokeScreen,
 		augments.PrecisionStrike,
 		augments.SecondChance,
 		augments.Overpower,
@@ -36,7 +35,6 @@ var coachPersonaTokens = map[CoachPersona][]augments.Name{
 		augments.PrecisionStrike,
 		augments.JammingSignal,
 		augments.IceInVeins,
-		augments.SmokeScreen,
 	},
 }
 

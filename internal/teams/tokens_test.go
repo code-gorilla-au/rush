@@ -28,7 +28,7 @@ func TestCoachPersona_AvailableTokens(t *testing.T) {
 			first := CoachPersonaVanguard.Augments()
 			second := CoachPersonaVanguard.Augments()
 
-			first[0] = augments.SmokeScreen
+			first[0] = augments.SecondChance
 
 			odize.AssertEqual(t, augments.TwistOfFate, second[0])
 		}).

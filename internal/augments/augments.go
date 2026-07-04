@@ -9,6 +9,7 @@ var _repository = map[Name]Effect{
 	TwistOfFate: {
 		Name:     TwistOfFate,
 		Category: CategoryOffense,
+		Trigger:  TriggerConditionOnRoll,
 		Effect:   "Roll 2d6 and keep the highest.",
 		Intent:   "Front-load pressure in must-win lanes.",
 		Action:   ActionAddDie,
@@ -18,6 +19,7 @@ var _repository = map[Name]Effect{
 	SecondChance: {
 		Name:     SecondChance,
 		Category: CategoryDefense,
+		Trigger:  TriggerConditionOnLoss,
 		Effect:   "Re-roll your own die once; second result replaces the first.",
 		Intent:   "Stabilize critical moments after a miss or tie.",
 		Action:   ActionReRoll,
@@ -27,18 +29,22 @@ var _repository = map[Name]Effect{
 	Overpower: {
 		Name:     Overpower,
 		Category: CategoryOffense,
+		Trigger:  TriggerConditionOnRoll,
 		Effect:   "Gain +1 to your roll total this duel.",
 		Intent:   "Reliable low-variance push.",
 		Action:   ActionIncrease,
 		Target:   TargetSelf,
+		Amount:   1,
 	},
 	Hamstring: {
 		Name:     Hamstring,
 		Category: CategorySabotage,
+		Trigger:  TriggerConditionOnRoll,
 		Effect:   "Opponent gets -1 to their roll total this duel.",
 		Intent:   "Defensive denial and tempo slowdown.",
 		Action:   ActionDecrease,
 		Target:   TargetOpponent,
+		Amount:   1,
 	},
 	PrecisionStrike: {
 		Name:     PrecisionStrike,
@@ -51,22 +57,27 @@ var _repository = map[Name]Effect{
 	JammingSignal: {
 		Name:     JammingSignal,
 		Category: CategorySabotage,
+		Trigger:  TriggerConditionOnRoll,
 		Effect:   "Cancel the opponent's declared Pre-roll token.",
 		Intent:   "Anti-pattern counterplay.",
 		Action:   ActionCancel,
 		Target:   TargetOpponent,
+		Amount:   0,
 	},
 	LastStand: {
 		Name:     LastStand,
 		Category: CategoryDefense,
+		Trigger:  TriggerConditionOnLoss,
 		Effect:   "Prevent your elimination this duel; lane remains unresolved.",
 		Intent:   "Comeback insurance for high-value lanes.",
 		Action:   "",
 		Target:   TargetSelf,
+		Amount:   0,
 	},
 	MomentumSurge: {
 		Name:     MomentumSurge,
 		Category: CategoryOffense,
+		Trigger:  TriggerConditionOnRoll,
 		Effect:   "If last round was a win, gain +2 this duel.",
 		Intent:   "Snowball option with explicit condition gate.",
 		Action:   ActionIncrease,
@@ -76,19 +87,12 @@ var _repository = map[Name]Effect{
 	IceInVeins: {
 		Name:     IceInVeins,
 		Category: CategoryOffense,
+		Trigger:  TriggerConditionOnDraw,
 		Effect:   "Convert tie into a win for your side.",
 		Intent:   "Tie-state control and clutch finish potential.",
 		Action:   ActionIncrease,
 		Target:   TargetSelf,
 		Amount:   1,
-	},
-	SmokeScreen: {
-		Name:     SmokeScreen,
-		Category: CategorySabotage,
-		Effect:   "Your token declaration remains hidden until after reveal.",
-		Intent:   "Mind-game tool to punish reactive opponents.",
-		Action:   "",
-		Target:   TargetSelf,
 	},
 }
 

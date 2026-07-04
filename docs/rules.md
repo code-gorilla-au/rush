@@ -22,20 +22,15 @@ Each round is resolved in this order:
 1. **Reset players**
    - All players return for the new round, even if they were eliminated in the previous round.
 
-2. **Lane assignment**
+2. **Augmentation and Lane assignment**
+   - Before each round, coaches have an option of providing an augmentation from their equipped list.
+   - A coach can use a maximum of 3 augmentations per game.
    - Coaches determine where their players go across the three lanes.
    - Assignments are made according to the selected playbook.
 
 3. **Lane duels**
-   - A duel is one complete lane interaction between two opposing players.
-   - Each duel follows these windows:
-     1. **Pre-roll Window**: Coaches may declare one Pre-roll token.
-     2. **Roll**: Both players roll `1d6`.
-     3. **Reveal**: Results are revealed. Highest score wins.
-     4. **Reaction Window**: Eligible Reaction tokens may be declared.
-     5. **Resolution Window**: Eligible Resolution tokens may be declared.
-     6. **Lane Update**: Apply the final outcome.
-   - If dice rolls are equal and no tokens resolve the tie, immediately re-roll.
+   - Players in the same lane duel and roll `1d6`. Highest score wins.
+   - If dice rolls are equal, immediately re-roll.
    - The losing player is eliminated for the round.
    - Lane duels continue until no opposing players remain in that lane.
 
@@ -67,10 +62,10 @@ To keep the game simple but add meaningful decisions, playbooks and coaches shou
 
 ### 3) Tactical Tokens
 
-Coaches use tokens to influence the outcome of duels. 
+Coaches use tokens to influence the outcome of the match.
 - Each token is **single-use** per match.
-- Max **one token per coach per duel**.
-- Tokens do not stack for the same coach in a single duel.
+- Max **3 augmentations per game**.
+- An augmentation is selected **before each round**.
 
 #### Token Library
 

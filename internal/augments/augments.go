@@ -43,7 +43,7 @@ var (
 			Category: CategoryOffense,
 			Type:     TypePassive,
 			Trigger:  TriggerConditionAfterRoll,
-			Effect:   "If last round was a win, gain +2 this duel.",
+			Effect:   "If last duel was a win, gain +2 this duel.",
 			Intent:   "Snowball option with explicit condition gate.",
 			Action:   ActionIncrease,
 			Target:   TargetSelf,
@@ -52,6 +52,28 @@ var (
 	}
 
 	_defenseRepo = map[Name]Effect{
+		Brace: {
+			Name:     Brace,
+			Category: CategoryDefense,
+			Type:     TypeActive,
+			Trigger:  TriggerConditionAfterRoll,
+			Effect:   "Losing roll by 1, convert result to a tie.",
+			Intent:   "Stabilize critical moments after a close loss",
+			Action:   ActionResultTie,
+			Target:   TargetBoth,
+			Amount:   0,
+		},
+		Fortify: {
+			Name:     Fortify,
+			Category: CategoryDefense,
+			Type:     TypePassive,
+			Trigger:  TriggerConditionAfterRoll,
+			Effect:   "If last round was a tie, gain +1 to roll",
+			Intent:   "Turn the tides on opponent momentum",
+			Action:   ActionIncrease,
+			Target:   TargetSelf,
+			Amount:   1,
+		},
 		SecondChance: {
 			Name:     SecondChance,
 			Category: CategoryDefense,
@@ -66,13 +88,13 @@ var (
 		LastStand: {
 			Name:     LastStand,
 			Category: CategoryDefense,
-			Type:     TypePassive,
+			Type:     TypeActive,
 			Trigger:  TriggerConditionAfterRoll,
-			Effect:   "Prevent your elimination this duel; lane remains unresolved.",
-			Intent:   "Comeback insurance for high-value lanes.",
-			Action:   "",
+			Effect:   "If last duel was a loss, and only 1 player remains in the lane, +2 to roll",
+			Intent:   "Slow down snowball effects.",
+			Action:   ActionIncrease,
 			Target:   TargetSelf,
-			Amount:   0,
+			Amount:   2,
 		},
 	}
 
@@ -88,22 +110,33 @@ var (
 			Target:   TargetOpponent,
 			Amount:   1,
 		},
-		JammingSignal: {
-			Name:     JammingSignal,
+		PocketSand: {
+			Name:     PocketSand,
 			Category: CategorySabotage,
 			Type:     TypeActive,
 			Trigger:  TriggerConditionBeforeRoll,
-			Effect:   "Cancel the opponent's declared Pre-roll token.",
+			Effect:   "Cancel the opponent's declared Pre-roll augment.",
 			Intent:   "Anti-pattern counterplay.",
 			Action:   ActionCancel,
 			Target:   TargetOpponent,
 			Amount:   0,
 		},
+		CriticalHit: {
+			Name:     CriticalHit,
+			Category: CategorySabotage,
+			Type:     TypeActive,
+			Trigger:  TriggerConditionAfterRoll,
+			Effect:   "If last duel was a loss, and only 1 player remains in the lane, +2 to roll",
+			Intent:   "Slow down snowball effects.",
+			Action:   ActionIncrease,
+			Target:   TargetSelf,
+			Amount:   2,
+		},
 		IceInVeins: {
 			Name:     IceInVeins,
 			Category: CategorySabotage,
 			Type:     TypeActive,
-			Trigger:  TriggerConditionAfterRoll,
+			Trigger:  TriggerConditionAfterAugments,
 			Effect:   "Convert tie into a win for your side.",
 			Intent:   "Tie-state control and clutch finish potential.",
 			Action:   ActionIncrease,
@@ -128,6 +161,23 @@ func Get(name Name) (Effect, bool) {
 	}
 
 	return Effect{}, false
+}
+
+func GetByCategory(category Category) ([]Effect, bool) {
+	var repo map[Name]Effect
+
+	switch category {
+	case CategoryOffense:
+		repo = _offenseRepo
+	case CategoryDefense:
+		repo = _defenseRepo
+	case CategorySabotage:
+		repo = _sabotageRepo
+	default:
+		return []Effect{}, false
+	}
+
+	return slices.Collect(maps.Values(repo)), true
 }
 
 func List() []Name {

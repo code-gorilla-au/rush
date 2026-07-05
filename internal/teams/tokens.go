@@ -20,7 +20,7 @@ var _coachPersonaTokens = map[CoachPersona][]augments.Name{
 		augments.IceInVeins,
 	},
 	CoachPersonaTrickster: {
-		augments.JammingSignal,
+		augments.PocketSand,
 		augments.SecondChance,
 		augments.Overpower,
 		augments.IceInVeins,

@@ -17,7 +17,7 @@ func TestRepository(t *testing.T) {
 				Overpower,
 				Hamstring,
 				PrecisionStrike,
-				JammingSignal,
+				PocketSand,
 				LastStand,
 				MomentumSurge,
 				IceInVeins,

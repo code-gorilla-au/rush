@@ -8,20 +8,24 @@ const (
 	Overpower       Name = "Overpower"
 	Hamstring       Name = "Hamstring"
 	PrecisionStrike Name = "Precision Strike"
-	JammingSignal   Name = "Jamming Signal"
+	PocketSand      Name = "Jamming Signal"
 	LastStand       Name = "Last Stand"
 	MomentumSurge   Name = "Momentum Surge"
 	IceInVeins      Name = "Ice in Veins"
+	Brace           Name = "Brace"
+	Fortify         Name = "Fortify"
+	CriticalHit     Name = "Critical Hit"
 )
 
 type Action string
 
 const (
-	ActionIncrease Action = "increase"
-	ActionDecrease Action = "decrease"
-	ActionAddDie   Action = "add_die"
-	ActionReRoll   Action = "re_roll"
-	ActionCancel   Action = "cancel"
+	ActionIncrease  Action = "increase"
+	ActionDecrease  Action = "decrease"
+	ActionAddDie    Action = "add_die"
+	ActionReRoll    Action = "re_roll"
+	ActionCancel    Action = "cancel"
+	ActionResultTie Action = "result_tie"
 )
 
 type Target string
@@ -29,6 +33,7 @@ type Target string
 const (
 	TargetSelf     Target = "self"
 	TargetOpponent Target = "opponent"
+	TargetBoth     Target = "both"
 )
 
 type Category string
@@ -49,8 +54,9 @@ const (
 type TriggerCondition string
 
 const (
-	TriggerConditionBeforeRoll TriggerCondition = "before_roll"
-	TriggerConditionAfterRoll  TriggerCondition = "after_roll"
+	TriggerConditionBeforeRoll    TriggerCondition = "before_roll"
+	TriggerConditionAfterRoll     TriggerCondition = "after_roll"
+	TriggerConditionAfterAugments TriggerCondition = "after_augments"
 )
 
 type Effect struct {

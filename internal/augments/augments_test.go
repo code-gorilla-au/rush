@@ -12,6 +12,7 @@ func TestRepository(t *testing.T) {
 	err := group.
 		Test("should contain all tokens from proposal", func(t *testing.T) {
 			expectedTokens := []Name{
+				NoAugment,
 				TwistOfFate,
 				SecondChance,
 				Overpower,
@@ -42,6 +43,7 @@ func TestRepository(t *testing.T) {
 			odize.AssertEqual(t, 4, counts[CategoryOffense])
 			odize.AssertEqual(t, 4, counts[CategoryDefense])
 			odize.AssertEqual(t, 4, counts[CategorySabotage])
+			odize.AssertEqual(t, 1, counts[CategoryNoOp])
 		}).
 		Run()
 
@@ -84,7 +86,7 @@ func TestList(t *testing.T) {
 	err := group.
 		Test("should return all token names in repository", func(t *testing.T) {
 			names := List()
-			odize.AssertEqual(t, 12, len(names))
+			odize.AssertEqual(t, 13, len(names))
 
 			for _, name := range names {
 				_, ok := Get(name)

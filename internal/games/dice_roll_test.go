@@ -125,3 +125,138 @@ func TestRuleTwistOfFate(t *testing.T) {
 	err := group.Run()
 	odize.AssertNoError(t, err)
 }
+
+func TestEngineRun(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	err := group.
+		Test("should trigger configured rules in run pipeline", func(t *testing.T) {
+			beforeCalled := false
+			afterCalled := false
+			afterAugmentsCalled := false
+
+			engine := &Engine{
+				beforeRole: []DecisionEngineFunc{
+					func(input DecisionInput) DecisionInput {
+						beforeCalled = true
+						input.teamA.player = 11
+						return input
+					},
+				},
+				afterRole: []DecisionEngineFunc{
+					func(input DecisionInput) DecisionInput {
+						afterCalled = true
+						input.teamA.roll++
+						return input
+					},
+				},
+				afterAugments: []DecisionEngineFunc{
+					func(input DecisionInput) DecisionInput {
+						afterAugmentsCalled = true
+						input.teamA.roll++
+						return input
+					},
+				},
+				rollFn: newSequentialRollFn([]int{3, 3}),
+			}
+
+			result := engine.Run(DecisionInput{})
+
+			odize.AssertTrue(t, beforeCalled)
+			odize.AssertTrue(t, afterCalled)
+			odize.AssertTrue(t, afterAugmentsCalled)
+			odize.AssertEqual(t, TeamA, result.Outcome)
+			odize.AssertEqual(t, int64(11), result.Player)
+			odize.AssertEqual(t, 5, result.Roll)
+			odize.AssertEqual(t, 2, result.RollDelta)
+		}).
+		Test("should trigger twist of fate effect when rule matches", func(t *testing.T) {
+			secondRolls := newSequentialRollFn([]int{6})
+
+			engine := &Engine{
+				beforeRole: []DecisionEngineFunc{},
+				afterRole: []DecisionEngineFunc{
+					func(input DecisionInput) DecisionInput {
+						return ruleTwistOfFate(input, secondRolls)
+					},
+				},
+				afterAugments: []DecisionEngineFunc{},
+				rollFn:        newSequentialRollFn([]int{5, 2}),
+			}
+
+			result := engine.Run(DecisionInput{
+				teamA: TeamDecisionInput{
+					player:  101,
+					augment: augments.Effect{Name: augments.TwistOfFate},
+				},
+				teamB: TeamDecisionInput{player: 202},
+			})
+
+			odize.AssertEqual(t, TeamA, result.Outcome)
+			odize.AssertEqual(t, int64(101), result.Player)
+			odize.AssertEqual(t, 6, result.Roll)
+			odize.AssertEqual(t, 1, result.RollDelta)
+		}).
+		Test("should not trigger twist of fate effect when rule does not match", func(t *testing.T) {
+			secondRolls := newSequentialRollFn([]int{6})
+
+			engine := &Engine{
+				beforeRole: []DecisionEngineFunc{},
+				afterRole: []DecisionEngineFunc{
+					func(input DecisionInput) DecisionInput {
+						return ruleTwistOfFate(input, secondRolls)
+					},
+				},
+				afterAugments: []DecisionEngineFunc{},
+				rollFn:        newSequentialRollFn([]int{5, 2}),
+			}
+
+			result := engine.Run(DecisionInput{
+				teamA: TeamDecisionInput{
+					player:  101,
+					augment: augments.Effect{Name: augments.Brace},
+				},
+				teamB: TeamDecisionInput{player: 202},
+			})
+
+			odize.AssertEqual(t, TeamB, result.Outcome)
+			odize.AssertEqual(t, int64(202), result.Player)
+			odize.AssertEqual(t, 5, result.Roll)
+			odize.AssertEqual(t, 3, result.RollDelta)
+		}).
+		Test("should return draw when both final rolls are equal", func(t *testing.T) {
+			engine := &Engine{
+				beforeRole:    []DecisionEngineFunc{},
+				afterRole:     []DecisionEngineFunc{},
+				afterAugments: []DecisionEngineFunc{},
+				rollFn:        newSequentialRollFn([]int{4, 4}),
+			}
+
+			result := engine.Run(DecisionInput{
+				teamA: TeamDecisionInput{player: 101},
+				teamB: TeamDecisionInput{player: 202},
+			})
+
+			odize.AssertEqual(t, Draw, result.Outcome)
+			odize.AssertEqual(t, int64(0), result.Player)
+			odize.AssertEqual(t, 0, result.Roll)
+			odize.AssertEqual(t, 0, result.RollDelta)
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}
+
+func newSequentialRollFn(rolls []int) RollFn {
+	idx := 0
+
+	return func() int {
+		if idx >= len(rolls) {
+			return rolls[len(rolls)-1]
+		}
+
+		value := rolls[idx]
+		idx++
+		return value
+	}
+}

@@ -24,13 +24,15 @@ func TestRepository(t *testing.T) {
 			}
 
 			for _, name := range expectedTokens {
-				_, ok := _repository[name]
+				_, ok := Get(name)
 				odize.AssertTrue(t, ok)
 			}
 		}).
 		Test("should have correct number of tokens per category", func(t *testing.T) {
 			counts := make(map[Category]int)
-			for _, effect := range _repository {
+			for _, name := range List() {
+				effect, ok := Get(name)
+				odize.AssertTrue(t, ok)
 				counts[effect.Category]++
 			}
 
@@ -79,10 +81,10 @@ func TestList(t *testing.T) {
 	err := group.
 		Test("should return all token names in repository", func(t *testing.T) {
 			names := List()
-			odize.AssertEqual(t, len(_repository), len(names))
+			odize.AssertEqual(t, 9, len(names))
 
 			for _, name := range names {
-				_, ok := _repository[name]
+				_, ok := Get(name)
 				odize.AssertTrue(t, ok)
 			}
 		}).

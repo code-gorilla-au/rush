@@ -8,7 +8,7 @@ func NewRound() Round {
 	return Round{
 		TeamA:       TeamFormation{Lanes: [3][]int{}},
 		TeamB:       TeamFormation{Lanes: [3][]int{}},
-		DuelResults: []DuelResults{},
+		DuelResults: []DuelResult{},
 	}
 }
 
@@ -76,9 +76,10 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 		}
 
 		if aRoll > bRoll {
-			r.DuelResults = append(r.DuelResults, DuelResults{
-				Outcome: ResultTeamA,
-				Roll:    aRoll,
+			r.DuelResults = append(r.DuelResults, DuelResult{
+				Outcome:   ResultTeamA,
+				Roll:      aRoll,
+				RollDelta: aRoll - bRoll,
 			})
 
 			_, err := r.TeamB.LanePop(lane)
@@ -87,9 +88,10 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 			}
 
 		} else if bRoll > aRoll {
-			r.DuelResults = append(r.DuelResults, DuelResults{
-				Outcome: ResultTeamB,
-				Roll:    bRoll,
+			r.DuelResults = append(r.DuelResults, DuelResult{
+				Outcome:   ResultTeamB,
+				Roll:      bRoll,
+				RollDelta: bRoll - aRoll,
 			})
 
 			_, err := r.TeamA.LanePop(lane)
@@ -98,9 +100,10 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 			}
 		}
 
-		r.DuelResults = append(r.DuelResults, DuelResults{
-			Outcome: ResultDraw,
-			Roll:    0,
+		r.DuelResults = append(r.DuelResults, DuelResult{
+			Outcome:   ResultDraw,
+			Roll:      0,
+			RollDelta: 0,
 		})
 
 	}

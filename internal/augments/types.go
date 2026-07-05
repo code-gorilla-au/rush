@@ -39,17 +39,24 @@ const (
 	CategorySabotage Category = "sabotage"
 )
 
+type Type string
+
+const (
+	TypeActive  Type = "active"
+	TypePassive Type = "passive"
+)
+
 type TriggerCondition string
 
 const (
-	TriggerConditionOnRoll TriggerCondition = "on_roll"
-	TriggerConditionOnLoss TriggerCondition = "on_loss"
-	TriggerConditionOnDraw TriggerCondition = "on_draw"
+	TriggerConditionBeforeRoll TriggerCondition = "before_roll"
+	TriggerConditionAfterRoll  TriggerCondition = "after_roll"
 )
 
 type Effect struct {
 	Name     Name             `json:"name,omitempty"`
 	Category Category         `json:"category,omitempty"`
+	Type     Type             `json:"type,omitempty"`
 	Trigger  TriggerCondition `json:"trigger,omitempty"`
 	Effect   string           `json:"effect,omitempty"`
 	Intent   string           `json:"intent,omitempty"`

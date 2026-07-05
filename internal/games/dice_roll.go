@@ -11,12 +11,36 @@ func DiceRoll() int {
 }
 
 type TeamDecisionInput struct {
-	augment augments.Name
+	augment augments.Effect
 	roll    int
 }
 
 type DecisionInput struct {
-	lastRound    RoundResult
-	teamAAugment augments.Name
-	teamBAugment augments.Name
+	lastRound    DuelResult
+	teamAAugment TeamDecisionInput
+	teamBAugment TeamDecisionInput
+}
+
+type DecisionEngineFunc func(input DecisionInput) DecisionInput
+
+func RuleTwistOfFate(input DecisionInput) DecisionInput {
+	return ruleTwistOfFate(input, DiceRoll)
+}
+
+func ruleTwistOfFate(input DecisionInput, roll RollFn) DecisionInput {
+	if input.teamBAugment.augment.Name == augments.TwistOfFate {
+		secondRoll := roll()
+		if input.teamBAugment.roll < secondRoll {
+			input.teamBAugment.roll = secondRoll
+		}
+	}
+
+	if input.teamAAugment.augment.Name == augments.TwistOfFate {
+		secondRoll := roll()
+		if input.teamAAugment.roll < secondRoll {
+			input.teamAAugment.roll = secondRoll
+		}
+	}
+
+	return input
 }

@@ -45,12 +45,13 @@ type Game struct {
 type Round struct {
 	TeamA       TeamFormation `json:"team_a"`
 	TeamB       TeamFormation `json:"team_b"`
-	DuelResults []DuelResults `json:"duel_results"`
+	DuelResults []DuelResult  `json:"duel_results"`
 }
 
-type DuelResults struct {
-	Outcome RoundOutcome `json:"outcome"`
-	Roll    int          `json:"roll"`
+type DuelResult struct {
+	Outcome   RoundOutcome `json:"outcome"`
+	Roll      int          `json:"roll"`
+	RollDelta int          `json:"roll_delta"`
 }
 
 type TeamStatistics struct {

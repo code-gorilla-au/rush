@@ -6,89 +6,104 @@ import (
 )
 
 var (
-	_repository = map[Name]Effect{
+	_offenseRepo = map[Name]Effect{
 		TwistOfFate: {
 			Name:     TwistOfFate,
 			Category: CategoryOffense,
-			Trigger:  TriggerConditionOnRoll,
+			Type:     TypeActive,
+			Trigger:  TriggerConditionBeforeRoll,
 			Effect:   "Roll 2d6 and keep the highest.",
 			Intent:   "Front-load pressure in must-win lanes.",
 			Action:   ActionAddDie,
 			Target:   TargetSelf,
 			Amount:   1,
 		},
-		SecondChance: {
-			Name:     SecondChance,
-			Category: CategoryDefense,
-			Trigger:  TriggerConditionOnLoss,
-			Effect:   "Re-roll your own die once; second result replaces the first.",
-			Intent:   "Stabilize critical moments after a miss or tie.",
-			Action:   ActionReRoll,
-			Target:   TargetSelf,
-			Amount:   1,
-		},
 		Overpower: {
 			Name:     Overpower,
 			Category: CategoryOffense,
-			Trigger:  TriggerConditionOnRoll,
+			Type:     TypeActive,
+			Trigger:  TriggerConditionBeforeRoll,
 			Effect:   "Gain +1 to your roll total this duel.",
 			Intent:   "Reliable low-variance push.",
 			Action:   ActionIncrease,
 			Target:   TargetSelf,
 			Amount:   1,
 		},
-		Hamstring: {
-			Name:     Hamstring,
-			Category: CategorySabotage,
-			Trigger:  TriggerConditionOnRoll,
-			Effect:   "Opponent gets -1 to their roll total this duel.",
-			Intent:   "Defensive denial and tempo slowdown.",
-			Action:   ActionDecrease,
-			Target:   TargetOpponent,
-			Amount:   1,
-		},
 		PrecisionStrike: {
 			Name:     PrecisionStrike,
 			Category: CategoryOffense,
+			Type:     TypeActive,
 			Effect:   "Add +1 to your revealed total.",
 			Intent:   "Skill-expression token for close reads.",
 			Action:   ActionIncrease,
 			Target:   TargetSelf,
 		},
-		JammingSignal: {
-			Name:     JammingSignal,
-			Category: CategorySabotage,
-			Trigger:  TriggerConditionOnRoll,
-			Effect:   "Cancel the opponent's declared Pre-roll token.",
-			Intent:   "Anti-pattern counterplay.",
-			Action:   ActionCancel,
-			Target:   TargetOpponent,
-			Amount:   0,
-		},
-		LastStand: {
-			Name:     LastStand,
-			Category: CategoryDefense,
-			Trigger:  TriggerConditionOnLoss,
-			Effect:   "Prevent your elimination this duel; lane remains unresolved.",
-			Intent:   "Comeback insurance for high-value lanes.",
-			Action:   "",
-			Target:   TargetSelf,
-			Amount:   0,
-		},
 		MomentumSurge: {
 			Name:     MomentumSurge,
 			Category: CategoryOffense,
-			Trigger:  TriggerConditionOnRoll,
+			Type:     TypePassive,
+			Trigger:  TriggerConditionAfterRoll,
 			Effect:   "If last round was a win, gain +2 this duel.",
 			Intent:   "Snowball option with explicit condition gate.",
 			Action:   ActionIncrease,
 			Target:   TargetSelf,
 			Amount:   2,
 		},
+	}
+
+	_defenseRepo = map[Name]Effect{
+		SecondChance: {
+			Name:     SecondChance,
+			Category: CategoryDefense,
+			Type:     TypePassive,
+			Trigger:  TriggerConditionAfterRoll,
+			Effect:   "Re-roll your own die once; second result replaces the first.",
+			Intent:   "Stabilize critical moments after a miss or tie.",
+			Action:   ActionReRoll,
+			Target:   TargetSelf,
+			Amount:   1,
+		},
+		LastStand: {
+			Name:     LastStand,
+			Category: CategoryDefense,
+			Type:     TypePassive,
+			Trigger:  TriggerConditionAfterRoll,
+			Effect:   "Prevent your elimination this duel; lane remains unresolved.",
+			Intent:   "Comeback insurance for high-value lanes.",
+			Action:   "",
+			Target:   TargetSelf,
+			Amount:   0,
+		},
+	}
+
+	_sabotageRepo = map[Name]Effect{
+		Hamstring: {
+			Name:     Hamstring,
+			Category: CategorySabotage,
+			Type:     TypeActive,
+			Trigger:  TriggerConditionAfterRoll,
+			Effect:   "Opponent gets -1 to their roll total this duel.",
+			Intent:   "Defensive denial and tempo slowdown.",
+			Action:   ActionDecrease,
+			Target:   TargetOpponent,
+			Amount:   1,
+		},
+		JammingSignal: {
+			Name:     JammingSignal,
+			Category: CategorySabotage,
+			Type:     TypeActive,
+			Trigger:  TriggerConditionBeforeRoll,
+			Effect:   "Cancel the opponent's declared Pre-roll token.",
+			Intent:   "Anti-pattern counterplay.",
+			Action:   ActionCancel,
+			Target:   TargetOpponent,
+			Amount:   0,
+		},
 		IceInVeins: {
 			Name:     IceInVeins,
 			Category: CategorySabotage,
-			Trigger:  TriggerConditionOnDraw,
+			Type:     TypeActive,
+			Trigger:  TriggerConditionAfterRoll,
 			Effect:   "Convert tie into a win for your side.",
 			Intent:   "Tie-state control and clutch finish potential.",
 			Action:   ActionIncrease,
@@ -96,13 +111,35 @@ var (
 			Amount:   1,
 		},
 	}
+
+	_repositories = []map[Name]Effect{
+		_offenseRepo,
+		_defenseRepo,
+		_sabotageRepo,
+	}
 )
 
 func Get(name Name) (Effect, bool) {
-	item, ok := _repository[name]
-	return item, ok
+	for _, repository := range _repositories {
+		item, ok := repository[name]
+		if ok {
+			return item, true
+		}
+	}
+
+	return Effect{}, false
 }
 
 func List() []Name {
-	return slices.Collect(maps.Keys(_repository))
+	total := 0
+	for _, repository := range _repositories {
+		total += len(repository)
+	}
+
+	names := make([]Name, 0, total)
+	for _, repository := range _repositories {
+		names = append(names, slices.Collect(maps.Keys(repository))...)
+	}
+
+	return names
 }

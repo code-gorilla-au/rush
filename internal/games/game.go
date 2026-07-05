@@ -58,9 +58,9 @@ func (g *Game) CalculateWinner() (int64, error) {
 	teamB := 0
 
 	for _, result := range g.results {
-		if result.Outcome == ResultTeamA {
+		if result.Outcome == TeamA {
 			teamA++
-		} else if result.Outcome == ResultTeamB {
+		} else if result.Outcome == TeamB {
 			teamB++
 		}
 	}
@@ -98,16 +98,16 @@ func (g *Game) Name() string {
 }
 
 func (g *Game) TeamAScore() int {
-	teamA := filterResultsByTeam(ResultTeamA, g.results)
+	teamA := filterResultsByTeam(TeamA, g.results)
 	return len(teamA)
 }
 
 func (g *Game) TeamBScore() int {
-	teamB := filterResultsByTeam(ResultTeamB, g.results)
+	teamB := filterResultsByTeam(TeamB, g.results)
 	return len(teamB)
 }
 
-func filterResultsByTeam(team RoundOutcome, results []RoundResult) []RoundResult {
+func filterResultsByTeam(team Outcome, results []RoundResult) []RoundResult {
 	var filteredResults []RoundResult
 
 	for _, result := range results {

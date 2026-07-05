@@ -29,7 +29,7 @@ func TestResolveLane(t *testing.T) {
 
 		res := r.ResolveLane(lane, rollFn)
 
-		odize.AssertEqual(t, ResultTeamA, res.Outcome)
+		odize.AssertEqual(t, TeamA, res.Outcome)
 		odize.AssertEqual(t, 2, res.RemainingPlayers)
 		odize.AssertEqual(t, 0, r.TeamB.LaneCount(lane))
 	})
@@ -54,7 +54,7 @@ func TestResolveLane(t *testing.T) {
 
 		res := r.ResolveLane(lane, rollFn)
 
-		odize.AssertEqual(t, ResultTeamB, res.Outcome)
+		odize.AssertEqual(t, TeamB, res.Outcome)
 		odize.AssertEqual(t, 2, res.RemainingPlayers)
 		odize.AssertEqual(t, 0, r.TeamA.LaneCount(lane))
 	})
@@ -70,7 +70,7 @@ func TestResolveLane(t *testing.T) {
 
 		res := r.ResolveLane(lane, func() int { return 1 })
 
-		odize.AssertEqual(t, ResultTeamB, res.Outcome)
+		odize.AssertEqual(t, TeamB, res.Outcome)
 		odize.AssertEqual(t, 3, res.RemainingPlayers)
 	})
 
@@ -85,7 +85,7 @@ func TestResolveLane(t *testing.T) {
 
 		res := r.ResolveLane(lane, func() int { return 1 })
 
-		odize.AssertEqual(t, ResultTeamA, res.Outcome)
+		odize.AssertEqual(t, TeamA, res.Outcome)
 		odize.AssertEqual(t, 3, res.RemainingPlayers)
 	})
 
@@ -129,7 +129,7 @@ func TestResolveLanes(t *testing.T) {
 		// Team A players: Lane 0 (2), Lane 1 (0), Lane 2 (3) = 5
 		// Team B players: Lane 0 (0), Lane 1 (2), Lane 2 (0) = 2
 		// Total A (5) > Total B (2) -> Team A wins
-		odize.AssertEqual(t, ResultTeamA, res.Outcome)
+		odize.AssertEqual(t, TeamA, res.Outcome)
 		odize.AssertEqual(t, 5, res.RemainingPlayers)
 	})
 
@@ -164,7 +164,7 @@ func TestResolveLanes(t *testing.T) {
 		// Team A players: Lane 0 (0), Lane 1 (0), Lane 2 (1) = 1
 		// Team B players: Lane 0 (3), Lane 1 (2), Lane 2 (0) = 5
 		// Total B (5) > Total A (1) -> Team B wins
-		odize.AssertEqual(t, ResultTeamB, res.Outcome)
+		odize.AssertEqual(t, TeamB, res.Outcome)
 		odize.AssertEqual(t, 5, res.RemainingPlayers)
 	})
 
@@ -190,7 +190,7 @@ func TestResolveLanes(t *testing.T) {
 		// Total A (1) == Total B (1)
 		// Current logic: if teamAPlayers > teamBPlayers { A wins } else if teamBPlayers > teamAPlayers { B wins } else { Draw }
 		// So it should be Draw.
-		odize.AssertEqual(t, ResultDraw, res.Outcome)
+		odize.AssertEqual(t, Draw, res.Outcome)
 		odize.AssertEqual(t, 0, res.RemainingPlayers)
 	})
 

@@ -37,9 +37,9 @@ func (r *Round) calculateWinner(result []RoundResult) RoundResult {
 	for _, laneResult := range result {
 
 		switch laneResult.Outcome {
-		case ResultTeamA:
+		case TeamA:
 			teamAPlayers += laneResult.RemainingPlayers
-		case ResultTeamB:
+		case TeamB:
 			teamBPlayers += laneResult.RemainingPlayers
 		}
 
@@ -47,20 +47,20 @@ func (r *Round) calculateWinner(result []RoundResult) RoundResult {
 
 	if teamAPlayers > teamBPlayers {
 		return RoundResult{
-			Outcome:          ResultTeamA,
+			Outcome:          TeamA,
 			RemainingPlayers: teamAPlayers,
 		}
 	}
 
 	if teamAPlayers < teamBPlayers {
 		return RoundResult{
-			Outcome:          ResultTeamB,
+			Outcome:          TeamB,
 			RemainingPlayers: teamBPlayers,
 		}
 	}
 
 	return RoundResult{
-		Outcome:          ResultDraw,
+		Outcome:          Draw,
 		RemainingPlayers: 0,
 	}
 }
@@ -77,7 +77,7 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 
 		if aRoll > bRoll {
 			r.DuelResults = append(r.DuelResults, DuelResult{
-				Outcome:   ResultTeamA,
+				Outcome:   TeamA,
 				Roll:      aRoll,
 				RollDelta: aRoll - bRoll,
 			})
@@ -89,7 +89,7 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 
 		} else if bRoll > aRoll {
 			r.DuelResults = append(r.DuelResults, DuelResult{
-				Outcome:   ResultTeamB,
+				Outcome:   TeamB,
 				Roll:      bRoll,
 				RollDelta: bRoll - aRoll,
 			})
@@ -101,7 +101,7 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 		}
 
 		r.DuelResults = append(r.DuelResults, DuelResult{
-			Outcome:   ResultDraw,
+			Outcome:   Draw,
 			Roll:      0,
 			RollDelta: 0,
 		})
@@ -110,13 +110,13 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 
 	if r.TeamA.LaneHasPlayers(lane) {
 		return RoundResult{
-			Outcome:          ResultTeamA,
+			Outcome:          TeamA,
 			RemainingPlayers: r.TeamA.LaneCount(lane),
 		}
 	}
 
 	return RoundResult{
-		Outcome:          ResultTeamB,
+		Outcome:          TeamB,
 		RemainingPlayers: r.TeamB.LaneCount(lane),
 	}
 

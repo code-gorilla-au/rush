@@ -156,8 +156,8 @@ func (s *Service) processGameForStats(stats *TeamStatistics, model database.Game
 		return fmt.Errorf("parsing game %d results: %w", model.ID, err)
 	}
 
-	teamRoundsWon := len(filterResultsByTeam(ResultTeamA, results))
-	teamRoundsLost := len(filterResultsByTeam(ResultTeamB, results))
+	teamRoundsWon := len(filterResultsByTeam(TeamA, results))
+	teamRoundsLost := len(filterResultsByTeam(TeamB, results))
 	if model.TeamB.Valid && model.TeamB.Int64 == teamID {
 		teamRoundsWon, teamRoundsLost = teamRoundsLost, teamRoundsWon
 	}

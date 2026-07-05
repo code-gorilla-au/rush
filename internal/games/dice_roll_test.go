@@ -12,11 +12,11 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 	group.Test("should not modify input struct (immutability)", func(t *testing.T) {
 		input := DecisionInput{
-			teamAAugment: TeamDecisionInput{
+			teamA: TeamDecisionInput{
 				augment: augments.Effect{Name: augments.TwistOfFate},
 				roll:    1,
 			},
-			teamBAugment: TeamDecisionInput{
+			teamB: TeamDecisionInput{
 				augment: augments.Effect{Name: augments.TwistOfFate},
 				roll:    1,
 			},
@@ -30,11 +30,11 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 	group.Test("should increase roll for Team A when TwistOfFate provides a higher roll", func(t *testing.T) {
 		input := DecisionInput{
-			teamAAugment: TeamDecisionInput{
+			teamA: TeamDecisionInput{
 				augment: augments.Effect{Name: augments.TwistOfFate},
 				roll:    2,
 			},
-			teamBAugment: TeamDecisionInput{
+			teamB: TeamDecisionInput{
 				roll: 3,
 			},
 		}
@@ -42,13 +42,13 @@ func TestRuleTwistOfFate(t *testing.T) {
 		mockRoll := func() int { return 5 }
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 5, res.teamAAugment.roll)
-		odize.AssertEqual(t, 3, res.teamBAugment.roll) // Team B unchanged
+		odize.AssertEqual(t, 5, res.teamA.roll)
+		odize.AssertEqual(t, 3, res.teamB.roll) // Team B unchanged
 	})
 
 	group.Test("should not change roll for Team A when TwistOfFate provides a lower roll", func(t *testing.T) {
 		input := DecisionInput{
-			teamAAugment: TeamDecisionInput{
+			teamA: TeamDecisionInput{
 				augment: augments.Effect{Name: augments.TwistOfFate},
 				roll:    4,
 			},
@@ -57,16 +57,16 @@ func TestRuleTwistOfFate(t *testing.T) {
 		mockRoll := func() int { return 2 }
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 4, res.teamAAugment.roll)
+		odize.AssertEqual(t, 4, res.teamA.roll)
 	})
 
 	group.Test("should increase roll for Team B when TwistOfFate provides a higher roll", func(t *testing.T) {
 		input := DecisionInput{
-			teamBAugment: TeamDecisionInput{
+			teamB: TeamDecisionInput{
 				augment: augments.Effect{Name: augments.TwistOfFate},
 				roll:    2,
 			},
-			teamAAugment: TeamDecisionInput{
+			teamA: TeamDecisionInput{
 				roll: 3,
 			},
 		}
@@ -74,17 +74,17 @@ func TestRuleTwistOfFate(t *testing.T) {
 		mockRoll := func() int { return 5 }
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 5, res.teamBAugment.roll)
-		odize.AssertEqual(t, 3, res.teamAAugment.roll) // Team A unchanged
+		odize.AssertEqual(t, 5, res.teamB.roll)
+		odize.AssertEqual(t, 3, res.teamA.roll) // Team A unchanged
 	})
 
 	group.Test("should not change rolls when TwistOfFate augment is not present", func(t *testing.T) {
 		input := DecisionInput{
-			teamAAugment: TeamDecisionInput{
+			teamA: TeamDecisionInput{
 				augment: augments.Effect{Name: "Some Other Effect"},
 				roll:    3,
 			},
-			teamBAugment: TeamDecisionInput{
+			teamB: TeamDecisionInput{
 				roll: 4,
 			},
 		}
@@ -92,17 +92,17 @@ func TestRuleTwistOfFate(t *testing.T) {
 		mockRoll := func() int { return 6 }
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 3, res.teamAAugment.roll)
-		odize.AssertEqual(t, 4, res.teamBAugment.roll)
+		odize.AssertEqual(t, 3, res.teamA.roll)
+		odize.AssertEqual(t, 4, res.teamB.roll)
 	})
 
 	group.Test("should handle both teams having TwistOfFate", func(t *testing.T) {
 		input := DecisionInput{
-			teamAAugment: TeamDecisionInput{
+			teamA: TeamDecisionInput{
 				augment: augments.Effect{Name: augments.TwistOfFate},
 				roll:    2,
 			},
-			teamBAugment: TeamDecisionInput{
+			teamB: TeamDecisionInput{
 				augment: augments.Effect{Name: augments.TwistOfFate},
 				roll:    3,
 			},
@@ -118,8 +118,8 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 6, res.teamAAugment.roll)
-		odize.AssertEqual(t, 5, res.teamBAugment.roll)
+		odize.AssertEqual(t, 6, res.teamA.roll)
+		odize.AssertEqual(t, 5, res.teamB.roll)
 	})
 
 	err := group.Run()

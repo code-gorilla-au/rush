@@ -11,7 +11,7 @@ var (
 			Name:     TwistOfFate,
 			Category: CategoryOffense,
 			Type:     TypeActive,
-			Trigger:  TriggerConditionBeforeRoll,
+			Trigger:  TriggerConditionAfterRoll,
 			Effect:   "Roll 2d6 and keep the highest.",
 			Intent:   "Front-load pressure in must-win lanes.",
 			Action:   ActionAddDie,
@@ -145,10 +145,25 @@ var (
 		},
 	}
 
+	_noop = map[Name]Effect{
+		NoAugment: {
+			Name:     NoAugment,
+			Category: CategoryNoOp,
+			Type:     TypePassive,
+			Trigger:  TriggerConditionBeforeRoll,
+			Effect:   "No augment.",
+			Intent:   "Standard attack",
+			Action:   ActionNoOp,
+			Target:   TargetSelf,
+			Amount:   0,
+		},
+	}
+
 	_repositories = []map[Name]Effect{
 		_offenseRepo,
 		_defenseRepo,
 		_sabotageRepo,
+		_noop,
 	}
 )
 

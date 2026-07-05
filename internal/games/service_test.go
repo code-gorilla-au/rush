@@ -58,20 +58,20 @@ func TestService_GetTeamStatistics(t *testing.T) {
 		opponentCfg := TeamConfig{TeamID: opponentTeam.ID, TeamName: opponentTeam.Name, Formations: make([]playbooks.Formation, 10)}
 
 		persistCompletedGame(t, gameSvc, ctx, targetCfg, opponentCfg, targetTeam.ID, []RoundResult{
-			{Outcome: ResultTeamA},
-			{Outcome: ResultTeamA},
-			{Outcome: ResultTeamB},
+			{Outcome: TeamA},
+			{Outcome: TeamA},
+			{Outcome: TeamB},
 		})
 
 		persistCompletedGame(t, gameSvc, ctx, opponentCfg, targetCfg, opponentTeam.ID, []RoundResult{
-			{Outcome: ResultTeamA},
-			{Outcome: ResultTeamB},
-			{Outcome: ResultTeamA},
+			{Outcome: TeamA},
+			{Outcome: TeamB},
+			{Outcome: TeamA},
 		})
 
 		persistCompletedGame(t, gameSvc, ctx, targetCfg, opponentCfg, 0, []RoundResult{
-			{Outcome: ResultTeamA},
-			{Outcome: ResultTeamB},
+			{Outcome: TeamA},
+			{Outcome: TeamB},
 		})
 
 		stats, err := gameSvc.GetTeamStatistics(ctx, targetTeam.ID)

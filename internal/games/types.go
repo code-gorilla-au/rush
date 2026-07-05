@@ -19,12 +19,12 @@ const (
 	StatusComplete GameStatus = "complete"
 )
 
-type RoundOutcome string
+type Outcome string
 
 const (
-	ResultDraw  RoundOutcome = "draw"
-	ResultTeamA RoundOutcome = "team_a"
-	ResultTeamB RoundOutcome = "team_b"
+	Draw  Outcome = "draw"
+	TeamA Outcome = "team_a"
+	TeamB Outcome = "team_b"
 )
 
 type Game struct {
@@ -49,9 +49,10 @@ type Round struct {
 }
 
 type DuelResult struct {
-	Outcome   RoundOutcome `json:"outcome"`
-	Roll      int          `json:"roll"`
-	RollDelta int          `json:"roll_delta"`
+	Player    int64   `json:"player"`
+	Outcome   Outcome `json:"outcome"`
+	Roll      int     `json:"roll"`
+	RollDelta int     `json:"roll_delta"`
 }
 
 type TeamStatistics struct {
@@ -86,8 +87,8 @@ type LanesConfig struct {
 }
 
 type RoundResult struct {
-	Outcome          RoundOutcome `json:"outcome"`
-	RemainingPlayers int          `json:"remaining_players"`
+	Outcome          Outcome `json:"outcome"`
+	RemainingPlayers int     `json:"remaining_players"`
 }
 
 type RollFn func() int

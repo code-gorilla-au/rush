@@ -3,6 +3,7 @@ package augments
 type Name string
 
 const (
+	NoAugment       Name = "No Augment"
 	TwistOfFate     Name = "Twist of Fate"
 	SecondChance    Name = "Second Chance"
 	Overpower       Name = "Overpower"
@@ -26,6 +27,7 @@ const (
 	ActionReRoll    Action = "re_roll"
 	ActionCancel    Action = "cancel"
 	ActionResultTie Action = "result_tie"
+	ActionNoOp      Action = "no_op"
 )
 
 type Target string
@@ -42,6 +44,7 @@ const (
 	CategoryOffense  Category = "offense"
 	CategoryDefense  Category = "defense"
 	CategorySabotage Category = "sabotage"
+	CategoryNoOp     Category = "no_op"
 )
 
 type Type string

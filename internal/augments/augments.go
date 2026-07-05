@@ -121,8 +121,8 @@ var (
 			Target:   TargetOpponent,
 			Amount:   0,
 		},
-		CriticalHit: {
-			Name:     CriticalHit,
+		PoisonEdge: {
+			Name:     PoisonEdge,
 			Category: CategorySabotage,
 			Type:     TypeActive,
 			Trigger:  TriggerConditionAfterRoll,
@@ -135,7 +135,7 @@ var (
 		IceInVeins: {
 			Name:     IceInVeins,
 			Category: CategorySabotage,
-			Type:     TypeActive,
+			Type:     TypePassive,
 			Trigger:  TriggerConditionAfterAugments,
 			Effect:   "Convert tie into a win for your side.",
 			Intent:   "Tie-state control and clutch finish potential.",

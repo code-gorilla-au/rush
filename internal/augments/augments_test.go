@@ -21,6 +21,9 @@ func TestRepository(t *testing.T) {
 				LastStand,
 				MomentumSurge,
 				IceInVeins,
+				Brace,
+				Fortify,
+				PoisonEdge,
 			}
 
 			for _, name := range expectedTokens {
@@ -37,8 +40,8 @@ func TestRepository(t *testing.T) {
 			}
 
 			odize.AssertEqual(t, 4, counts[CategoryOffense])
-			odize.AssertEqual(t, 2, counts[CategoryDefense])
-			odize.AssertEqual(t, 3, counts[CategorySabotage])
+			odize.AssertEqual(t, 4, counts[CategoryDefense])
+			odize.AssertEqual(t, 4, counts[CategorySabotage])
 		}).
 		Run()
 
@@ -81,12 +84,53 @@ func TestList(t *testing.T) {
 	err := group.
 		Test("should return all token names in repository", func(t *testing.T) {
 			names := List()
-			odize.AssertEqual(t, 9, len(names))
+			odize.AssertEqual(t, 12, len(names))
 
 			for _, name := range names {
 				_, ok := Get(name)
 				odize.AssertTrue(t, ok)
 			}
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}
+
+func TestGetByCategory(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	err := group.
+		Test("should return offense effects for offense category", func(t *testing.T) {
+			effects, ok := GetByCategory(CategoryOffense)
+			odize.AssertTrue(t, ok)
+			odize.AssertEqual(t, 4, len(effects))
+
+			for _, effect := range effects {
+				odize.AssertEqual(t, CategoryOffense, effect.Category)
+			}
+		}).
+		Test("should return defense effects for defense category", func(t *testing.T) {
+			effects, ok := GetByCategory(CategoryDefense)
+			odize.AssertTrue(t, ok)
+			odize.AssertEqual(t, 4, len(effects))
+
+			for _, effect := range effects {
+				odize.AssertEqual(t, CategoryDefense, effect.Category)
+			}
+		}).
+		Test("should return sabotage effects for sabotage category", func(t *testing.T) {
+			effects, ok := GetByCategory(CategorySabotage)
+			odize.AssertTrue(t, ok)
+			odize.AssertEqual(t, 4, len(effects))
+
+			for _, effect := range effects {
+				odize.AssertEqual(t, CategorySabotage, effect.Category)
+			}
+		}).
+		Test("should return empty effects and false for unknown category", func(t *testing.T) {
+			effects, ok := GetByCategory(Category("unknown"))
+			odize.AssertFalse(t, ok)
+			odize.AssertEqual(t, 0, len(effects))
 		}).
 		Run()
 

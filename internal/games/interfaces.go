@@ -12,3 +12,7 @@ type Store interface {
 	ListCompletedGamesByTeam(ctx context.Context, arg database.ListCompletedGamesByTeamParams) ([]database.Game, error)
 	UpdateGame(ctx context.Context, arg database.UpdateGameParams) (database.Game, error)
 }
+
+type RollStrategy interface {
+	Run(input DecisionInput) DuelResult
+}

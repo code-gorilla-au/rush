@@ -208,17 +208,3 @@ func NamesFromCategory(category Category) []Name {
 
 	return result
 }
-
-func List() []Name {
-	total := 0
-	for _, repository := range _repositories {
-		total += len(repository)
-	}
-
-	names := make([]Name, 0, total)
-	for _, repository := range _repositories {
-		names = append(names, slices.Collect(maps.Keys(repository))...)
-	}
-
-	return names
-}

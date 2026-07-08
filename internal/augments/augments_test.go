@@ -33,19 +33,6 @@ func TestRepository(t *testing.T) {
 				odize.AssertTrue(t, ok)
 			}
 		}).
-		Test("should have correct number of tokens per category", func(t *testing.T) {
-			counts := make(map[Category]int)
-			for _, name := range List() {
-				effect, ok := Get(name)
-				odize.AssertTrue(t, ok)
-				counts[effect.Category]++
-			}
-
-			odize.AssertEqual(t, 4, counts[CategoryOffense])
-			odize.AssertEqual(t, 4, counts[CategoryDefense])
-			odize.AssertEqual(t, 4, counts[CategorySabotage])
-			odize.AssertEqual(t, 1, counts[CategoryNoOp])
-		}).
 		Run()
 
 	odize.AssertNoError(t, err)
@@ -75,24 +62,6 @@ func TestGet(t *testing.T) {
 		Test("should return false for case-insensitive mismatch", func(t *testing.T) {
 			_, ok := Get(Name("twist of fate"))
 			odize.AssertFalse(t, ok)
-		}).
-		Run()
-
-	odize.AssertNoError(t, err)
-}
-
-func TestList(t *testing.T) {
-	group := odize.NewGroup(t, nil)
-
-	err := group.
-		Test("should return all token names in repository", func(t *testing.T) {
-			names := List()
-			odize.AssertEqual(t, 13, len(names))
-
-			for _, name := range names {
-				_, ok := Get(name)
-				odize.AssertTrue(t, ok)
-			}
 		}).
 		Run()
 

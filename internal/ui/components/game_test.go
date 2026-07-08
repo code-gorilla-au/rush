@@ -33,8 +33,8 @@ func (m *mockStore) CreateGame(ctx context.Context, arg database.CreateGameParam
 func TestGameComponent(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
-	teamA := games.TeamConfig{TeamID: 1, TeamName: "Team A", Formations: make([]playbooks.Formation, 10)}
-	teamB := games.TeamConfig{TeamID: 2, TeamName: "Team B", Formations: make([]playbooks.Formation, 10)}
+	teamA := games.TeamConfig{TeamID: 1, TeamName: "Team A", Players: []int64{101, 102, 103}, Formations: make([]playbooks.Formation, 10)}
+	teamB := games.TeamConfig{TeamID: 2, TeamName: "Team B", Players: []int64{201, 202, 203}, Formations: make([]playbooks.Formation, 10)}
 
 	for i := 0; i < 10; i++ {
 		teamA.Formations[i] = playbooks.Formation{Lane1: 1, Lane2: 1, Lane3: 1}

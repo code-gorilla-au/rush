@@ -69,11 +69,13 @@ func TestPageGameCompleteModel(t *testing.T) {
 				TeamA: games.TeamConfig{
 					TeamID:     team.ID,
 					TeamName:   team.Name,
+					Players:    []int64{1, 2, 3},
 					Formations: formationsA,
 				},
 				TeamB: games.TeamConfig{
 					TeamID:     teamB.ID,
 					TeamName:   teamB.Name,
+					Players:    []int64{4, 5, 6},
 					Formations: formationsB,
 				},
 			})

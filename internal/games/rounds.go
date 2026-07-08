@@ -6,8 +6,8 @@ import (
 
 func NewRound() Round {
 	return Round{
-		TeamA:       TeamFormation{Lanes: [3][]int{}},
-		TeamB:       TeamFormation{Lanes: [3][]int{}},
+		TeamA:       TeamFormation{Lanes: [3][]int64{}},
+		TeamB:       TeamFormation{Lanes: [3][]int64{}},
 		DuelResults: []DuelResult{},
 	}
 }
@@ -144,13 +144,21 @@ func (s *TeamFormation) LanePop(lane int) (int, error) {
 func (s *TeamFormation) FillLanes(f LanesConfig) {
 	s.TeamID = f.TeamID
 
-	s.LaneFill(0, f.Lane1)
-	s.LaneFill(1, f.Lane2)
-	s.LaneFill(2, f.Lane3)
+	remainder := s.LaneFill(0, f.Lane1, f.Players)
+	remainder = s.LaneFill(1, f.Lane2, remainder)
+	s.LaneFill(2, f.Lane3, remainder)
 }
 
-func (s *TeamFormation) LaneFill(lane int, players int) {
+func (s *TeamFormation) LaneFill(lane int, players int, teamPlayers []int64) []int64 {
+	remainder := teamPlayers
 	for i := 0; i < players; i++ {
-		s.Lanes[lane] = append(s.Lanes[lane], i)
+		if len(remainder) == 0 {
+			break
+		}
+		player := remainder[0]
+		remainder = remainder[1:]
+		s.Lanes[lane] = append(s.Lanes[lane], player)
 	}
+
+	return remainder
 }

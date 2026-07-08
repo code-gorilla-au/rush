@@ -82,15 +82,20 @@ func (m *PageBattleConfirmModel) createGame() tea.Msg {
 		return fmt.Errorf("game service is not configured")
 	}
 
+	teamAPlayers := getPlayerIDs(m.globalState.Team.Players)
+	teamBPlayers := getPlayerIDs(m.selectedAITeam.Team.Players)
+
 	params := games.NewGameParams{
 		TeamA: games.TeamConfig{
 			TeamID:     m.globalState.Team.ID,
 			TeamName:   m.globalState.Team.Name,
+			Players:    teamAPlayers,
 			Formations: m.selectedPlaybook.Formations,
 		},
 		TeamB: games.TeamConfig{
 			TeamID:     m.selectedAITeam.Team.ID,
 			TeamName:   m.selectedAITeam.Team.Name,
+			Players:    teamBPlayers,
 			Formations: m.selectedAITeam.Playbook.Formations,
 		},
 	}
@@ -225,4 +230,13 @@ func getPlayerNames(players []teams.Player) []string {
 	}
 
 	return names
+}
+
+func getPlayerIDs(players []teams.Player) []int64 {
+	IDs := make([]int64, len(players))
+	for i, item := range players {
+		IDs[i] = item.ID
+	}
+
+	return IDs
 }

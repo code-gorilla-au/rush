@@ -71,19 +71,21 @@ type TeamStatistics struct {
 type TeamConfig struct {
 	TeamID     int64                 `json:"team_id"`
 	TeamName   string                `json:"team_name"`
+	Players    []int64               `json:"players"`
 	Formations []playbooks.Formation `json:"formations"`
 }
 
 type TeamFormation struct {
-	TeamID int64    `json:"team_id,omitempty"`
-	Lanes  [3][]int `json:"lanes,omitempty"`
+	TeamID int64      `json:"team_id,omitempty"`
+	Lanes  [3][]int64 `json:"lanes,omitempty"`
 }
 
 type LanesConfig struct {
-	TeamID int64 `json:"team_id"`
-	Lane1  int   `json:"lane_1"`
-	Lane2  int   `json:"lane_2"`
-	Lane3  int   `json:"lane_3"`
+	TeamID  int64   `json:"team_id"`
+	Players []int64 `json:"players"`
+	Lane1   int     `json:"lane_1"`
+	Lane2   int     `json:"lane_2"`
+	Lane3   int     `json:"lane_3"`
 }
 
 type RoundResult struct {

@@ -16,16 +16,18 @@ func generateRounds(teamA TeamConfig, teamB TeamConfig) [10]Round {
 
 		r.FillSquad(
 			LanesConfig{
-				TeamID: teamA.TeamID,
-				Lane1:  teamA.Formations[i].Lane1,
-				Lane2:  teamA.Formations[i].Lane2,
-				Lane3:  teamA.Formations[i].Lane3,
+				TeamID:  teamA.TeamID,
+				Players: teamA.Players,
+				Lane1:   teamA.Formations[i].Lane1,
+				Lane2:   teamA.Formations[i].Lane2,
+				Lane3:   teamA.Formations[i].Lane3,
 			},
 			LanesConfig{
-				TeamID: teamB.TeamID,
-				Lane1:  teamB.Formations[i].Lane1,
-				Lane2:  teamB.Formations[i].Lane2,
-				Lane3:  teamB.Formations[i].Lane3,
+				TeamID:  teamB.TeamID,
+				Players: teamB.Players,
+				Lane1:   teamB.Formations[i].Lane1,
+				Lane2:   teamB.Formations[i].Lane2,
+				Lane3:   teamB.Formations[i].Lane3,
 			},
 		)
 

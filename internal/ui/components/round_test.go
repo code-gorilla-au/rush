@@ -15,14 +15,14 @@ func TestRound(t *testing.T) {
 
 	round := games.Round{
 		TeamA: games.TeamFormation{
-			Lanes: [3][]int{
+			Lanes: [3][]int64{
 				{1, 2},
 				{3},
 				{4, 5, 6},
 			},
 		},
 		TeamB: games.TeamFormation{
-			Lanes: [3][]int{
+			Lanes: [3][]int64{
 				{7},
 				{8, 9},
 				{},

@@ -17,7 +17,7 @@ type TeamDecisionInput struct {
 }
 
 type DecisionInput struct {
-	lastRound DuelResult
+	lastRound *DuelResult
 	teamA     TeamDecisionInput
 	teamB     TeamDecisionInput
 }

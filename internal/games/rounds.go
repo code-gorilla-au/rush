@@ -76,7 +76,10 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 		}
 
 		if aRoll > bRoll {
+			player := r.TeamA.LanePeak(lane)
+
 			r.DuelResults = append(r.DuelResults, DuelResult{
+				Player:    player,
 				Outcome:   TeamA,
 				Roll:      aRoll,
 				RollDelta: aRoll - bRoll,
@@ -88,7 +91,10 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
 			}
 
 		} else if bRoll > aRoll {
+			player := r.TeamB.LanePeak(lane)
+
 			r.DuelResults = append(r.DuelResults, DuelResult{
+				Player:    player,
 				Outcome:   TeamB,
 				Roll:      bRoll,
 				RollDelta: bRoll - aRoll,
@@ -130,15 +136,20 @@ func (s *TeamFormation) LaneHasPlayers(lane int) bool {
 	return len(s.Lanes[lane]) > 0
 }
 
-func (s *TeamFormation) LanePop(lane int) (int, error) {
+func (s *TeamFormation) LanePeak(lane int) int64 {
+	return s.Lanes[lane][len(s.Lanes[lane])-1]
+}
+
+func (s *TeamFormation) LanePop(lane int) (int64, error) {
 	tmpLane := s.Lanes[lane]
 	if len(tmpLane) == 0 {
 		return 0, ErrNoPlayer
 	}
 
+	item := tmpLane[len(tmpLane)-1]
 	s.Lanes[lane] = tmpLane[:len(tmpLane)-1]
 
-	return 1, nil
+	return item, nil
 }
 
 func (s *TeamFormation) FillLanes(f LanesConfig) {

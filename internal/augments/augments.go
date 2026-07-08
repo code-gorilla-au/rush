@@ -195,6 +195,20 @@ func GetByCategory(category Category) ([]Effect, bool) {
 	return slices.Collect(maps.Values(repo)), true
 }
 
+func NamesFromCategory(category Category) []Name {
+	repo, ok := GetByCategory(category)
+	if !ok {
+		return []Name{}
+	}
+
+	var result []Name
+	for _, effect := range repo {
+		result = append(result, effect.Name)
+	}
+
+	return result
+}
+
 func List() []Name {
 	total := 0
 	for _, repository := range _repositories {

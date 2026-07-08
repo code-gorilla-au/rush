@@ -1,6 +1,7 @@
 package augments
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/code-gorilla-au/odize"
@@ -133,6 +134,47 @@ func TestGetByCategory(t *testing.T) {
 			effects, ok := GetByCategory(Category("unknown"))
 			odize.AssertFalse(t, ok)
 			odize.AssertEqual(t, 0, len(effects))
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}
+
+func TestNamesFromCategory(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	err := group.
+		Test("should return offense names", func(t *testing.T) {
+			names := NamesFromCategory(CategoryOffense)
+			odize.AssertEqual(t, 4, len(names))
+			odize.AssertTrue(t, slices.Contains(names, TwistOfFate))
+			odize.AssertTrue(t, slices.Contains(names, Overpower))
+			odize.AssertTrue(t, slices.Contains(names, PrecisionStrike))
+			odize.AssertTrue(t, slices.Contains(names, MomentumSurge))
+		}).
+		Test("should return defense names", func(t *testing.T) {
+			names := NamesFromCategory(CategoryDefense)
+			odize.AssertEqual(t, 4, len(names))
+			odize.AssertTrue(t, slices.Contains(names, Brace))
+			odize.AssertTrue(t, slices.Contains(names, Fortify))
+			odize.AssertTrue(t, slices.Contains(names, SecondChance))
+			odize.AssertTrue(t, slices.Contains(names, LastStand))
+		}).
+		Test("should return sabotage names", func(t *testing.T) {
+			names := NamesFromCategory(CategorySabotage)
+			odize.AssertEqual(t, 4, len(names))
+			odize.AssertTrue(t, slices.Contains(names, Hamstring))
+			odize.AssertTrue(t, slices.Contains(names, PocketSand))
+			odize.AssertTrue(t, slices.Contains(names, PoisonEdge))
+			odize.AssertTrue(t, slices.Contains(names, IceInVeins))
+		}).
+		Test("should return empty slice for NoOp category", func(t *testing.T) {
+			names := NamesFromCategory(CategoryNoOp)
+			odize.AssertEqual(t, 0, len(names))
+		}).
+		Test("should return empty slice for unknown category", func(t *testing.T) {
+			names := NamesFromCategory(Category("unknown"))
+			odize.AssertEqual(t, 0, len(names))
 		}).
 		Run()
 

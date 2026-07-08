@@ -1,6 +1,7 @@
 package teams
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/code-gorilla-au/odize"
@@ -14,43 +15,15 @@ func TestCoachPersona_AvailableTokens(t *testing.T) {
 		Test("returns expected tokens for known persona", func(t *testing.T) {
 			tokens := CoachPersonaBastion.Augments()
 
-			expected := []augments.Name{
-				augments.SecondChance,
-				augments.Hamstring,
-				augments.LastStand,
-				augments.IceInVeins,
-			}
+			odize.AssertTrue(t, slices.Contains(tokens, augments.SecondChance))
+			odize.AssertTrue(t, slices.Contains(tokens, augments.LastStand))
+			odize.AssertTrue(t, slices.Contains(tokens, augments.Fortify))
+			odize.AssertTrue(t, slices.Contains(tokens, augments.Brace))
 
-			odize.AssertEqual(t, expected, tokens)
-		}).
-		Test("returns cloned slice to prevent mutation leaks", func(t *testing.T) {
-			first := CoachPersonaVanguard.Augments()
-			second := CoachPersonaVanguard.Augments()
-
-			first[0] = augments.SecondChance
-
-			odize.AssertEqual(t, augments.TwistOfFate, second[0])
 		}).
 		Test("returns empty slice for unknown persona", func(t *testing.T) {
 			tokens := CoachPersona("Unknown Coach").Augments()
 			odize.AssertTrue(t, len(tokens) == 0)
-		}).
-		Run()
-
-	odize.AssertNoError(t, err)
-}
-
-func TestCoach_AvailableTokens(t *testing.T) {
-	group := odize.NewGroup(t, nil)
-
-	err := group.
-		Test("returns tokens from coach persona", func(t *testing.T) {
-			coach := Coach{Persona: CoachPersonaTrickster}
-
-			expected := CoachPersonaTrickster.Augments()
-			actual := coach.AvailableAugments()
-
-			odize.AssertEqual(t, expected, actual)
 		}).
 		Run()
 

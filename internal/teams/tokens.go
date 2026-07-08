@@ -1,45 +1,23 @@
 package teams
 
 import (
-	"slices"
-
 	"github.com/code-gorilla-au/rush/internal/augments"
 )
 
-var _coachPersonaTokens = map[CoachPersona][]augments.Name{
-	CoachPersonaVanguard: {
-		augments.TwistOfFate,
-		augments.Overpower,
-		augments.MomentumSurge,
-		augments.PrecisionStrike,
-	},
-	CoachPersonaBastion: {
-		augments.SecondChance,
-		augments.Hamstring,
-		augments.LastStand,
-		augments.IceInVeins,
-	},
-	CoachPersonaTrickster: {
-		augments.PocketSand,
-		augments.SecondChance,
-		augments.Overpower,
-		augments.IceInVeins,
-	},
-	CoachPersonaWildcard: {
-		augments.TwistOfFate,
-		augments.Overpower,
-		augments.Hamstring,
-		augments.PrecisionStrike,
-	},
+var _coachPersonaTokens = map[CoachPersona]augments.Category{
+	CoachPersonaVanguard:  augments.CategoryOffense,
+	CoachPersonaBastion:   augments.CategoryDefense,
+	CoachPersonaTrickster: augments.CategorySabotage,
+	CoachPersonaWildcard:  augments.CategoryOffense,
 }
 
 func (p CoachPersona) Augments() []augments.Name {
-	tokens, ok := _coachPersonaTokens[p]
+	aug, ok := _coachPersonaTokens[p]
 	if !ok {
 		return []augments.Name{}
 	}
 
-	return slices.Clone(tokens)
+	return augments.NamesFromCategory(aug)
 }
 
 func (c *Coach) AvailableAugments() []augments.Name {

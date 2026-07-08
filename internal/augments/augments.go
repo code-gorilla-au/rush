@@ -68,7 +68,7 @@ var (
 			Category: CategoryDefense,
 			Type:     TypePassive,
 			Trigger:  TriggerConditionAfterRoll,
-			Effect:   "If last round was a tie, gain +1 to roll",
+			Effect:   "If last duel was a tie, gain +1 to roll",
 			Intent:   "Turn the tides on opponent momentum",
 			Action:   ActionIncrease,
 			Target:   TargetSelf,

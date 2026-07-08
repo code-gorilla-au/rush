@@ -11,9 +11,10 @@ func DiceRoll() int {
 }
 
 type TeamDecisionInput struct {
-	augment augments.Effect
-	player  int64
-	roll    int
+	activeAugment    augments.Effect
+	passivesAugments []augments.Effect
+	player           int64
+	roll             int
 }
 
 type DecisionInput struct {
@@ -29,14 +30,14 @@ func RuleTwistOfFate(input DecisionInput) DecisionInput {
 }
 
 func ruleTwistOfFate(input DecisionInput, roll RollFn) DecisionInput {
-	if input.teamB.augment.Name == augments.TwistOfFate {
+	if input.teamB.activeAugment.Name == augments.TwistOfFate {
 		secondRoll := roll()
 		if input.teamB.roll < secondRoll {
 			input.teamB.roll = secondRoll
 		}
 	}
 
-	if input.teamA.augment.Name == augments.TwistOfFate {
+	if input.teamA.activeAugment.Name == augments.TwistOfFate {
 		secondRoll := roll()
 		if input.teamA.roll < secondRoll {
 			input.teamA.roll = secondRoll
@@ -47,16 +48,16 @@ func ruleTwistOfFate(input DecisionInput, roll RollFn) DecisionInput {
 }
 
 type Engine struct {
-	beforeRole    []DecisionEngineFunc
-	afterRole     []DecisionEngineFunc
+	beforeRoll    []DecisionEngineFunc
+	afterRoll     []DecisionEngineFunc
 	afterAugments []DecisionEngineFunc
 	rollFn        RollFn
 }
 
 func NewDecisionEngine() *Engine {
 	return &Engine{
-		beforeRole: []DecisionEngineFunc{},
-		afterRole: []DecisionEngineFunc{
+		beforeRoll: []DecisionEngineFunc{},
+		afterRoll: []DecisionEngineFunc{
 			RuleTwistOfFate,
 		},
 		afterAugments: []DecisionEngineFunc{},
@@ -65,14 +66,14 @@ func NewDecisionEngine() *Engine {
 }
 
 func (e *Engine) Run(input DecisionInput) DuelResult {
-	for _, ruleFn := range e.beforeRole {
+	for _, ruleFn := range e.beforeRoll {
 		input = ruleFn(input)
 	}
 
 	input.teamB.roll = e.rollFn()
 	input.teamA.roll = e.rollFn()
 
-	for _, ruleFn := range e.afterRole {
+	for _, ruleFn := range e.afterRoll {
 		input = ruleFn(input)
 	}
 

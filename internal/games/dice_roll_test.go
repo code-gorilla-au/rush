@@ -13,12 +13,12 @@ func TestRuleTwistOfFate(t *testing.T) {
 	group.Test("should not modify input struct (immutability)", func(t *testing.T) {
 		input := DecisionInput{
 			teamA: TeamDecisionInput{
-				augment: augments.Effect{Name: augments.TwistOfFate},
-				roll:    1,
+				activeAugment: augments.Effect{Name: augments.TwistOfFate},
+				roll:          1,
 			},
 			teamB: TeamDecisionInput{
-				augment: augments.Effect{Name: augments.TwistOfFate},
-				roll:    1,
+				activeAugment: augments.Effect{Name: augments.TwistOfFate},
+				roll:          1,
 			},
 		}
 
@@ -31,8 +31,8 @@ func TestRuleTwistOfFate(t *testing.T) {
 	group.Test("should increase roll for Team A when TwistOfFate provides a higher roll", func(t *testing.T) {
 		input := DecisionInput{
 			teamA: TeamDecisionInput{
-				augment: augments.Effect{Name: augments.TwistOfFate},
-				roll:    2,
+				activeAugment: augments.Effect{Name: augments.TwistOfFate},
+				roll:          2,
 			},
 			teamB: TeamDecisionInput{
 				roll: 3,
@@ -49,8 +49,8 @@ func TestRuleTwistOfFate(t *testing.T) {
 	group.Test("should not change roll for Team A when TwistOfFate provides a lower roll", func(t *testing.T) {
 		input := DecisionInput{
 			teamA: TeamDecisionInput{
-				augment: augments.Effect{Name: augments.TwistOfFate},
-				roll:    4,
+				activeAugment: augments.Effect{Name: augments.TwistOfFate},
+				roll:          4,
 			},
 		}
 
@@ -63,8 +63,8 @@ func TestRuleTwistOfFate(t *testing.T) {
 	group.Test("should increase roll for Team B when TwistOfFate provides a higher roll", func(t *testing.T) {
 		input := DecisionInput{
 			teamB: TeamDecisionInput{
-				augment: augments.Effect{Name: augments.TwistOfFate},
-				roll:    2,
+				activeAugment: augments.Effect{Name: augments.TwistOfFate},
+				roll:          2,
 			},
 			teamA: TeamDecisionInput{
 				roll: 3,
@@ -81,8 +81,8 @@ func TestRuleTwistOfFate(t *testing.T) {
 	group.Test("should not change rolls when TwistOfFate augment is not present", func(t *testing.T) {
 		input := DecisionInput{
 			teamA: TeamDecisionInput{
-				augment: augments.Effect{Name: "Some Other Effect"},
-				roll:    3,
+				activeAugment: augments.Effect{Name: "Some Other Effect"},
+				roll:          3,
 			},
 			teamB: TeamDecisionInput{
 				roll: 4,
@@ -99,12 +99,12 @@ func TestRuleTwistOfFate(t *testing.T) {
 	group.Test("should handle both teams having TwistOfFate", func(t *testing.T) {
 		input := DecisionInput{
 			teamA: TeamDecisionInput{
-				augment: augments.Effect{Name: augments.TwistOfFate},
-				roll:    2,
+				activeAugment: augments.Effect{Name: augments.TwistOfFate},
+				roll:          2,
 			},
 			teamB: TeamDecisionInput{
-				augment: augments.Effect{Name: augments.TwistOfFate},
-				roll:    3,
+				activeAugment: augments.Effect{Name: augments.TwistOfFate},
+				roll:          3,
 			},
 		}
 
@@ -136,14 +136,14 @@ func TestEngineRun(t *testing.T) {
 			afterAugmentsCalled := false
 
 			engine := &Engine{
-				beforeRole: []DecisionEngineFunc{
+				beforeRoll: []DecisionEngineFunc{
 					func(input DecisionInput) DecisionInput {
 						beforeCalled = true
 						input.teamA.player = 11
 						return input
 					},
 				},
-				afterRole: []DecisionEngineFunc{
+				afterRoll: []DecisionEngineFunc{
 					func(input DecisionInput) DecisionInput {
 						afterCalled = true
 						input.teamA.roll++
@@ -174,8 +174,8 @@ func TestEngineRun(t *testing.T) {
 			secondRolls := newSequentialRollFn([]int{6})
 
 			engine := &Engine{
-				beforeRole: []DecisionEngineFunc{},
-				afterRole: []DecisionEngineFunc{
+				beforeRoll: []DecisionEngineFunc{},
+				afterRoll: []DecisionEngineFunc{
 					func(input DecisionInput) DecisionInput {
 						return ruleTwistOfFate(input, secondRolls)
 					},
@@ -186,8 +186,8 @@ func TestEngineRun(t *testing.T) {
 
 			result := engine.Run(DecisionInput{
 				teamA: TeamDecisionInput{
-					player:  101,
-					augment: augments.Effect{Name: augments.TwistOfFate},
+					player:        101,
+					activeAugment: augments.Effect{Name: augments.TwistOfFate},
 				},
 				teamB: TeamDecisionInput{player: 202},
 			})
@@ -201,8 +201,8 @@ func TestEngineRun(t *testing.T) {
 			secondRolls := newSequentialRollFn([]int{6})
 
 			engine := &Engine{
-				beforeRole: []DecisionEngineFunc{},
-				afterRole: []DecisionEngineFunc{
+				beforeRoll: []DecisionEngineFunc{},
+				afterRoll: []DecisionEngineFunc{
 					func(input DecisionInput) DecisionInput {
 						return ruleTwistOfFate(input, secondRolls)
 					},
@@ -213,8 +213,8 @@ func TestEngineRun(t *testing.T) {
 
 			result := engine.Run(DecisionInput{
 				teamA: TeamDecisionInput{
-					player:  101,
-					augment: augments.Effect{Name: augments.Brace},
+					player:        101,
+					activeAugment: augments.Effect{Name: augments.Brace},
 				},
 				teamB: TeamDecisionInput{player: 202},
 			})
@@ -226,8 +226,8 @@ func TestEngineRun(t *testing.T) {
 		}).
 		Test("should return draw when both final rolls are equal", func(t *testing.T) {
 			engine := &Engine{
-				beforeRole:    []DecisionEngineFunc{},
-				afterRole:     []DecisionEngineFunc{},
+				beforeRoll:    []DecisionEngineFunc{},
+				afterRoll:     []DecisionEngineFunc{},
 				afterAugments: []DecisionEngineFunc{},
 				rollFn:        newSequentialRollFn([]int{4, 4}),
 			}

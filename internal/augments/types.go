@@ -9,7 +9,7 @@ const (
 	Overpower       Name = "Overpower"
 	Hamstring       Name = "Hamstring"
 	PrecisionStrike Name = "Precision Strike"
-	PocketSand      Name = "Jamming Signal"
+	PocketSand      Name = "Pocket Sand"
 	LastStand       Name = "Last Stand"
 	MomentumSurge   Name = "Momentum Surge"
 	IceInVeins      Name = "Ice in Veins"

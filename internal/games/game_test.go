@@ -48,14 +48,14 @@ func TestGame_ResolveRound(t *testing.T) {
 			rounds:       generateRounds(teamA, teamB),
 		}
 
-		rolls := []int{6, 1}
+		rolls := []int{1, 6}
 		idx := 0
 		rollFn := func() int {
 			val := rolls[idx%2]
 			idx++
 			return val
 		}
-		res, err := game.ResolveRound(rollFn)
+		res, err := game.ResolveRound(&TestEngine{RollFn: rollFn})
 
 		odize.AssertNoError(t, err)
 		odize.AssertTrue(t, res.Outcome == TeamA || res.Outcome == TeamB)

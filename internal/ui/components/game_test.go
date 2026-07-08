@@ -41,7 +41,7 @@ func TestGameComponent(t *testing.T) {
 		teamB.Formations[i] = playbooks.Formation{Lane1: 1, Lane2: 1, Lane3: 1}
 	}
 
-	rolls := []int{6, 1}
+	rolls := []int{1, 6}
 	idx := 0
 	rollFn := func() int {
 		val := rolls[idx%2]
@@ -58,7 +58,7 @@ func TestGameComponent(t *testing.T) {
 		})
 		odize.AssertNoError(t, err)
 
-		gComp := NewGame(&game, "Team A", "Team B", rollFn)
+		gComp := NewGame(&game, "Team A", "Team B", &games.TestEngine{RollFn: rollFn})
 
 		// Initial state
 		odize.AssertFalse(t, gComp.resolved)

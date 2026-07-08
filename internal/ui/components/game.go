@@ -12,13 +12,13 @@ import (
 
 // Game component handles the UI for a single round of a game.
 type Game struct {
-	game      *games.Game
-	teamAName string
-	teamBName string
-	resolved  bool
-	result    games.RoundResult
-	rollFn    games.RollFn
-	roundComp Round
+	game       *games.Game
+	teamAName  string
+	teamBName  string
+	resolved   bool
+	result     games.RoundResult
+	rollEngine games.RollStrategy
+	roundComp  Round
 }
 
 // MsgResolveRound is sent when the round should be resolved.
@@ -28,9 +28,9 @@ type MsgResolveRound struct{}
 type MsgNextRound struct{}
 
 // NewGame creates a new Game component.
-func NewGame(game *games.Game, teamAName, teamBName string, rollFn games.RollFn) Game {
-	if rollFn == nil {
-		rollFn = games.DiceRoll
+func NewGame(game *games.Game, teamAName, teamBName string, rollEngine games.RollStrategy) Game {
+	if rollEngine == nil {
+		rollEngine = games.NewDecisionEngine()
 	}
 
 	currentRoundIdx := game.CurrentRound()
@@ -41,11 +41,11 @@ func NewGame(game *games.Game, teamAName, teamBName string, rollFn games.RollFn)
 	}
 
 	return Game{
-		game:      game,
-		teamAName: teamAName,
-		teamBName: teamBName,
-		rollFn:    rollFn,
-		roundComp: NewRound(currentRound, teamAName, teamBName),
+		game:       game,
+		teamAName:  teamAName,
+		teamBName:  teamBName,
+		rollEngine: rollEngine,
+		roundComp:  NewRound(currentRound, teamAName, teamBName),
 	}
 }
 
@@ -79,7 +79,7 @@ func (g *Game) handleRound() {
 		return
 	}
 
-	res, err := g.game.ResolveRound(g.rollFn)
+	res, err := g.game.ResolveRound(g.rollEngine)
 	if err == nil {
 		g.result = res
 		g.resolved = true

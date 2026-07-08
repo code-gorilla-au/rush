@@ -84,7 +84,7 @@ func TestPageGameCompleteModel(t *testing.T) {
 			// Simulate game completion with Team A as winner
 			rollIdx := 0
 			rollFn := func() int {
-				rolls := []int{10, 1}
+				rolls := []int{1, 10}
 				r := rolls[rollIdx%2]
 				rollIdx++
 				return r
@@ -92,7 +92,7 @@ func TestPageGameCompleteModel(t *testing.T) {
 
 			// Finish all rounds
 			for i := 0; i < 10; i++ {
-				game.ResolveRound(rollFn)
+				game.ResolveRound(&games.TestEngine{RollFn: rollFn})
 			}
 
 			_, err = gameSvc.CompleteGame(ctx, game)

@@ -103,7 +103,7 @@ func TestPageGameModel(t *testing.T) {
 		m.Update(MsgGameLoaded{Game: game})
 
 		// Simulate round resolved (currentRound incremented)
-		m.game.ResolveRound(func() int { return 1 })
+		m.game.ResolveRound(&games.TestEngine{RollFn: func() int { return 1 }})
 
 		_, cmd := m.Update(components.MsgNextRound{})
 

@@ -37,7 +37,7 @@ func generateRounds(teamA TeamConfig, teamB TeamConfig) [10]Round {
 	return rounds
 }
 
-func (g *Game) ResolveRound(roll RollFn) (RoundResult, error) {
+func (g *Game) ResolveRound(roll RollStrategy) (RoundResult, error) {
 	if g.currentRound < 0 || g.currentRound >= int64(len(g.rounds)) {
 		return RoundResult{}, ErrNoRounds
 	}

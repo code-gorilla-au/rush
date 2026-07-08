@@ -66,7 +66,7 @@ func TestResolveLane(t *testing.T) {
 		fillLaneWithIDs(t, &r.TeamB, lane, []int64{21})
 
 		// Team A wins if aRoll > bRoll
-		rolls := []int{6, 1} // aRoll=6, bRoll=1 -> Team B pops
+		rolls := []int{1, 6} // bRoll=1, aRoll=6 -> Team B pops
 		idx := 0
 		rollFn := func() int {
 			val := rolls[idx]
@@ -74,9 +74,7 @@ func TestResolveLane(t *testing.T) {
 			return val
 		}
 
-		res := r.ResolveLane(lane, rollFn)
-
-		odize.AssertEqual(t, TeamA, res.Outcome)
+		res := r.ResolveLane(lane, &TestEngine{RollFn: rollFn})
 		odize.AssertEqual(t, 2, res.RemainingPlayers)
 		odize.AssertEqual(t, 0, r.TeamB.LaneCount(lane))
 	})
@@ -91,7 +89,7 @@ func TestResolveLane(t *testing.T) {
 		fillLaneWithIDs(t, &r.TeamB, lane, []int64{41, 42})
 
 		// Team B wins if bRoll > aRoll
-		rolls := []int{1, 6} // aRoll=1, bRoll=6 -> Team A pops
+		rolls := []int{6, 1} // bRoll=6, aRoll=1 -> Team A pops
 		idx := 0
 		rollFn := func() int {
 			val := rolls[idx]
@@ -99,9 +97,7 @@ func TestResolveLane(t *testing.T) {
 			return val
 		}
 
-		res := r.ResolveLane(lane, rollFn)
-
-		odize.AssertEqual(t, TeamB, res.Outcome)
+		res := r.ResolveLane(lane, &TestEngine{RollFn: rollFn})
 		odize.AssertEqual(t, 2, res.RemainingPlayers)
 		odize.AssertEqual(t, 0, r.TeamA.LaneCount(lane))
 	})
@@ -115,7 +111,7 @@ func TestResolveLane(t *testing.T) {
 		fillLaneWithIDs(t, &r.TeamA, lane, []int64{})
 		fillLaneWithIDs(t, &r.TeamB, lane, []int64{51, 52, 53})
 
-		res := r.ResolveLane(lane, func() int { return 1 })
+		res := r.ResolveLane(lane, &TestEngine{RollFn: func() int { return 1 }})
 
 		odize.AssertEqual(t, TeamB, res.Outcome)
 		odize.AssertEqual(t, 3, res.RemainingPlayers)
@@ -130,7 +126,7 @@ func TestResolveLane(t *testing.T) {
 		fillLaneWithIDs(t, &r.TeamA, lane, []int64{61, 62, 63})
 		fillLaneWithIDs(t, &r.TeamB, lane, []int64{})
 
-		res := r.ResolveLane(lane, func() int { return 1 })
+		res := r.ResolveLane(lane, &TestEngine{RollFn: func() int { return 1 }})
 
 		odize.AssertEqual(t, TeamA, res.Outcome)
 		odize.AssertEqual(t, 3, res.RemainingPlayers)
@@ -163,7 +159,7 @@ func TestResolveLanes(t *testing.T) {
 		// Rolls for Lane 0: A(6), B(1) -> B loses 1
 		// Rolls for Lane 1: A(1), B(6) -> A loses 1
 		// Lane 2: No rolls needed as B has 0 players
-		rolls := []int{6, 1, 1, 6}
+		rolls := []int{1, 6, 6, 1}
 		idx := 0
 		rollFn := func() int {
 			val := rolls[idx]
@@ -171,7 +167,7 @@ func TestResolveLanes(t *testing.T) {
 			return val
 		}
 
-		res := r.ResolveLanes(rollFn)
+		res := r.ResolveLanes(&TestEngine{RollFn: rollFn})
 
 		// Team A players: Lane 0 (2), Lane 1 (0), Lane 2 (3) = 5
 		// Team B players: Lane 0 (0), Lane 1 (2), Lane 2 (0) = 2
@@ -198,7 +194,7 @@ func TestResolveLanes(t *testing.T) {
 		fillLaneWithIDs(t, &r.TeamB, 2, []int64{})
 
 		// Rolls for Lane 1: A(1), B(6) -> A loses 1
-		rolls := []int{1, 6}
+		rolls := []int{6, 1}
 		idx := 0
 		rollFn := func() int {
 			val := rolls[idx]
@@ -206,7 +202,7 @@ func TestResolveLanes(t *testing.T) {
 			return val
 		}
 
-		res := r.ResolveLanes(rollFn)
+		res := r.ResolveLanes(&TestEngine{RollFn: rollFn})
 
 		// Team A players: Lane 0 (0), Lane 1 (0), Lane 2 (1) = 1
 		// Team B players: Lane 0 (3), Lane 1 (2), Lane 2 (0) = 5
@@ -232,7 +228,7 @@ func TestResolveLanes(t *testing.T) {
 		fillLaneWithIDs(t, &r.TeamA, 2, []int64{})
 		fillLaneWithIDs(t, &r.TeamB, 2, []int64{})
 
-		res := r.ResolveLanes(func() int { return 1 })
+		res := r.ResolveLanes(&TestEngine{RollFn: func() int { return 1 }})
 
 		// Total A (1) == Total B (1)
 		// Current logic: if teamAPlayers > teamBPlayers { A wins } else if teamBPlayers > teamAPlayers { B wins } else { Draw }

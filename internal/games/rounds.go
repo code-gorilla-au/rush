@@ -2,6 +2,8 @@ package games
 
 import (
 	"errors"
+
+	"github.com/code-gorilla-au/rush/internal/augments"
 )
 
 func NewRound() Round {
@@ -17,7 +19,7 @@ func (r *Round) FillSquad(a LanesConfig, b LanesConfig) {
 	r.TeamB.FillLanes(b)
 }
 
-func (r *Round) ResolveLanes(rollFn RollFn) RoundResult {
+func (r *Round) ResolveLanes(rollFn RollStrategy) RoundResult {
 	var result []RoundResult
 
 	for lane := 0; lane < len(r.TeamA.Lanes); lane++ {
@@ -65,52 +67,50 @@ func (r *Round) calculateWinner(result []RoundResult) RoundResult {
 	}
 }
 
-func (r *Round) ResolveLane(lane int, rollFn RollFn) RoundResult {
+func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
 	for r.TeamA.LaneHasPlayers(lane) && r.TeamB.LaneHasPlayers(lane) {
-		aRoll := rollFn()
-		bRoll := rollFn()
+		playerA := r.TeamA.LanePeak(lane)
+		playerB := r.TeamB.LanePeak(lane)
 
-		for aRoll == bRoll {
-			bRoll = rollFn()
-			aRoll = rollFn()
+		var lastRound *DuelResult
+		if len(r.DuelResults) > 0 {
+			lastRound = new(r.DuelResults[len(r.DuelResults)-1])
 		}
 
-		if aRoll > bRoll {
-			player := r.TeamA.LanePeak(lane)
+		rollInput := DecisionInput{
+			lastRound: lastRound,
+			teamA: TeamDecisionInput{
+				activeAugment:    augments.Effect{},
+				passivesAugments: []augments.Effect{},
+				player:           playerA,
+				roll:             0,
+			},
+			teamB: TeamDecisionInput{
+				activeAugment:    augments.Effect{},
+				passivesAugments: []augments.Effect{},
+				player:           playerB,
+				roll:             0,
+			},
+		}
 
-			r.DuelResults = append(r.DuelResults, DuelResult{
-				Player:    player,
-				Outcome:   TeamA,
-				Roll:      aRoll,
-				RollDelta: aRoll - bRoll,
-			})
+		re := rollFn.Run(rollInput)
 
+		for re.Outcome == Draw {
+			re = rollFn.Run(rollInput)
+		}
+
+		r.DuelResults = append(r.DuelResults, re)
+		if re.Outcome == TeamA {
 			_, err := r.TeamB.LanePop(lane)
 			if errors.Is(err, ErrNoPlayer) {
 				break
 			}
-
-		} else if bRoll > aRoll {
-			player := r.TeamB.LanePeak(lane)
-
-			r.DuelResults = append(r.DuelResults, DuelResult{
-				Player:    player,
-				Outcome:   TeamB,
-				Roll:      bRoll,
-				RollDelta: bRoll - aRoll,
-			})
-
+		} else {
 			_, err := r.TeamA.LanePop(lane)
 			if errors.Is(err, ErrNoPlayer) {
 				break
 			}
 		}
-
-		r.DuelResults = append(r.DuelResults, DuelResult{
-			Outcome:   Draw,
-			Roll:      0,
-			RollDelta: 0,
-		})
 
 	}
 

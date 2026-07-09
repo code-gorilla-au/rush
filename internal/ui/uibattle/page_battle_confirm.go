@@ -91,12 +91,14 @@ func (m *PageBattleConfirmModel) createGame() tea.Msg {
 			TeamID:     m.globalState.Team.ID,
 			TeamName:   m.globalState.Team.Name,
 			Players:    teamAPlayers,
+			Augments:   m.globalState.Coach.AvailableAugments(),
 			Formations: m.selectedPlaybook.Formations,
 		},
 		TeamB: games.TeamConfig{
 			TeamID:     m.selectedAITeam.Team.ID,
 			TeamName:   m.selectedAITeam.Team.Name,
 			Players:    teamBPlayers,
+			Augments:   m.selectedAITeam.Coach.AvailableAugments(),
 			Formations: m.selectedAITeam.Playbook.Formations,
 		},
 	}

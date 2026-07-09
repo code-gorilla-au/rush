@@ -11,15 +11,20 @@ var _coachPersonaTokens = map[CoachPersona]augments.Category{
 	CoachPersonaWildcard:  augments.CategoryOffense,
 }
 
-func (p CoachPersona) Augments() []augments.Name {
+func (p CoachPersona) Augments() []augments.Effect {
 	aug, ok := _coachPersonaTokens[p]
 	if !ok {
-		return []augments.Name{}
+		return []augments.Effect{}
 	}
 
-	return augments.NamesFromCategory(aug)
+	list, ok := augments.GetByCategory(aug)
+	if !ok {
+		return []augments.Effect{}
+	}
+
+	return list
 }
 
-func (c *Coach) AvailableAugments() []augments.Name {
+func (c *Coach) AvailableAugments() []augments.Effect {
 	return c.Persona.Augments()
 }

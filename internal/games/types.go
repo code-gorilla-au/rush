@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/code-gorilla-au/rush/internal/augments"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 )
 
@@ -72,6 +73,7 @@ type TeamConfig struct {
 	TeamID     int64                 `json:"team_id"`
 	TeamName   string                `json:"team_name"`
 	Players    []int64               `json:"players"`
+	Augments   []augments.Effect     `json:"augments"`
 	Formations []playbooks.Formation `json:"formations"`
 }
 

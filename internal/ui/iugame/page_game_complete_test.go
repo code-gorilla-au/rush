@@ -92,7 +92,7 @@ func TestPageGameCompleteModel(t *testing.T) {
 
 			// Finish all rounds
 			for i := 0; i < 10; i++ {
-				game.ResolveRound(&games.TestEngine{RollFn: rollFn})
+				_, _ = game.ResolveRound(&games.TestEngine{RollFn: rollFn})
 			}
 
 			_, err = gameSvc.CompleteGame(ctx, game)

@@ -23,7 +23,6 @@ type MsgSwitchGamePage struct {
 // GameModel handles all game related pages.
 type GameModel struct {
 	currentPage         SubPageGame
-	subPageGame         tea.Model
 	subPageGameRoot     tea.Model
 	subPageGameComplete tea.Model
 }

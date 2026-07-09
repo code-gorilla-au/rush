@@ -138,23 +138,6 @@ func (s *Service) GetCoachByID(ctx context.Context, id int64) (Coach, error) {
 	return fromCoachModel(model), nil
 }
 
-func (s *Service) getTeamPlayers(ctx context.Context, teamID int64) ([]Player, error) {
-	models, err := s.store.GetTeamMembers(ctx, sql.NullInt64{
-		Int64: teamID,
-		Valid: true,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("getting team players: %w", err)
-	}
-
-	players := make([]Player, len(models))
-	for i, model := range models {
-		players[i] = fromPlayerModel(model)
-	}
-
-	return players, nil
-}
-
 func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
 	model, err := s.store.CreateTeam(ctx, database.CreateTeamParams{
 		Name: name,

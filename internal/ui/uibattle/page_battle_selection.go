@@ -134,11 +134,13 @@ func (m *PageBattleSelectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.aiTeamList.SetActive(m.state == stateSelectingOpponent)
 
 	var listCmd tea.Cmd
-	if m.state == stateSelectingPlaybook {
+	switch m.state {
+	case stateSelectingPlaybook:
 		m.playbookList, listCmd = m.playbookList.Update(msg)
-	} else if m.state == stateSelectingOpponent {
+	case stateSelectingOpponent:
 		m.aiTeamList, listCmd = m.aiTeamList.Update(msg)
 	}
+
 	cmds = append(cmds, listCmd)
 
 	return m, tea.Batch(cmds...)

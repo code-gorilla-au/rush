@@ -34,7 +34,8 @@ func (t TeamTile) View(theme styles.IceTheme, width int) string {
 		renderPlayers(theme, t.PlayerNames),
 	)
 
-	tileStyle := theme.RoundBorder.Copy().Align(lipgloss.Left)
+	tileStyle := theme.RoundBorder
+	tileStyle.Align(lipgloss.Left)
 
 	if width > 0 {
 		tileStyle = tileStyle.Width(width)

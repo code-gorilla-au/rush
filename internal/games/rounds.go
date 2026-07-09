@@ -95,11 +95,17 @@ func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
 		}
 
 		re := rollFn.Run(rollInput)
+
+		re.Lane = lane
 		r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TriggeredAugment)
 		r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TriggeredAugment)
 
 		for re.Outcome == Draw {
 			re = rollFn.Run(rollInput)
+
+			re.Lane = lane
+			r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TriggeredAugment)
+			r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TriggeredAugment)
 		}
 
 		r.DuelResults = append(r.DuelResults, re)

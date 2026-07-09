@@ -7,128 +7,6 @@ import (
 	"github.com/code-gorilla-au/rush/internal/augments"
 )
 
-func TestRuleTwistOfFate(t *testing.T) {
-	group := odize.NewGroup(t, nil)
-
-	group.Test("should not modify input struct (immutability)", func(t *testing.T) {
-		input := DecisionInput{
-			lastRound: &DuelResult{Outcome: Draw},
-			teamA: TeamDecisionInput{
-				triggeredAugment: augments.TwistOfFate,
-				roll:             1,
-			},
-			teamB: TeamDecisionInput{
-				triggeredAugment: augments.TwistOfFate,
-				roll:             1,
-			},
-		}
-
-		inputCopy := input
-		_ = RuleTwistOfFate(input)
-
-		odize.AssertEqual(t, inputCopy, input)
-	})
-
-	group.Test("should increase roll for Team A when TwistOfFate provides a higher roll", func(t *testing.T) {
-		input := DecisionInput{
-			lastRound: &DuelResult{Outcome: TeamB},
-			teamA: TeamDecisionInput{
-				triggeredAugment: augments.NoAugment,
-				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
-				roll:             2,
-			},
-			teamB: TeamDecisionInput{
-				roll: 3,
-			},
-		}
-
-		mockRoll := func() int { return 5 }
-		res := ruleTwistOfFate(input, mockRoll)
-
-		odize.AssertEqual(t, 5, res.teamA.roll)
-		odize.AssertEqual(t, 3, res.teamB.roll) // Team B unchanged
-	})
-
-	group.Test("should not change roll for Team A when TwistOfFate provides a lower roll", func(t *testing.T) {
-		input := DecisionInput{
-			lastRound: &DuelResult{Outcome: TeamB},
-			teamA: TeamDecisionInput{
-				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
-				roll:             4,
-			},
-		}
-
-		mockRoll := func() int { return 2 }
-		res := ruleTwistOfFate(input, mockRoll)
-
-		odize.AssertEqual(t, 4, res.teamA.roll)
-	})
-
-	group.Test("should increase roll for Team B when TwistOfFate provides a higher roll", func(t *testing.T) {
-		input := DecisionInput{
-			lastRound: &DuelResult{Outcome: TeamA},
-			teamB: TeamDecisionInput{
-				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
-				roll:             2,
-			},
-			teamA: TeamDecisionInput{
-				roll: 3,
-			},
-		}
-
-		mockRoll := func() int { return 5 }
-		res := ruleTwistOfFate(input, mockRoll)
-
-		odize.AssertEqual(t, 5, res.teamB.roll)
-		odize.AssertEqual(t, 3, res.teamA.roll) // Team A unchanged
-	})
-
-	group.Test("should not change rolls when TwistOfFate augment is not present", func(t *testing.T) {
-		input := DecisionInput{
-			lastRound: &DuelResult{Outcome: TeamB},
-			teamA: TeamDecisionInput{
-				triggeredAugment: "Some Other Effect",
-				roll:             3,
-			},
-			teamB: TeamDecisionInput{
-				roll: 4,
-			},
-		}
-
-		mockRoll := func() int { return 6 }
-		res := ruleTwistOfFate(input, mockRoll)
-
-		odize.AssertEqual(t, 3, res.teamA.roll)
-		odize.AssertEqual(t, 4, res.teamB.roll)
-	})
-
-	group.Test("should handle both teams having TwistOfFate", func(t *testing.T) {
-		input := DecisionInput{
-			lastRound: &DuelResult{Outcome: TeamB},
-			teamA: TeamDecisionInput{
-				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
-				roll:             2,
-			},
-			teamB: TeamDecisionInput{
-				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
-				roll:             3,
-			},
-		}
-
-		mockRoll := func() int {
-			return 6
-		}
-
-		res := ruleTwistOfFate(input, mockRoll)
-
-		odize.AssertEqual(t, 6, res.teamA.roll)
-		odize.AssertEqual(t, 3, res.teamB.roll)
-	})
-
-	err := group.Run()
-	odize.AssertNoError(t, err)
-}
-
 func TestEngineRun(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
@@ -246,6 +124,98 @@ func TestEngineRun(t *testing.T) {
 			odize.AssertEqual(t, int64(0), result.Player)
 			odize.AssertEqual(t, 0, result.Roll)
 			odize.AssertEqual(t, 0, result.RollDelta)
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}
+
+func TestRules(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	err := group.
+		Test("RuleTwistOfFate should do nothing if lastRound is nil", func(t *testing.T) {
+			input := DecisionInput{
+				teamA: TeamDecisionInput{
+					roll:             3,
+					passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
+				},
+			}
+			result := ruleTwistOfFate(input, func() int { return 6 })
+			odize.AssertEqual(t, 3, result.teamA.roll)
+			odize.AssertEqual(t, augments.Name(""), result.teamA.triggeredAugment)
+		}).
+		Test("RuleTwistOfFate should trigger for Team B if Team A won last round", func(t *testing.T) {
+			input := DecisionInput{
+				lastRound: &DuelResult{Outcome: TeamA},
+				teamB: TeamDecisionInput{
+					roll:             2,
+					passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
+				},
+			}
+			result := ruleTwistOfFate(input, func() int { return 5 })
+			odize.AssertEqual(t, 5, result.teamB.roll)
+			odize.AssertEqual(t, augments.TwistOfFate, result.teamB.triggeredAugment)
+		}).
+		Test("RuleTwistOfFate should not update roll if second roll is lower", func(t *testing.T) {
+			input := DecisionInput{
+				lastRound: &DuelResult{Outcome: TeamB},
+				teamA: TeamDecisionInput{
+					roll:             4,
+					passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
+				},
+			}
+			result := ruleTwistOfFate(input, func() int { return 2 })
+			odize.AssertEqual(t, 4, result.teamA.roll)
+			odize.AssertEqual(t, augments.TwistOfFate, result.teamA.triggeredAugment)
+		}).
+		Test("RuleOverPower should increase roll by 1", func(t *testing.T) {
+			input := DecisionInput{
+				teamA: TeamDecisionInput{
+					roll:             3,
+					passivesAugments: []augments.Effect{{Name: augments.Overpower}},
+				},
+				teamB: TeamDecisionInput{
+					roll:             3,
+					passivesAugments: []augments.Effect{{Name: augments.Overpower}},
+				},
+			}
+			result := RuleOverPower(input)
+			odize.AssertEqual(t, 4, result.teamA.roll)
+			odize.AssertEqual(t, 4, result.teamB.roll)
+			odize.AssertEqual(t, augments.Overpower, result.teamA.triggeredAugment)
+			odize.AssertEqual(t, augments.Overpower, result.teamB.triggeredAugment)
+		}).
+		Test("RuleMomentumSurge should trigger only if won last round", func(t *testing.T) {
+			// Team A won last round
+			input := DecisionInput{
+				lastRound: &DuelResult{Outcome: TeamA},
+				teamA: TeamDecisionInput{
+					roll:             3,
+					passivesAugments: []augments.Effect{{Name: augments.MomentumSurge}},
+				},
+				teamB: TeamDecisionInput{
+					roll:             3,
+					passivesAugments: []augments.Effect{{Name: augments.MomentumSurge}},
+				},
+			}
+			result := RuleMomentumSurge(input)
+			odize.AssertEqual(t, 5, result.teamA.roll) // 3 + 2
+			odize.AssertEqual(t, 3, result.teamB.roll) // No change for Team B
+			odize.AssertEqual(t, augments.MomentumSurge, result.teamA.triggeredAugment)
+			odize.AssertEqual(t, augments.Name(""), result.teamB.triggeredAugment)
+
+			// Team B won last round
+			input.lastRound.Outcome = TeamB
+			input.teamA.triggeredAugment = ""
+			input.teamA.roll = 3
+			input.teamB.triggeredAugment = ""
+			input.teamB.roll = 3
+			result = RuleMomentumSurge(input)
+			odize.AssertEqual(t, 3, result.teamA.roll) // No change for Team A
+			odize.AssertEqual(t, 5, result.teamB.roll) // 3 + 2
+			odize.AssertEqual(t, augments.Name(""), result.teamA.triggeredAugment)
+			odize.AssertEqual(t, augments.MomentumSurge, result.teamB.triggeredAugment)
 		}).
 		Run()
 

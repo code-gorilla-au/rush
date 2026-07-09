@@ -27,40 +27,6 @@ type DecisionInput struct {
 
 type DecisionEngineFunc func(input DecisionInput) DecisionInput
 
-func RuleTwistOfFate(input DecisionInput) DecisionInput {
-	return ruleTwistOfFate(input, DiceRoll)
-}
-
-func ruleTwistOfFate(input DecisionInput, roll RollFn) DecisionInput {
-	if input.lastRound == nil {
-		return input
-	}
-
-	switch input.lastRound.Outcome {
-	case TeamB:
-		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.TwistOfFate) {
-			input.teamA.triggeredAugment = augments.TwistOfFate
-
-			secondRoll := roll()
-			if input.teamA.roll < secondRoll {
-				input.teamA.roll = secondRoll
-			}
-		}
-
-	case TeamA:
-		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.TwistOfFate) {
-			input.teamB.triggeredAugment = augments.TwistOfFate
-
-			secondRoll := roll()
-			if input.teamB.roll < secondRoll {
-				input.teamB.roll = secondRoll
-			}
-		}
-	}
-
-	return input
-}
-
 type Engine struct {
 	beforeRoll    []DecisionEngineFunc
 	afterRoll     []DecisionEngineFunc
@@ -73,6 +39,8 @@ func NewDecisionEngine() *Engine {
 		beforeRoll: []DecisionEngineFunc{},
 		afterRoll: []DecisionEngineFunc{
 			RuleTwistOfFate,
+			RuleOverPower,
+			RuleMomentumSurge,
 		},
 		afterAugments: []DecisionEngineFunc{},
 		rollFn:        DiceRoll,

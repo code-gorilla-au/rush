@@ -73,7 +73,6 @@ func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
 		if err := r.executeDuels(lane, rollFn); err != nil {
 			break
 		}
-
 	}
 
 	if r.TeamA.LaneHasPlayers(lane) {

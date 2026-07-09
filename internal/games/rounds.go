@@ -68,6 +68,7 @@ func (r *Round) calculateWinner(result []RoundResult) RoundResult {
 }
 
 func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
+
 	for r.TeamA.LaneHasPlayers(lane) && r.TeamB.LaneHasPlayers(lane) {
 		playerA := r.TeamA.LanePeak(lane)
 		playerB := r.TeamB.LanePeak(lane)
@@ -94,6 +95,8 @@ func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
 		}
 
 		re := rollFn.Run(rollInput)
+		r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TriggeredAugment)
+		r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TriggeredAugment)
 
 		for re.Outcome == Draw {
 			re = rollFn.Run(rollInput)
@@ -173,4 +176,18 @@ func (s *TeamFormation) LaneFill(lane int, players int, teamPlayers []int64) []i
 	}
 
 	return remainder
+}
+
+func popAugment(list []augments.Effect, name augments.Name) []augments.Effect {
+
+	newList := list
+
+	for i, e := range newList {
+		if e.Name == name {
+			newList = append(newList[:i], newList[i+1:]...)
+			return newList
+		}
+	}
+
+	return newList
 }

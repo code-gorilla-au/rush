@@ -70,55 +70,8 @@ func (r *Round) calculateWinner(result []RoundResult) RoundResult {
 func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
 
 	for r.TeamA.LaneHasPlayers(lane) && r.TeamB.LaneHasPlayers(lane) {
-		playerA := r.TeamA.LanePeak(lane)
-		playerB := r.TeamB.LanePeak(lane)
-
-		var lastRound *DuelResult
-		if len(r.DuelResults) > 0 {
-			lastRound = new(r.DuelResults[len(r.DuelResults)-1])
-		}
-
-		rollInput := DecisionInput{
-			lastRound: lastRound,
-			teamA: TeamDecisionInput{
-				triggeredAugment: augments.NoAugment,
-				passivesAugments: r.TeamA.Augments,
-				player:           playerA,
-				roll:             0,
-			},
-			teamB: TeamDecisionInput{
-				triggeredAugment: augments.NoAugment,
-				passivesAugments: r.TeamB.Augments,
-				player:           playerB,
-				roll:             0,
-			},
-		}
-
-		re := rollFn.Run(rollInput)
-
-		re.Lane = lane
-		r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TriggeredAugment)
-		r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TriggeredAugment)
-
-		for re.Outcome == Draw {
-			re = rollFn.Run(rollInput)
-
-			re.Lane = lane
-			r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TriggeredAugment)
-			r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TriggeredAugment)
-		}
-
-		r.DuelResults = append(r.DuelResults, re)
-		if re.Outcome == TeamA {
-			_, err := r.TeamB.LanePop(lane)
-			if errors.Is(err, ErrNoPlayer) {
-				break
-			}
-		} else {
-			_, err := r.TeamA.LanePop(lane)
-			if errors.Is(err, ErrNoPlayer) {
-				break
-			}
+		if err := r.executeDuels(lane, rollFn); err != nil {
+			break
 		}
 
 	}
@@ -135,6 +88,61 @@ func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
 		RemainingPlayers: r.TeamB.LaneCount(lane),
 	}
 
+}
+
+func (r *Round) executeDuels(lane int, rollFn RollStrategy) error {
+	playerA := r.TeamA.LanePeak(lane)
+	playerB := r.TeamB.LanePeak(lane)
+
+	var lastRound *DuelResult
+	if len(r.DuelResults) > 0 {
+		lastRound = new(r.DuelResults[len(r.DuelResults)-1])
+	}
+
+	rollInput := DecisionInput{
+		lastRound: lastRound,
+		teamA: TeamDecisionInput{
+			triggeredAugment: augments.NoAugment,
+			passivesAugments: r.TeamA.Augments,
+			player:           playerA,
+			roll:             0,
+		},
+		teamB: TeamDecisionInput{
+			triggeredAugment: augments.NoAugment,
+			passivesAugments: r.TeamB.Augments,
+			player:           playerB,
+			roll:             0,
+		},
+	}
+
+	re := rollFn.Run(rollInput)
+
+	re.Lane = lane
+	r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TriggeredAugment)
+	r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TriggeredAugment)
+
+	for re.Outcome == Draw {
+		re = rollFn.Run(rollInput)
+
+		re.Lane = lane
+		r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TriggeredAugment)
+		r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TriggeredAugment)
+	}
+
+	r.DuelResults = append(r.DuelResults, re)
+	if re.Outcome == TeamA {
+		_, err := r.TeamB.LanePop(lane)
+		if errors.Is(err, ErrNoPlayer) {
+			return ErrNoPlayer
+		}
+	} else {
+		_, err := r.TeamA.LanePop(lane)
+		if errors.Is(err, ErrNoPlayer) {
+			return ErrNoPlayer
+		}
+	}
+
+	return nil
 }
 
 func (s *TeamFormation) LaneCount(lane int) int {

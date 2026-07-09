@@ -106,9 +106,10 @@ func (g *Game) View(theme styles.IceTheme) string {
 	var footer string
 	if g.resolved {
 		winner := g.teamAName
-		if g.result.Outcome == games.TeamB {
+		switch g.result.Outcome {
+		case games.TeamB:
 			winner = g.teamBName
-		} else if g.result.Outcome == games.Draw {
+		case games.Draw:
 			winner = "Draw"
 		}
 

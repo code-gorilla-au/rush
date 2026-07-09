@@ -7,6 +7,7 @@ import (
 )
 
 func DiceRoll() int {
+	//nolint:gosec
 	return rand.IntN(6) + 1
 }
 

@@ -12,7 +12,7 @@ func TestMigrator_Migrate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to open database: %v", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	migrator := NewMigrator(db, SchemaFS)
 
@@ -25,7 +25,7 @@ func TestMigrator_Migrate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to query tables: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	tables := make(map[string]bool)
 	for rows.Next() {

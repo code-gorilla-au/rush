@@ -29,6 +29,6 @@ func (f *Footer) Update(msg tea.Msg) {
 }
 
 // View renders the footer component.
-func (f Footer) View(theme styles.IceTheme) string {
+func (f *Footer) View(theme styles.IceTheme) string {
 	return theme.Footer.Render(f.Help.View(f.KeyMap))
 }

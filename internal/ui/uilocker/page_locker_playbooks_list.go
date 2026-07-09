@@ -92,40 +92,12 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Back):
-			if m.playbookList.IsFiltering() {
-				break
-			}
-			return m, func() tea.Msg {
-				return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
-			}
-		case key.Matches(msg, m.keys.Enter):
-			model, cmd, done := m.handleRouteEditPlaybook()
-			if done {
-				return model, cmd
-			}
-		case key.Matches(msg, m.keys.New):
-			if !m.playbookList.IsFiltering() {
-				return m, func() tea.Msg {
-					return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksCreate}
-				}
-			}
-		case key.Matches(msg, m.keys.Delete):
-			model, cmd, done := m.handleDeletePlaybook()
-			if done {
-				return model, cmd
-			}
+		model, cmd, done := m.handleKey(msg)
+		if done {
+			return model, cmd
 		}
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		if m.playbooksLoaded {
-			m.playbookList.SetSize(msg.Width, msg.Height-10)
-		}
-		m.footer.Update(msg)
+		m.handleWindowSize(msg)
 	}
 
 	if m.playbooksLoaded {
@@ -135,6 +107,40 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *ModelLockerPlaybooksList) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit, true
+	case key.Matches(msg, m.keys.Back):
+		if m.playbookList.IsFiltering() {
+			return nil, nil, false
+		}
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
+		}, true
+	case key.Matches(msg, m.keys.Enter):
+		return m.handleRouteEditPlaybook()
+	case key.Matches(msg, m.keys.New):
+		if !m.playbookList.IsFiltering() {
+			return m, func() tea.Msg {
+				return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksCreate}
+			}, true
+		}
+	case key.Matches(msg, m.keys.Delete):
+		return m.handleDeletePlaybook()
+	}
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlaybooksList) handleWindowSize(msg tea.WindowSizeMsg) {
+	m.width = msg.Width
+	m.height = msg.Height
+	if m.playbooksLoaded {
+		m.playbookList.SetSize(msg.Width, msg.Height-10)
+	}
+	m.footer.Update(msg)
 }
 
 func (m *ModelLockerPlaybooksList) handleRouteEditPlaybook() (tea.Model, tea.Cmd, bool) {
@@ -177,26 +183,15 @@ func (m *ModelLockerPlaybooksList) View() tea.View {
 	view.AltScreen = true
 
 	var content string
-	title := "PLAYBOOKS"
-
 	if m.err != nil {
 		content = m.theme.Logo.Render(fmt.Sprintf("Error: %v", m.err))
-	} else if !m.playbooksLoaded {
-		content = "Loading..."
 	} else {
-		if m.playbookList.Len() == 0 {
-			content = "No playbooks yet. Press 'n' to create one."
-		} else {
-			content = m.playbookList.View(m.theme)
-			if !m.playbookList.IsFiltering() {
-				content += "\n\nPress 'n' to create new playbook"
-			}
-		}
+		content = m.renderContent()
 	}
 
 	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
-		m.theme.Logo.Render(title),
+		m.theme.Logo.Render("PLAYBOOKS"),
 		"",
 		content,
 		"",
@@ -215,4 +210,18 @@ func (m *ModelLockerPlaybooksList) View() tea.View {
 		Render(centeredContent)
 
 	return view
+}
+
+func (m *ModelLockerPlaybooksList) renderContent() string {
+	if !m.playbooksLoaded {
+		return "Loading..."
+	}
+	if m.playbookList.Len() == 0 {
+		return "No playbooks yet. Press 'n' to create one."
+	}
+	content := m.playbookList.View(m.theme)
+	if !m.playbookList.IsFiltering() {
+		content += "\n\nPress 'n' to create new playbook"
+	}
+	return content
 }

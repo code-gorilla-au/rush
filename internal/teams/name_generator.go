@@ -11,6 +11,7 @@ type TeamNameGenerator struct {
 
 func NewTeamNameGenerator() *TeamNameGenerator {
 	return &TeamNameGenerator{
+		//nolint:gosec
 		rng: rand.New(rand.NewPCG(42, 42)),
 	}
 }

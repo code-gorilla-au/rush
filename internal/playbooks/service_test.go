@@ -35,7 +35,7 @@ func TestService(t *testing.T) {
 
 	group.AfterEach(func() {
 		if db != nil {
-			db.Close()
+			_ = db.Close()
 		}
 	})
 

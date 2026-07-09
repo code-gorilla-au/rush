@@ -157,30 +157,9 @@ func (m *ModelLockerPlaybooksEdit) handleKey(msg tea.KeyMsg) (*ModelLockerPlaybo
 	case key.Matches(msg, m.keys.Quit):
 		return m, tea.Quit, true
 	case key.Matches(msg, m.keys.Back):
-		if m.formationList.IsFiltering() {
-			return m, nil, false
-		}
-		return m, func() tea.Msg {
-			return MsgSwitchLockerPage{
-				NewPage: SubPageLockerPlaybooksCreate,
-				Playbook: &playbooks.Playbook{
-					ID:          m.playbookID,
-					Name:        m.playbookName,
-					Description: m.playbookDescription,
-					Formations:  m.newFormations,
-				},
-			}
-		}, true
+		return m.handleBack()
 	case key.Matches(msg, m.keys.Tab):
-		if m.formationList.IsFiltering() {
-			return m, nil, false
-		}
-		if m.activeList == availableFormationListIndex {
-			m.setActiveList(selectedFormationListIndex)
-		} else {
-			m.setActiveList(availableFormationListIndex)
-		}
-		return m, nil, true
+		return m.handleTab()
 	case key.Matches(msg, m.keys.Enter):
 		if m.formationList.IsFiltering() {
 			return m, nil, false
@@ -193,6 +172,35 @@ func (m *ModelLockerPlaybooksEdit) handleKey(msg tea.KeyMsg) (*ModelLockerPlaybo
 	}
 
 	return m, nil, false
+}
+
+func (m *ModelLockerPlaybooksEdit) handleBack() (*ModelLockerPlaybooksEdit, tea.Cmd, bool) {
+	if m.formationList.IsFiltering() {
+		return m, nil, false
+	}
+	return m, func() tea.Msg {
+		return MsgSwitchLockerPage{
+			NewPage: SubPageLockerPlaybooksCreate,
+			Playbook: &playbooks.Playbook{
+				ID:          m.playbookID,
+				Name:        m.playbookName,
+				Description: m.playbookDescription,
+				Formations:  m.newFormations,
+			},
+		}
+	}, true
+}
+
+func (m *ModelLockerPlaybooksEdit) handleTab() (*ModelLockerPlaybooksEdit, tea.Cmd, bool) {
+	if m.formationList.IsFiltering() {
+		return m, nil, false
+	}
+	if m.activeList == availableFormationListIndex {
+		m.setActiveList(selectedFormationListIndex)
+	} else {
+		m.setActiveList(availableFormationListIndex)
+	}
+	return m, nil, true
 }
 
 func (m *ModelLockerPlaybooksEdit) setActiveList(activeList int) {

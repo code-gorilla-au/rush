@@ -122,7 +122,7 @@ func persistCompletedGame(t *testing.T, gameSvc *Service, ctx context.Context, t
 	game.status = StatusComplete
 	game.currentRound = int64(len(game.rounds))
 	game.results = results
-	game.winner = new(winner)
+	game.winner = &winner
 
 	_, err = gameSvc.UpdateGame(ctx, game)
 	odize.AssertNoError(t, err)

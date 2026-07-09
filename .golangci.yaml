@@ -45,5 +45,13 @@ linters:
       rules:
         main:
           list-mode: lax
+    ireturn:
+      allow:
+        - charm.land/bubbletea/v2.Model
+        - charm.land/bubbletea/v2.Msg
+        - charm.land/bubbletea/v2.Cmd
+        - error
+        - generic
+        - stdlib
 
 

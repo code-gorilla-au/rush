@@ -227,7 +227,7 @@ func (s *Service) generateTeam(ctx context.Context, team AIGenerationParams) err
 
 	if _, err = s.playbookSvc.CreatePlaybook(ctx, playbooks.PlaybookParams{
 		TeamID:      aiTeam.ID,
-		Name:        fmt.Sprintf("%s Playbook", aiTeam.Name),
+		Name:        aiTeam.Name + " Playbook",
 		Description: team.Persona,
 		Formations:  team.Formations,
 	}); err != nil {

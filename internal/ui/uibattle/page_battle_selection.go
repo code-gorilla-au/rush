@@ -1,6 +1,7 @@
 package uibattle
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/code-gorilla-au/rush/internal/games"
@@ -87,7 +88,7 @@ func (m *PageBattleSelectionModel) Init() tea.Cmd {
 
 func (m *PageBattleSelectionModel) loadData() tea.Msg {
 	if m.globalState.Team == nil {
-		return fmt.Errorf("no team loaded")
+		return errors.New("no team loaded")
 	}
 
 	pb, err := m.playbookSvc.GetTeamPlaybooks(m.globalState.Context(), m.globalState.Team.ID)

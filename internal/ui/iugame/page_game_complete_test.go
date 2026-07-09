@@ -24,7 +24,7 @@ func TestPageGameCompleteModel(t *testing.T) {
 
 	group.BeforeEach(func() {
 		db := uitest.SetupTestDB(t)
-		t.Cleanup(func() { db.Close() })
+		t.Cleanup(func() { _ = db.Close() })
 		queries = database.New(db)
 		teamsSvc = teams.NewTeamsService(queries, playbooks.NewPlaybooksService(queries))
 		gameSvc = games.NewService(queries)

@@ -63,34 +63,54 @@ func (m *ModelLockerPlayers) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case uistate.MsgStateUpdated:
-		if m.globalState.Team != nil {
-			m.playerList = components.NewPlayerList(m.globalState.Team.Players)
-		}
+		m.handleStateUpdated()
 	case MsgSwitchLockerPage:
-		if msg.NewPage == SubPageLockerPlayers && m.globalState.Team != nil {
-			m.playerList = components.NewPlayerList(m.globalState.Team.Players)
-		}
+		m.handleSwitchLockerPage(msg)
 	case components.MsgPlayerUpdated:
 		cmds = append(cmds, m.handlePlayerUpdated(msg))
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Back):
-			return m, func() tea.Msg {
-				return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
-			}
+		model, cmd, done := m.handleKey(msg)
+		if done {
+			return model, cmd
 		}
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		m.footer.Update(msg)
+		m.handleWindowSize(msg)
 	}
 
 	cmd := m.playerList.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *ModelLockerPlayers) handleStateUpdated() {
+	if m.globalState.Team != nil {
+		m.playerList = components.NewPlayerList(m.globalState.Team.Players)
+	}
+}
+
+func (m *ModelLockerPlayers) handleSwitchLockerPage(msg MsgSwitchLockerPage) {
+	if msg.NewPage == SubPageLockerPlayers && m.globalState.Team != nil {
+		m.playerList = components.NewPlayerList(m.globalState.Team.Players)
+	}
+}
+
+func (m *ModelLockerPlayers) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit, true
+	case key.Matches(msg, m.keys.Back):
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
+		}, true
+	}
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlayers) handleWindowSize(msg tea.WindowSizeMsg) {
+	m.width = msg.Width
+	m.height = msg.Height
+	m.footer.Update(msg)
 }
 
 func (m *ModelLockerPlayers) handlePlayerUpdated(msg components.MsgPlayerUpdated) tea.Cmd {

@@ -58,36 +58,53 @@ func (m *ModelTitle) Init() tea.Cmd {
 }
 
 func (m *ModelTitle) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch vMsg := msg.(type) {
+	switch msg := msg.(type) {
 	case uistate.MsgStateUpdated:
-		m.globalState.Coach = vMsg.Coach
-		m.globalState.Team = vMsg.Team
-		m.menu.SetHasCoach(m.globalState.Coach != nil)
+		m.handleStateUpdated(msg)
 	case uistate.MsgSwitchPage:
-		if vMsg.NewPage == uistate.PageTitle {
-			m.menu.SetHasCoach(m.globalState.Coach != nil)
-		}
+		m.handleSwitchPage(msg)
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(vMsg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(vMsg, m.keys.Up):
-			m.menu.MoveUp()
-		case key.Matches(vMsg, m.keys.Down):
-			m.menu.MoveDown()
-		case key.Matches(vMsg, m.keys.Enter):
-			model, cmd, done := m.handleMenuSelect()
-			if done {
-				return model, cmd
-			}
+		model, cmd, done := m.handleKey(msg)
+		if done {
+			return model, cmd
 		}
 	case tea.WindowSizeMsg:
-		m.width = vMsg.Width
-		m.height = vMsg.Height
-		m.footer.Update(vMsg)
+		m.handleWindowSize(msg)
 	}
 
 	return m, nil
+}
+
+func (m *ModelTitle) handleStateUpdated(msg uistate.MsgStateUpdated) {
+	m.globalState.Coach = msg.Coach
+	m.globalState.Team = msg.Team
+	m.menu.SetHasCoach(m.globalState.Coach != nil)
+}
+
+func (m *ModelTitle) handleSwitchPage(msg uistate.MsgSwitchPage) {
+	if msg.NewPage == uistate.PageTitle {
+		m.menu.SetHasCoach(m.globalState.Coach != nil)
+	}
+}
+
+func (m *ModelTitle) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit, true
+	case key.Matches(msg, m.keys.Up):
+		m.menu.MoveUp()
+	case key.Matches(msg, m.keys.Down):
+		m.menu.MoveDown()
+	case key.Matches(msg, m.keys.Enter):
+		return m.handleMenuSelect()
+	}
+	return nil, nil, false
+}
+
+func (m *ModelTitle) handleWindowSize(msg tea.WindowSizeMsg) {
+	m.width = msg.Width
+	m.height = msg.Height
+	m.footer.Update(msg)
 }
 
 func (m *ModelTitle) handleMenuSelect() (tea.Model, tea.Cmd, bool) {

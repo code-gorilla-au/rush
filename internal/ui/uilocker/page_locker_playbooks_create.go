@@ -64,43 +64,16 @@ func (m *ModelLockerPlaybooksCreate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case MsgSwitchLockerPage:
-		if msg.NewPage == SubPageLockerPlaybooksCreate {
-			if msg.Playbook != nil {
-				m.load(msg.Playbook)
-			} else {
-				m.reset()
-			}
-		}
+		m.handleSwitchLockerPage(msg)
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Back):
-			return m, func() tea.Msg {
-				return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList}
-			}
-		case key.Matches(msg, m.keys.Enter):
-			name, description := m.playbookForm.Values()
-			if name != "" {
-				return m, func() tea.Msg {
-					return MsgSwitchLockerPage{
-						NewPage: SubPageLockerPlaybooksEdit,
-						Playbook: &playbooks.Playbook{
-							ID:          m.playbookID,
-							Name:        name,
-							Description: description,
-							Formations:  m.formations,
-						},
-					}
-				}
-			}
+		model, cmd, done := m.handleKey(msg)
+		if done {
+			return model, cmd
 		}
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		m.footer.Update(msg)
+		m.handleWindowSize(msg)
 	}
 
 	var cmd tea.Cmd
@@ -108,6 +81,54 @@ func (m *ModelLockerPlaybooksCreate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *ModelLockerPlaybooksCreate) handleSwitchLockerPage(msg MsgSwitchLockerPage) {
+	if msg.NewPage == SubPageLockerPlaybooksCreate {
+		if msg.Playbook != nil {
+			m.load(msg.Playbook)
+		} else {
+			m.reset()
+		}
+	}
+}
+
+func (m *ModelLockerPlaybooksCreate) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit, true
+	case key.Matches(msg, m.keys.Back):
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList}
+		}, true
+	case key.Matches(msg, m.keys.Enter):
+		return m.handleEnter()
+	}
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlaybooksCreate) handleEnter() (tea.Model, tea.Cmd, bool) {
+	name, description := m.playbookForm.Values()
+	if name != "" {
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{
+				NewPage: SubPageLockerPlaybooksEdit,
+				Playbook: &playbooks.Playbook{
+					ID:          m.playbookID,
+					Name:        name,
+					Description: description,
+					Formations:  m.formations,
+				},
+			}
+		}, true
+	}
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlaybooksCreate) handleWindowSize(msg tea.WindowSizeMsg) {
+	m.width = msg.Width
+	m.height = msg.Height
+	m.footer.Update(msg)
 }
 
 func (m *ModelLockerPlaybooksCreate) reset() {

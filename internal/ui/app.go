@@ -77,20 +77,9 @@ func (m *RootModel) Init() tea.Cmd {
 }
 
 func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
-
 	switch msg := msg.(type) {
 	case uistate.MsgStateUpdated:
-		m.globalState.Coach = msg.Coach
-		m.globalState.Team = msg.Team
-		var cmd tea.Cmd
-		m.pageTitle, cmd = m.pageTitle.Update(msg)
-		cmds = append(cmds, cmd)
-		if m.currentPage == uistate.PageCreateCoach {
-			m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
-			cmds = append(cmds, cmd)
-		}
-		return m, tea.Batch(cmds...)
+		return m.handleStateUpdated(msg)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -98,26 +87,48 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case uistate.MsgSwitchPage:
 		m.currentPage = msg.NewPage
-
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		var cmd tea.Cmd
-		m.pageTitle, cmd = m.pageTitle.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageLocker, cmd = m.pageLocker.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageGame, cmd = m.pageGame.Update(msg)
-		cmds = append(cmds, cmd)
-		return m, tea.Batch(cmds...)
+		return m.handleWindowSize(msg)
 	}
 
+	return m.updateCurrentPage(msg)
+}
+
+func (m *RootModel) handleStateUpdated(msg uistate.MsgStateUpdated) (tea.Model, tea.Cmd) {
+	m.globalState.Coach = msg.Coach
+	m.globalState.Team = msg.Team
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
+	m.pageTitle, cmd = m.pageTitle.Update(msg)
+	cmds = append(cmds, cmd)
+	if m.currentPage == uistate.PageCreateCoach {
+		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
+		cmds = append(cmds, cmd)
+	}
+	return m, tea.Batch(cmds...)
+}
+
+func (m *RootModel) handleWindowSize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
+	m.width = msg.Width
+	m.height = msg.Height
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
+	m.pageTitle, cmd = m.pageTitle.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageLocker, cmd = m.pageLocker.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageGame, cmd = m.pageGame.Update(msg)
+	cmds = append(cmds, cmd)
+	return m, tea.Batch(cmds...)
+}
+
+func (m *RootModel) updateCurrentPage(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch m.currentPage {
 	case uistate.PageTitle:
@@ -133,9 +144,7 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case uistate.PageGame:
 		m.pageGame, cmd = m.pageGame.Update(msg)
 	}
-	cmds = append(cmds, cmd)
-
-	return m, tea.Batch(cmds...)
+	return m, cmd
 }
 
 func (m *RootModel) View() tea.View {

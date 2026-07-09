@@ -21,7 +21,10 @@ type pageGameMockStore struct {
 
 func (m *pageGameMockStore) GetGameByID(ctx context.Context, id int64) (database.Game, error) {
 	rounds := [10]games.Round{}
-	roundsData, _ := json.Marshal(rounds)
+	roundsData, err := json.Marshal(rounds)
+	if err != nil {
+		return database.Game{}, err
+	}
 
 	return database.Game{
 		ID:           id,
@@ -103,7 +106,8 @@ func TestPageGameModel(t *testing.T) {
 		m.Update(MsgGameLoaded{Game: game})
 
 		// Simulate round resolved (currentRound incremented)
-		m.game.ResolveRound(&games.TestEngine{RollFn: func() int { return 1 }})
+		_, err := m.game.ResolveRound(&games.TestEngine{RollFn: func() int { return 1 }})
+		odize.AssertNoError(t, err)
 
 		_, cmd := m.Update(components.MsgNextRound{})
 

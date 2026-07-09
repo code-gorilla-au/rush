@@ -1,8 +1,6 @@
 package components
 
 import (
-	"fmt"
-
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
@@ -29,7 +27,7 @@ func (c CoachAvatar) View(theme styles.IceTheme) string {
 	}
 
 	teamName := theme.CoachTeam.Render(c.Team.Name)
-	coachName := theme.CoachName.Render(fmt.Sprintf("Coach: %s", c.Coach.Name))
+	coachName := theme.CoachName.Render("Coach: " + c.Coach.Name)
 
 	return lipgloss.JoinVertical(lipgloss.Left, teamName, coachName)
 }

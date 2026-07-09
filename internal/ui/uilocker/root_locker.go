@@ -54,8 +54,6 @@ func (m *LockerModel) Init() tea.Cmd {
 }
 
 func (m *LockerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
-
 	switch msg := msg.(type) {
 	case uistate.MsgSwitchPage:
 		if msg.NewPage == uistate.PageLockerRoom {
@@ -63,27 +61,33 @@ func (m *LockerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.Init()
 		}
 	case MsgSwitchLockerPage:
-		switch msg.NewPage {
-		case SubPageLockerRoom, SubPageLockerPlayers, SubPageLockerTeamStatistics, SubPageLockerPlaybooksList, SubPageLockerPlaybooksCreate, SubPageLockerPlaybooksEdit:
-			m.currentPage = msg.NewPage
-		}
-
+		m.currentPage = msg.NewPage
 	case tea.WindowSizeMsg:
-		var cmd tea.Cmd
-		m.subPageLockerRoom, cmd = m.subPageLockerRoom.Update(msg)
-		cmds = append(cmds, cmd)
-		m.subPageLockerPlayers, cmd = m.subPageLockerPlayers.Update(msg)
-		cmds = append(cmds, cmd)
-		m.subPageLockerTeamStatistics, cmd = m.subPageLockerTeamStatistics.Update(msg)
-		cmds = append(cmds, cmd)
-		m.subPageLockerPlaybooksList, cmd = m.subPageLockerPlaybooksList.Update(msg)
-		cmds = append(cmds, cmd)
-		m.subPageLockerPlaybooksCreate, cmd = m.subPageLockerPlaybooksCreate.Update(msg)
-		cmds = append(cmds, cmd)
-		m.subPageLockerPlaybooksEdit, cmd = m.subPageLockerPlaybooksEdit.Update(msg)
-		cmds = append(cmds, cmd)
+		return m, m.handleWindowSize(msg)
 	}
 
+	return m.updateCurrentPage(msg)
+}
+
+func (m *LockerModel) handleWindowSize(msg tea.WindowSizeMsg) tea.Cmd {
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
+	m.subPageLockerRoom, cmd = m.subPageLockerRoom.Update(msg)
+	cmds = append(cmds, cmd)
+	m.subPageLockerPlayers, cmd = m.subPageLockerPlayers.Update(msg)
+	cmds = append(cmds, cmd)
+	m.subPageLockerTeamStatistics, cmd = m.subPageLockerTeamStatistics.Update(msg)
+	cmds = append(cmds, cmd)
+	m.subPageLockerPlaybooksList, cmd = m.subPageLockerPlaybooksList.Update(msg)
+	cmds = append(cmds, cmd)
+	m.subPageLockerPlaybooksCreate, cmd = m.subPageLockerPlaybooksCreate.Update(msg)
+	cmds = append(cmds, cmd)
+	m.subPageLockerPlaybooksEdit, cmd = m.subPageLockerPlaybooksEdit.Update(msg)
+	cmds = append(cmds, cmd)
+	return tea.Batch(cmds...)
+}
+
+func (m *LockerModel) updateCurrentPage(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch m.currentPage {
 	case SubPageLockerRoom:
@@ -99,9 +103,7 @@ func (m *LockerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case SubPageLockerPlaybooksEdit:
 		m.subPageLockerPlaybooksEdit, cmd = m.subPageLockerPlaybooksEdit.Update(msg)
 	}
-	cmds = append(cmds, cmd)
-
-	return m, tea.Batch(cmds...)
+	return m, cmd
 }
 
 func (m *LockerModel) View() tea.View {

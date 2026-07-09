@@ -72,7 +72,8 @@ func TestNew(t *testing.T) {
 				GameSvc:     gs,
 			})
 			newModel, _ := m.Update(tea.WindowSizeMsg{Width: 100, Height: 50})
-			updatedModel := newModel.(*RootModel)
+			updatedModel, ok := newModel.(*RootModel)
+			odize.AssertTrue(t, ok)
 			odize.AssertTrue(t, updatedModel.width == 100)
 			odize.AssertTrue(t, updatedModel.height == 50)
 		}).

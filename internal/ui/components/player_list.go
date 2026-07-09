@@ -41,32 +41,37 @@ func (l *PlayerList) Update(msg tea.Msg) tea.Cmd {
 	}
 
 	item := &l.Items[l.cursor]
-
 	if item.IsEditing {
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch msg.String() {
-			case "enter":
-				item.IsEditing = false
-				item.Input.Blur()
-				item.Player.Name = item.Input.Value()
-				return func() tea.Msg {
-					return MsgPlayerUpdated{Player: item.Player}
-				}
-			case "esc":
-				item.IsEditing = false
-				item.Input.Blur()
-				item.Input.SetValue(item.Player.Name)
-				return nil
-			}
-		}
-		var cmd tea.Cmd
-		item.Input, cmd = item.Input.Update(msg)
-		return cmd
+		return l.handleEditing(item, msg)
 	}
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	return l.handleNavigation(item, msg)
+}
+
+func (l *PlayerList) handleEditing(item *PlayerItem, msg tea.Msg) tea.Cmd {
+	if msg, ok := msg.(tea.KeyMsg); ok {
+		switch msg.String() {
+		case "enter":
+			item.IsEditing = false
+			item.Input.Blur()
+			item.Player.Name = item.Input.Value()
+			return func() tea.Msg {
+				return MsgPlayerUpdated{Player: item.Player}
+			}
+		case "esc":
+			item.IsEditing = false
+			item.Input.Blur()
+			item.Input.SetValue(item.Player.Name)
+			return nil
+		}
+	}
+	var cmd tea.Cmd
+	item.Input, cmd = item.Input.Update(msg)
+	return cmd
+}
+
+func (l *PlayerList) handleNavigation(item *PlayerItem, msg tea.Msg) tea.Cmd {
+	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch msg.String() {
 		case "up", "k":
 			if l.cursor > 0 {

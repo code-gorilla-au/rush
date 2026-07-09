@@ -1,6 +1,7 @@
 package uibattle
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/code-gorilla-au/rush/internal/games"
@@ -75,11 +76,11 @@ func (m *PageBattleConfirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *PageBattleConfirmModel) createGame() tea.Msg {
 	if m.globalState == nil || m.globalState.Team == nil || m.selectedPlaybook == nil || m.selectedAITeam == nil {
-		return fmt.Errorf("missing team, playbook, or opponent")
+		return errors.New("missing team, playbook, or opponent")
 	}
 
 	if m.gameSvc == nil {
-		return fmt.Errorf("game service is not configured")
+		return errors.New("game service is not configured")
 	}
 
 	teamAPlayers := getPlayerIDs(m.globalState.Team.Players)

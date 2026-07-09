@@ -7,9 +7,13 @@ import (
 	"github.com/code-gorilla-au/rush/internal/database"
 )
 
-func fromFormationJSON(j interface{}) ([]Formation, error) {
+func fromFormationJSON(j any) ([]Formation, error) {
 	var f []Formation
-	if err := json.Unmarshal(j.([]byte), &f); err != nil {
+	b, ok := j.([]byte)
+	if !ok {
+		return []Formation{}, fmt.Errorf("expected []byte for formations, got %T", j)
+	}
+	if err := json.Unmarshal(b, &f); err != nil {
 		return []Formation{}, fmt.Errorf("failed to unmarshal formation: %w", err)
 	}
 

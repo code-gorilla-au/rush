@@ -60,9 +60,10 @@ func (g *Game) CalculateWinner() (int64, error) {
 	teamB := 0
 
 	for _, result := range g.results {
-		if result.Outcome == TeamA {
+		switch result.Outcome {
+		case TeamA:
 			teamA++
-		} else if result.Outcome == TeamB {
+		case TeamB:
 			teamB++
 		}
 	}

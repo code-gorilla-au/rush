@@ -115,7 +115,7 @@ func (m *PageGameCompleteModel) View() tea.View {
 	if m.winnerTeam == nil && !m.isDraw {
 		content = "Loading Results..."
 	} else {
-		content = m.renderMainContent(content)
+		content = m.renderMainContent()
 	}
 
 	centered := lipgloss.Place(
@@ -132,7 +132,7 @@ func (m *PageGameCompleteModel) View() tea.View {
 	return view
 }
 
-func (m *PageGameCompleteModel) renderMainContent(content string) string {
+func (m *PageGameCompleteModel) renderMainContent() string {
 	winMsg := m.theme.Logo.
 		Padding(1, 0).
 		Render("🏆 GAME COMPLETE 🏆")
@@ -151,11 +151,10 @@ func (m *PageGameCompleteModel) renderMainContent(content string) string {
 
 	footer := m.theme.Footer.Render("\nPress Enter to continue")
 
-	content = lipgloss.JoinVertical(
+	return lipgloss.JoinVertical(
 		lipgloss.Center,
 		winMsg,
 		mainContent,
 		footer,
 	)
-	return content
 }

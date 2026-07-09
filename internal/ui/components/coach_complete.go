@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"strings"
 
 	"charm.land/lipgloss/v2"
@@ -30,9 +29,9 @@ func (c CoachWinnerHuman) View(theme styles.IceTheme) string {
 	}
 
 	winnerHeader := theme.SecondaryHeader.
-		Render(fmt.Sprintf("Winner: %s", c.Team.Name))
+		Render("Winner: " + c.Team.Name)
 
-	coachInfo := theme.CoachName.Render(fmt.Sprintf("%s (Human Coach)", c.Coach.Name))
+	coachInfo := theme.CoachName.Render(c.Coach.Name + " (Human Coach)")
 
 	players := make([]string, len(c.Team.Players))
 	for i, p := range c.Team.Players {
@@ -71,9 +70,9 @@ func (c CoachWinnerAI) View(theme styles.IceTheme) string {
 	}
 
 	winnerHeader := theme.SecondaryHeader.
-		Render(fmt.Sprintf("Winner: %s", c.Team.Name))
+		Render("Winner: " + c.Team.Name)
 
-	coachInfo := theme.CoachName.Render(fmt.Sprintf("%s (AI Coach)", c.Coach.Name))
+	coachInfo := theme.CoachName.Render(c.Coach.Name + " (AI Coach)")
 
 	players := make([]string, len(c.Team.Players))
 	for i, p := range c.Team.Players {

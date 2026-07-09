@@ -11,18 +11,21 @@ import (
 const totalTeams = 12
 
 type AIGenerationParams struct {
-	CoachName  string `faker:"name"`
-	TeamName   string `faker:"username"`
-	Persona    string
-	Formations []playbooks.Formation
+	CoachName    string `faker:"name"`
+	TeamName     string
+	Persona      string
+	CoachPersona CoachPersona
+	Formations   []playbooks.Formation
 }
 
 var personas = []struct {
 	Name           string
+	CoachPersona   CoachPersona
 	FormationNames []string
 }{
 	{
-		Name: "The Wall - A defensive specialist that focuses on protecting all lanes equally.",
+		Name:         "The Wall - A defensive specialist that focuses on protecting all lanes equally.",
+		CoachPersona: CoachPersonaBastion,
 		FormationNames: []string{
 			"balanced-right", "balanced-left", "split-balanced",
 			"strong-centre", "strong-right", "strong-left",
@@ -30,7 +33,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Blitzkrieg - Aggressive tactics focusing on overwhelming the opponent through the center.",
+		Name:         "Blitzkrieg - Aggressive tactics focusing on overwhelming the opponent through the center.",
+		CoachPersona: CoachPersonaVanguard,
 		FormationNames: []string{
 			"strong-centre", "single-lane-centre", "overload-centre-left",
 			"overload-centre-right", "balanced-left", "balanced-right",
@@ -38,7 +42,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Flank Specialist - Prefers to attack from the edges, leaving the middle open.",
+		Name:         "Flank Specialist - Prefers to attack from the edges, leaving the middle open.",
+		CoachPersona: CoachPersonaTrickster,
 		FormationNames: []string{
 			"split-right", "split-left", "overload-right",
 			"overload-left", "split-balanced", "balanced-right",
@@ -46,7 +51,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Right Side Powerhouse - Concentrates most of the strength on the right flank.",
+		Name:         "Right Side Powerhouse - Concentrates most of the strength on the right flank.",
+		CoachPersona: CoachPersonaVanguard,
 		FormationNames: []string{
 			"strong-right", "overload-right", "single-lane-right",
 			"balanced-right", "overload-centre-right", "split-right",
@@ -54,7 +60,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Left Side Powerhouse - Concentrates most of the strength on the left flank.",
+		Name:         "Left Side Powerhouse - Concentrates most of the strength on the left flank.",
+		CoachPersona: CoachPersonaVanguard,
 		FormationNames: []string{
 			"strong-left", "overload-left", "single-lane-left",
 			"balanced-left", "overload-centre-left", "split-left",
@@ -62,7 +69,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "The Juggernaut - Heavy focus on one single lane to break through.",
+		Name:         "The Juggernaut - Heavy focus on one single lane to break through.",
+		CoachPersona: CoachPersonaVanguard,
 		FormationNames: []string{
 			"single-lane-left", "single-lane-centre", "single-lane-right",
 			"overload-left", "overload-right", "strong-centre",
@@ -70,7 +78,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Balanced Strategist - Adapts to the game with a mix of balanced formations.",
+		Name:         "Balanced Strategist - Adapts to the game with a mix of balanced formations.",
+		CoachPersona: CoachPersonaWildcard,
 		FormationNames: []string{
 			"balanced-right", "balanced-left", "split-balanced",
 			"strong-centre", "strong-right", "strong-left",
@@ -78,7 +87,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Chaos Theory - Uses unpredictable and highly skewed formations.",
+		Name:         "Chaos Theory - Uses unpredictable and highly skewed formations.",
+		CoachPersona: CoachPersonaTrickster,
 		FormationNames: []string{
 			"overload-centre-left", "overload-centre-right", "split-right",
 			"split-left", "overload-left", "overload-right",
@@ -86,7 +96,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "The Shield - Focuses on heavy central defense and slight flank pressure.",
+		Name:         "The Shield - Focuses on heavy central defense and slight flank pressure.",
+		CoachPersona: CoachPersonaBastion,
 		FormationNames: []string{
 			"strong-centre", "overload-centre-left", "overload-centre-right",
 			"balanced-right", "balanced-left", "split-balanced",
@@ -94,7 +105,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Centrist - Always stays in the middle, daring the opponent to go around.",
+		Name:         "Centrist - Always stays in the middle, daring the opponent to go around.",
+		CoachPersona: CoachPersonaWildcard,
 		FormationNames: []string{
 			"strong-centre", "single-lane-centre", "balanced-right",
 			"balanced-left", "overload-centre-left", "overload-centre-right",
@@ -102,7 +114,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Dual Flanker - Strong presence on both left and right, ignoring the center.",
+		Name:         "Dual Flanker - Strong presence on both left and right, ignoring the center.",
+		CoachPersona: CoachPersonaTrickster,
 		FormationNames: []string{
 			"split-balanced", "split-right", "split-left",
 			"overload-right", "overload-left", "balanced-right",
@@ -110,7 +123,8 @@ var personas = []struct {
 		},
 	},
 	{
-		Name: "Overload Master - Specializes in shifting maximum weight to one side or the other.",
+		Name:         "Overload Master - Specializes in shifting maximum weight to one side or the other.",
+		CoachPersona: CoachPersonaWildcard,
 		FormationNames: []string{
 			"overload-right", "overload-left", "overload-centre-left",
 			"overload-centre-right", "single-lane-left", "single-lane-right",
@@ -198,6 +212,7 @@ func (s *Service) GenerateAITeams(ctx context.Context) error {
 func (s *Service) generateTeam(ctx context.Context, team AIGenerationParams) error {
 	coach, err := s.CreateCoach(ctx, CreateCoachParams{
 		Name:      team.CoachName,
+		Persona:   team.CoachPersona,
 		IsHuman:   false,
 		IsDefault: false,
 	})
@@ -212,7 +227,7 @@ func (s *Service) generateTeam(ctx context.Context, team AIGenerationParams) err
 
 	if _, err = s.playbookSvc.CreatePlaybook(ctx, playbooks.PlaybookParams{
 		TeamID:      aiTeam.ID,
-		Name:        fmt.Sprintf("%s Playbook", aiTeam.Name),
+		Name:        aiTeam.Name + " Playbook",
 		Description: team.Persona,
 		Formations:  team.Formations,
 	}); err != nil {
@@ -230,6 +245,9 @@ func generateAITeams() ([]AIGenerationParams, error) {
 		formationMap[f.Name] = f
 	}
 
+	nameGen := NewTeamNameGenerator()
+	teamNames := nameGen.GenerateUnique(totalTeams)
+
 	for i := 0; i < totalTeams; i++ {
 		tmpTeam := AIGenerationParams{}
 
@@ -237,8 +255,11 @@ func generateAITeams() ([]AIGenerationParams, error) {
 			return nil, fmt.Errorf("generating team: %w", err)
 		}
 
+		tmpTeam.TeamName = teamNames[i]
+
 		persona := personas[i%len(personas)]
 		tmpTeam.Persona = persona.Name
+		tmpTeam.CoachPersona = persona.CoachPersona
 
 		teamFormations := make([]playbooks.Formation, 0, len(persona.FormationNames))
 		for _, name := range persona.FormationNames {

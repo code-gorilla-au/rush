@@ -1,4 +1,4 @@
-package ui
+package uilocker
 
 import (
 	"fmt"
@@ -8,14 +8,12 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type lockerPlaybooksListKeyMap struct {
-	components.CommonKeys
-	Back   key.Binding
-	Enter  key.Binding
-	New    key.Binding
-	Delete key.Binding
+	uistate.KeyMap
 }
 
 func (k lockerPlaybooksListKeyMap) ShortHelp() []key.Binding {
@@ -30,30 +28,15 @@ func (k lockerPlaybooksListKeyMap) FullHelp() [][]key.Binding {
 
 func newLockerPlaybooksListKeyMap() lockerPlaybooksListKeyMap {
 	return lockerPlaybooksListKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
-		),
-		New: key.NewBinding(
-			key.WithKeys("n"),
-			key.WithHelp("n", "new playbook"),
-		),
-		Delete: key.NewBinding(
-			key.WithKeys("d"),
-			key.WithHelp("d", "delete")),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 
 type ModelLockerPlaybooksList struct {
 	width           int
 	height          int
-	theme           IceTheme
-	globalState     *GlobalState
+	theme           styles.IceTheme
+	globalState     *uistate.GlobalState
 	playbookSvc     *playbooks.Service
 	keys            lockerPlaybooksListKeyMap
 	footer          components.Footer
@@ -62,9 +45,9 @@ type ModelLockerPlaybooksList struct {
 	err             error
 }
 
-func NewModelLockerPlaybooksList(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooksList {
+func NewModelLockerPlaybooksList(state *uistate.GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksList {
 	return &ModelLockerPlaybooksList{
-		theme:       NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		playbookSvc: playbookSvc,
 		keys:        newLockerPlaybooksListKeyMap(),
@@ -95,54 +78,26 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case MsgPlaybooksLoaded:
 		m.playbooksLoaded = true
-		m.playbookList = components.NewPlaybookList(msg.Playbooks)
-		m.playbookList.SetSize(m.width, m.height-10)
-	case MsgSwitchPage:
-		if msg.NewPage == PageLockerPlaybooksList {
+		m.playbookList = components.NewPlaybookList(msg.Playbooks, m.theme)
+		m.playbookList.SetSize(m.width/2, m.height-10)
+	case MsgSwitchLockerPage:
+		if msg.NewPage == SubPageLockerPlaybooksList {
 			cmds = append(cmds, m.loadPlaybooks)
 		}
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Back):
-			if m.playbookList.IsFiltering() {
-				break
-			}
-			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageLockerRoom}
-			}
-		case key.Matches(msg, m.keys.Enter):
-			model, cmd, done := m.handleRouteEditPlaybook()
-			if done {
-				return model, cmd
-			}
-		case key.Matches(msg, m.keys.New):
-			if !m.playbookList.IsFiltering() {
-				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerPlaybooksCreate}
-				}
-			}
-		case key.Matches(msg, m.keys.Delete):
-			model, cmd, done := m.handleDeletePlaybook()
-			if done {
-				return model, cmd
-			}
+		model, cmd, done := m.handleKey(msg)
+		if done {
+			return model, cmd
 		}
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		if m.playbooksLoaded {
-			m.playbookList.SetSize(msg.Width, msg.Height-10)
-		}
-		m.footer.Update(msg)
+		m.handleWindowSize(msg)
 	}
 
 	if m.playbooksLoaded {
@@ -154,6 +109,40 @@ func (m *ModelLockerPlaybooksList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+func (m *ModelLockerPlaybooksList) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit, true
+	case key.Matches(msg, m.keys.Back):
+		if m.playbookList.IsFiltering() {
+			return nil, nil, false
+		}
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
+		}, true
+	case key.Matches(msg, m.keys.Enter):
+		return m.handleRouteEditPlaybook()
+	case key.Matches(msg, m.keys.New):
+		if !m.playbookList.IsFiltering() {
+			return m, func() tea.Msg {
+				return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksCreate}
+			}, true
+		}
+	case key.Matches(msg, m.keys.Delete):
+		return m.handleDeletePlaybook()
+	}
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlaybooksList) handleWindowSize(msg tea.WindowSizeMsg) {
+	m.width = msg.Width
+	m.height = msg.Height
+	if m.playbooksLoaded {
+		m.playbookList.SetSize(msg.Width, msg.Height-10)
+	}
+	m.footer.Update(msg)
+}
+
 func (m *ModelLockerPlaybooksList) handleRouteEditPlaybook() (tea.Model, tea.Cmd, bool) {
 	if m.playbookList.IsFiltering() {
 		return nil, nil, false
@@ -162,8 +151,8 @@ func (m *ModelLockerPlaybooksList) handleRouteEditPlaybook() (tea.Model, tea.Cmd
 	selected := m.playbookList.SelectedItem()
 	if selected != nil {
 		return m, func() tea.Msg {
-			return MsgSwitchPage{
-				NewPage:  PageLockerPlaybooksCreate,
+			return MsgSwitchLockerPage{
+				NewPage:  SubPageLockerPlaybooksCreate,
 				Playbook: selected,
 			}
 		}, true
@@ -194,30 +183,19 @@ func (m *ModelLockerPlaybooksList) View() tea.View {
 	view.AltScreen = true
 
 	var content string
-	title := "PLAYBOOKS"
-
 	if m.err != nil {
 		content = m.theme.Logo.Render(fmt.Sprintf("Error: %v", m.err))
-	} else if !m.playbooksLoaded {
-		content = "Loading..."
 	} else {
-		if m.playbookList.Len() == 0 {
-			content = "No playbooks yet. Press 'n' to create one."
-		} else {
-			content = m.playbookList.View()
-			if !m.playbookList.IsFiltering() {
-				content += "\n\nPress 'n' to create new playbook"
-			}
-		}
+		content = m.renderContent()
 	}
 
 	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
-		m.theme.Logo.Render(title),
+		m.theme.Logo.Render("PLAYBOOKS"),
 		"",
 		content,
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(
@@ -232,4 +210,18 @@ func (m *ModelLockerPlaybooksList) View() tea.View {
 		Render(centeredContent)
 
 	return view
+}
+
+func (m *ModelLockerPlaybooksList) renderContent() string {
+	if !m.playbooksLoaded {
+		return "Loading..."
+	}
+	if m.playbookList.Len() == 0 {
+		return "No playbooks yet. Press 'n' to create one."
+	}
+	content := m.playbookList.View(m.theme)
+	if !m.playbookList.IsFiltering() {
+		content += "\n\nPress 'n' to create new playbook"
+	}
+	return content
 }

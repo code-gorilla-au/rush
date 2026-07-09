@@ -30,7 +30,7 @@ linters:
 
     rules:
       # Exclude some linters from running on tests files.
-      - path: _test\.go
+      - path: _test.go
         linters:
           - gocyclo
           - cyclop
@@ -38,11 +38,20 @@ linters:
           - gosec
           - forbidigo
           - exhaustruct
+          - unused
 
   settings:
     depguard:
       rules:
         main:
           list-mode: lax
+    ireturn:
+      allow:
+        - charm.land/bubbletea/v2.Model
+        - charm.land/bubbletea/v2.Msg
+        - charm.land/bubbletea/v2.Cmd
+        - error
+        - generic
+        - stdlib
 
 

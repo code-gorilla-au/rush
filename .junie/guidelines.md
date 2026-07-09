@@ -1,6 +1,7 @@
 
 ## Global rules
 - You must always ask before creating mocks
+- DO NOT USE VITEST FOR GOLANG
 
 ## SQLite queries
 

@@ -2,23 +2,23 @@ package components
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/games"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 // Game component handles the UI for a single round of a game.
 type Game struct {
-	game      *games.Game
-	teamAName string
-	teamBName string
-	resolved  bool
-	result    games.Result
-	rollFn    games.RollFn
-	roundComp Round
+	game       *games.Game
+	teamAName  string
+	teamBName  string
+	resolved   bool
+	result     games.RoundResult
+	rollEngine games.RollStrategy
+	roundComp  Round
 }
 
 // MsgResolveRound is sent when the round should be resolved.
@@ -28,11 +28,9 @@ type MsgResolveRound struct{}
 type MsgNextRound struct{}
 
 // NewGame creates a new Game component.
-func NewGame(game *games.Game, teamAName, teamBName string, rollFn games.RollFn) Game {
-	if rollFn == nil {
-		rollFn = func() int {
-			return rand.IntN(10) + 1 // 1-10
-		}
+func NewGame(game *games.Game, teamAName, teamBName string, rollEngine games.RollStrategy) Game {
+	if rollEngine == nil {
+		rollEngine = games.NewDecisionEngine()
 	}
 
 	currentRoundIdx := game.CurrentRound()
@@ -43,11 +41,11 @@ func NewGame(game *games.Game, teamAName, teamBName string, rollFn games.RollFn)
 	}
 
 	return Game{
-		game:      game,
-		teamAName: teamAName,
-		teamBName: teamBName,
-		rollFn:    rollFn,
-		roundComp: NewRound(currentRound, teamAName, teamBName),
+		game:       game,
+		teamAName:  teamAName,
+		teamBName:  teamBName,
+		rollEngine: rollEngine,
+		roundComp:  NewRound(currentRound, teamAName, teamBName),
 	}
 }
 
@@ -81,7 +79,7 @@ func (g *Game) handleRound() {
 		return
 	}
 
-	res, err := g.game.ResolveRound(g.rollFn)
+	res, err := g.game.ResolveRound(g.rollEngine)
 	if err == nil {
 		g.result = res
 		g.resolved = true
@@ -92,51 +90,44 @@ func (g *Game) handleRound() {
 }
 
 // View renders the Game component.
-func (g *Game) View() string {
-	roundView := g.roundComp.View()
+func (g *Game) View(theme styles.IceTheme) string {
+	roundView := g.roundComp.View(theme)
 
 	roundNum := g.game.CurrentRound()
 	if !g.resolved {
 		roundNum++
 	}
 
-	headerStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#A5F2F3")).
-		Bold(true).
-		MarginBottom(1)
-
-	roundInfo := headerStyle.Render(fmt.Sprintf("ROUND %d", roundNum))
+	roundInfo := theme.Header.Render(fmt.Sprintf("ROUND %d", roundNum))
+	scoreInfo := theme.SecondaryHeader.Render(
+		fmt.Sprintf("%s %d - %d %s", g.teamAName, g.game.TeamAScore(), g.game.TeamBScore(), g.teamBName),
+	)
 
 	var footer string
 	if g.resolved {
 		winner := g.teamAName
-		if g.result.Outcome == games.ResultTeamB {
+		switch g.result.Outcome {
+		case games.TeamB:
 			winner = g.teamBName
-		} else if g.result.Outcome == games.ResultDraw {
+		case games.Draw:
 			winner = "Draw"
 		}
 
-		winnerStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFD700")).
-			Bold(true).
-			MarginTop(1)
-
-		winnerInfo := winnerStyle.Render(fmt.Sprintf("WINNER: %s! (%d players remaining)", winner, g.result.RemainingPlayers))
-		prompt := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#888888")).
+		winnerInfo := theme.Winner.Render(fmt.Sprintf("WINNER: %s! (%d players remaining)", winner, g.result.RemainingPlayers))
+		prompt := theme.Muted.
 			MarginTop(1).
 			Render("Press Enter for next round...")
 
 		footer = lipgloss.JoinVertical(lipgloss.Center, winnerInfo, prompt)
 	} else {
-		footer = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#888888")).
+		footer = theme.Muted.
 			MarginTop(1).
-			Render("Resolving...")
+			Render("Dual in progress...")
 	}
 
 	content := lipgloss.JoinVertical(lipgloss.Center,
 		roundInfo,
+		scoreInfo,
 		roundView,
 		footer,
 	)

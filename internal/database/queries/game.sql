@@ -35,3 +35,10 @@ set name          = ?,
     tournament_id = ?
 where id = ?
 returning *;
+
+-- name: ListCompletedGamesByTeam :many
+select *
+from games
+where status = 'complete'
+  and (team_a = ? or team_b = ?)
+order by updated_at desc;

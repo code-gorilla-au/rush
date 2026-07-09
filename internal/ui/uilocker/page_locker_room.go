@@ -1,7 +1,9 @@
-package ui
+package uilocker
 
 import (
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -9,9 +11,7 @@ import (
 )
 
 type lockerRoomKeyMap struct {
-	components.CommonKeys
-	Back   key.Binding
-	Select key.Binding
+	uistate.KeyMap
 }
 
 func (k lockerRoomKeyMap) ShortHelp() []key.Binding {
@@ -26,36 +26,28 @@ func (k lockerRoomKeyMap) FullHelp() [][]key.Binding {
 
 func newLockerRoomKeyMap() lockerRoomKeyMap {
 	return lockerRoomKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back to title"),
-		),
-		Select: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 
 type ModelLockerRoom struct {
 	width       int
 	height      int
-	theme       IceTheme
-	globalState *GlobalState
+	theme       styles.IceTheme
+	globalState *uistate.GlobalState
 	keys        lockerRoomKeyMap
 	footer      components.Footer
 	list        components.LockerRoomList
 }
 
-func NewModelLockerRoom(globalState *GlobalState) *ModelLockerRoom {
+func NewModelLockerRoom(globalState *uistate.GlobalState, theme styles.IceTheme) *ModelLockerRoom {
 	keys := newLockerRoomKeyMap()
 	return &ModelLockerRoom{
 		globalState: globalState,
 		keys:        keys,
 		footer:      components.NewFooter(keys),
-		theme:       NewIceTheme(),
-		list:        components.NewLockerRoomList(),
+		theme:       theme,
+		list:        components.NewLockerRoomList(theme),
 	}
 }
 
@@ -64,10 +56,10 @@ func (m *ModelLockerRoom) Init() tea.Cmd {
 }
 
 func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m.list.Update(msg)
+	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case tea.KeyMsg:
@@ -76,27 +68,36 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Back):
 			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageTitle}
+				return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 			}
 		case key.Matches(msg, m.keys.Select):
 			switch m.list.SelectedItem() {
 			case components.ItemPlayers:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerPlayers}
+					return MsgSwitchLockerPage{NewPage: SubPageLockerPlayers}
+				}
+			case components.ItemTeamStatistics:
+				return m, func() tea.Msg {
+					return MsgSwitchLockerPage{NewPage: SubPageLockerTeamStatistics}
 				}
 			case components.ItemPlaybooks:
 				return m, func() tea.Msg {
-					return MsgSwitchPage{NewPage: PageLockerPlaybooksList}
+					return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList}
 				}
 			}
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.list.SetSize(40, 20)
 		m.footer.Update(msg)
 	}
 
-	return m, nil
+	var listCmd tea.Cmd
+	m.list, listCmd = m.list.Update(msg)
+	cmds = append(cmds, listCmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m *ModelLockerRoom) View() tea.View {
@@ -105,11 +106,11 @@ func (m *ModelLockerRoom) View() tea.View {
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
-		m.theme.Logo.Render("LOCKER ROOM"),
+		m.theme.Logo.Render("LOCKER ROOM: "+m.globalState.Team.Name),
 		"",
-		m.list.View(m.theme.Base, m.theme.ListSelected),
+		m.list.View(m.theme),
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

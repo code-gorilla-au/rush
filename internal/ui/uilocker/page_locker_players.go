@@ -1,8 +1,10 @@
-package ui
+package uilocker
 
 import (
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -10,11 +12,7 @@ import (
 )
 
 type lockerPlayersKeyMap struct {
-	components.CommonKeys
-	Back  key.Binding
-	Enter key.Binding
-	Up    key.Binding
-	Down  key.Binding
+	uistate.KeyMap
 }
 
 func (k lockerPlayersKeyMap) ShortHelp() []key.Binding {
@@ -30,41 +28,25 @@ func (k lockerPlayersKeyMap) FullHelp() [][]key.Binding {
 
 func newLockerPlayersKeyMap() lockerPlayersKeyMap {
 	return lockerPlayersKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back to locker room"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "edit/save"),
-		),
-		Up: key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "up"),
-		),
-		Down: key.NewBinding(
-			key.WithKeys("down", "j"),
-			key.WithHelp("↓/j", "down"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 
 type ModelLockerPlayers struct {
 	width       int
 	height      int
-	theme       IceTheme
-	globalState *GlobalState
+	theme       styles.IceTheme
+	globalState *uistate.GlobalState
 	teamsSvc    *teams.Service
 	keys        lockerPlayersKeyMap
 	footer      components.Footer
 	playerList  components.PlayerList
 }
 
-func NewModelLockerPlayers(state *GlobalState, teamsSvc *teams.Service) *ModelLockerPlayers {
+func NewModelLockerPlayers(state *uistate.GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelLockerPlayers {
 	keys := newLockerPlayersKeyMap()
 	return &ModelLockerPlayers{
-		theme:       NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		teamsSvc:    teamsSvc,
 		keys:        keys,
@@ -80,35 +62,55 @@ func (m *ModelLockerPlayers) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
-		if m.globalState.Team != nil {
-			m.playerList = components.NewPlayerList(m.globalState.Team.Players)
-		}
-	case MsgSwitchPage:
-		if msg.NewPage == PageLockerPlayers && m.globalState.Team != nil {
-			m.playerList = components.NewPlayerList(m.globalState.Team.Players)
-		}
+	case uistate.MsgStateUpdated:
+		m.handleStateUpdated()
+	case MsgSwitchLockerPage:
+		m.handleSwitchLockerPage(msg)
 	case components.MsgPlayerUpdated:
 		cmds = append(cmds, m.handlePlayerUpdated(msg))
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Back):
-			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageLockerRoom}
-			}
+		model, cmd, done := m.handleKey(msg)
+		if done {
+			return model, cmd
 		}
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		m.footer.Update(msg)
+		m.handleWindowSize(msg)
 	}
 
 	cmd := m.playerList.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *ModelLockerPlayers) handleStateUpdated() {
+	if m.globalState.Team != nil {
+		m.playerList = components.NewPlayerList(m.globalState.Team.Players)
+	}
+}
+
+func (m *ModelLockerPlayers) handleSwitchLockerPage(msg MsgSwitchLockerPage) {
+	if msg.NewPage == SubPageLockerPlayers && m.globalState.Team != nil {
+		m.playerList = components.NewPlayerList(m.globalState.Team.Players)
+	}
+}
+
+func (m *ModelLockerPlayers) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit, true
+	case key.Matches(msg, m.keys.Back):
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
+		}, true
+	}
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlayers) handleWindowSize(msg tea.WindowSizeMsg) {
+	m.width = msg.Width
+	m.height = msg.Height
+	m.footer.Update(msg)
 }
 
 func (m *ModelLockerPlayers) handlePlayerUpdated(msg components.MsgPlayerUpdated) tea.Cmd {
@@ -137,16 +139,16 @@ func (m *ModelLockerPlayers) View() tea.View {
 
 	playersView := "No players found"
 	if len(m.playerList.Items) > 0 {
-		playersView = m.playerList.View(lipgloss.NewStyle(), m.theme.ListSelected)
+		playersView = m.playerList.View(m.theme)
 	}
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
-		m.theme.Logo.Render("PLAYERS"),
+		m.theme.Logo.Render(m.globalState.Team.Name),
 		"",
 		playersView,
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

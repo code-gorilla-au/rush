@@ -26,7 +26,7 @@ type Migrator struct {
 }
 
 // NewMigrator creates a new Migrator instance that implements the Service interface.
-func NewMigrator(db *sql.DB, fsys fs.FS) Service {
+func NewMigrator(db *sql.DB, fsys fs.FS) *Migrator {
 	return &Migrator{
 		db: db,
 		fs: fsys,

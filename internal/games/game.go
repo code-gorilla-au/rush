@@ -16,16 +16,18 @@ func generateRounds(teamA TeamConfig, teamB TeamConfig) [10]Round {
 
 		r.FillSquad(
 			LanesConfig{
-				TeamID: teamA.TeamID,
-				Lane1:  teamA.Formations[i].Lane1,
-				Lane2:  teamA.Formations[i].Lane2,
-				Lane3:  teamA.Formations[i].Lane3,
+				TeamID:  teamA.TeamID,
+				Players: teamA.Players,
+				Lane1:   teamA.Formations[i].Lane1,
+				Lane2:   teamA.Formations[i].Lane2,
+				Lane3:   teamA.Formations[i].Lane3,
 			},
 			LanesConfig{
-				TeamID: teamB.TeamID,
-				Lane1:  teamB.Formations[i].Lane1,
-				Lane2:  teamB.Formations[i].Lane2,
-				Lane3:  teamB.Formations[i].Lane3,
+				TeamID:  teamB.TeamID,
+				Players: teamB.Players,
+				Lane1:   teamB.Formations[i].Lane1,
+				Lane2:   teamB.Formations[i].Lane2,
+				Lane3:   teamB.Formations[i].Lane3,
 			},
 		)
 
@@ -35,9 +37,9 @@ func generateRounds(teamA TeamConfig, teamB TeamConfig) [10]Round {
 	return rounds
 }
 
-func (g *Game) ResolveRound(roll RollFn) (Result, error) {
+func (g *Game) ResolveRound(roll RollStrategy) (RoundResult, error) {
 	if g.currentRound < 0 || g.currentRound >= int64(len(g.rounds)) {
-		return Result{}, ErrNoRounds
+		return RoundResult{}, ErrNoRounds
 	}
 
 	round := &g.rounds[int(g.currentRound)]
@@ -51,15 +53,17 @@ func (g *Game) ResolveRound(roll RollFn) (Result, error) {
 
 func (g *Game) CalculateWinner() (int64, error) {
 	if g.status != StatusComplete {
-		return 0, ErrGameNotComplete
+		return 0, fmt.Errorf("%d: %w", g.id, ErrGameNotComplete)
 	}
+
 	teamA := 0
 	teamB := 0
 
 	for _, result := range g.results {
-		if result.Outcome == ResultTeamA {
+		switch result.Outcome {
+		case TeamA:
 			teamA++
-		} else if result.Outcome == ResultTeamB {
+		case TeamB:
 			teamB++
 		}
 	}
@@ -96,6 +100,28 @@ func (g *Game) Name() string {
 	return g.name
 }
 
+func (g *Game) TeamAScore() int {
+	teamA := filterResultsByTeam(TeamA, g.results)
+	return len(teamA)
+}
+
+func (g *Game) TeamBScore() int {
+	teamB := filterResultsByTeam(TeamB, g.results)
+	return len(teamB)
+}
+
+func filterResultsByTeam(team Outcome, results []RoundResult) []RoundResult {
+	var filteredResults []RoundResult
+
+	for _, result := range results {
+		if result.Outcome == team {
+			filteredResults = append(filteredResults, result)
+		}
+	}
+
+	return filteredResults
+}
+
 func fromGameModel(m database.Game) (Game, error) {
 
 	var rounds [10]Round
@@ -103,7 +129,7 @@ func fromGameModel(m database.Game) (Game, error) {
 		return Game{}, fmt.Errorf("failed to unmarshal game model: %w", err)
 	}
 
-	var results []Result
+	var results []RoundResult
 	if err := json.Unmarshal(m.ResultsLog, &results); err != nil {
 		return Game{}, fmt.Errorf("failed to unmarshal results log: %w", err)
 	}

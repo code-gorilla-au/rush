@@ -1,6 +1,7 @@
 create table if not exists coaches (
 	id integer primary key autoincrement,
 	name varchar(255) not null,
+	persona varchar(255) not null default 'Wildcard Coach',
     is_default BOOLEAN DEFAULT 0,
     is_human BOOLEAN DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

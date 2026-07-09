@@ -12,6 +12,7 @@ import (
 type Coach struct {
 	ID        int64
 	Name      string
+	Persona   string
 	IsDefault sql.NullBool
 	IsHuman   sql.NullBool
 	CreatedAt sql.NullTime

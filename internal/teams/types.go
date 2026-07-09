@@ -22,12 +22,13 @@ type Team struct {
 }
 
 type Coach struct {
-	ID        int64     `json:"id,omitzero"`
-	Name      string    `json:"name,omitzero"`
-	IsDefault bool      `json:"is_default,omitzero"`
-	IsHuman   bool      `json:"is_human,omitzero"`
-	CreatedAt time.Time `json:"created_at,omitzero"`
-	UpdatedAt time.Time `json:"updated_at,omitzero"`
+	ID        int64        `json:"id,omitzero"`
+	Name      string       `json:"name,omitzero"`
+	Persona   CoachPersona `json:"persona,omitzero"`
+	IsDefault bool         `json:"is_default,omitzero"`
+	IsHuman   bool         `json:"is_human,omitzero"`
+	CreatedAt time.Time    `json:"created_at,omitzero"`
+	UpdatedAt time.Time    `json:"updated_at,omitzero"`
 }
 
 type Player struct {
@@ -41,4 +42,13 @@ type Player struct {
 var (
 	ErrCoachNotFound = errors.New("coach not found")
 	ErrTeamNotFound  = errors.New("team not found")
+)
+
+type CoachPersona string
+
+const (
+	CoachPersonaVanguard  CoachPersona = "Vanguard"
+	CoachPersonaBastion   CoachPersona = "Bastion"
+	CoachPersonaTrickster CoachPersona = "Trickster"
+	CoachPersonaWildcard  CoachPersona = "Wildcard"
 )

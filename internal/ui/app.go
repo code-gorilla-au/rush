@@ -7,67 +7,29 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/iugame"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uibattle"
+	"github.com/code-gorilla-au/rush/internal/ui/uilocker"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
-
-type MsgStateUpdated struct {
-	Coach *teams.Coach
-	Team  *teams.Team
-}
-
-type MsgSwitchPage struct {
-	NewPage  Page
-	Playbook *playbooks.Playbook
-	GameID   int64
-}
-
-type Page int
-
-const (
-	PageTitle Page = iota + 1
-	PageCreateCoach
-	PageLockerRoom
-	PageLockerPlayers
-	PageLockerPlaybooksList
-	PageLockerPlaybooksCreate
-	PageLockerPlaybooksEdit
-	PageNewTournament
-	PageNewBattleSelection
-	PageTitleSettings
-	PageGame
-	PageGameComplete
-)
-
-type GlobalState struct {
-	Coach *teams.Coach
-	Team  *teams.Team
-}
-
-func (m *GlobalState) Context() context.Context {
-	return context.Background()
-}
 
 type RootModel struct {
-	ctx                       context.Context
-	width                     int
-	height                    int
-	theme                     IceTheme
-	currentPage               Page
-	pageTitle                 tea.Model
-	pageCreateCoach           tea.Model
-	pageLockerRoom            tea.Model
-	pageLockerPlayers         tea.Model
-	pageLockerPlaybooksList   tea.Model
-	pageLockerPlaybooksCreate tea.Model
-	pageLockerPlaybooksEdit   tea.Model
-	pageNewTournament         tea.Model
-	pageNewBattleSelection    tea.Model
-	pageTitleSettings         tea.Model
-	pageGame                  tea.Model
-	pageGameComplete          tea.Model
-	globalState               *GlobalState
-	teamsSvc                  *teams.Service
-	playbookSvc               *playbooks.Service
-	gameSvc                   *games.Service
+	ctx               context.Context
+	width             int
+	height            int
+	theme             styles.IceTheme
+	currentPage       uistate.Page
+	pageTitle         tea.Model
+	pageCreateCoach   tea.Model
+	pageLocker        tea.Model
+	pageNewTournament tea.Model
+	pageNewBattle     tea.Model
+	pageGame          tea.Model
+	globalState       *uistate.GlobalState
+	teamsSvc          *teams.Service
+	playbookSvc       *playbooks.Service
+	gameSvc           *games.Service
 }
 
 type Dependencies struct {
@@ -78,28 +40,23 @@ type Dependencies struct {
 
 // New returns a new UI model.
 func New(deps Dependencies) *RootModel {
-	state := &GlobalState{}
+	state := &uistate.GlobalState{}
+	theme := styles.NewIceTheme()
 
 	return &RootModel{
-		ctx:                       context.Background(),
-		theme:                     NewIceTheme(),
-		currentPage:               PageTitle,
-		pageTitle:                 NewModelTitle(state),
-		pageCreateCoach:           NewModelCreateCoach(state, deps.TeamsSvc),
-		pageLockerRoom:            NewModelLockerRoom(state),
-		pageLockerPlayers:         NewModelLockerPlayers(state, deps.TeamsSvc),
-		pageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, deps.PlaybookSvc),
-		pageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, deps.PlaybookSvc),
-		pageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, deps.PlaybookSvc),
-		pageNewTournament:         NewModelNewTournament(state),
-		pageNewBattleSelection:    NewModelNewBattleSelection(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc),
-		pageTitleSettings:         NewModelTitleSettings(state),
-		pageGame:                  NewModelGame(state, deps.GameSvc),
-		pageGameComplete:          NewPageGameComplete(state, deps.TeamsSvc, deps.GameSvc),
-		globalState:               state,
-		teamsSvc:                  deps.TeamsSvc,
-		playbookSvc:               deps.PlaybookSvc,
-		gameSvc:                   deps.GameSvc,
+		ctx:               context.Background(),
+		theme:             theme,
+		currentPage:       uistate.PageTitle,
+		pageTitle:         NewModelTitle(state, theme),
+		pageCreateCoach:   NewModelCreateCoach(state, deps.TeamsSvc, theme),
+		pageLocker:        uilocker.NewLockerModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
+		pageNewTournament: NewModelNewTournament(state, theme),
+		pageNewBattle:     uibattle.NewBattleModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
+		pageGame:          iugame.NewGameModel(state, deps.TeamsSvc, deps.GameSvc, theme),
+		globalState:       state,
+		teamsSvc:          deps.TeamsSvc,
+		playbookSvc:       deps.PlaybookSvc,
+		gameSvc:           deps.GameSvc,
 	}
 }
 
@@ -107,109 +64,87 @@ func (m *RootModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		coach, err := m.teamsSvc.GetDefaultCoach(m.ctx)
 		if err != nil {
-			return MsgStateUpdated{Coach: nil}
+			return uistate.MsgStateUpdated{Coach: nil}
 		}
 
 		team, err := m.teamsSvc.GetTeamByCoachID(m.ctx, coach.ID)
 		if err != nil {
-			return MsgStateUpdated{Coach: nil}
+			return uistate.MsgStateUpdated{Coach: &coach, Team: nil}
 		}
 
-		return MsgStateUpdated{Coach: &coach, Team: &team}
+		return uistate.MsgStateUpdated{Coach: &coach, Team: &team}
 	}
 }
 
 func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
-
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
-		m.globalState.Coach = msg.Coach
-		m.globalState.Team = msg.Team
+	case uistate.MsgStateUpdated:
+		return m.handleStateUpdated(msg)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		}
-	case MsgSwitchPage:
+	case uistate.MsgSwitchPage:
 		m.currentPage = msg.NewPage
-		var cmd tea.Cmd
-		switch m.currentPage {
-		case PageNewBattleSelection:
-			cmd = m.pageNewBattleSelection.Init()
-		case PageGame:
-			if page, ok := m.pageGame.(*PageGameModel); ok {
-				page.SetGameID(msg.GameID)
-			}
-			cmd = m.pageGame.Init()
-		case PageGameComplete:
-			if page, ok := m.pageGameComplete.(*PageGameCompleteModel); ok {
-				page.SetGameID(msg.GameID)
-			}
-			cmd = m.pageGameComplete.Init()
-		}
-		cmds = append(cmds, cmd)
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		var cmd tea.Cmd
-		m.pageTitle, cmd = m.pageTitle.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageLockerRoom, cmd = m.pageLockerRoom.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageLockerPlayers, cmd = m.pageLockerPlayers.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageLockerPlaybooksList, cmd = m.pageLockerPlaybooksList.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageLockerPlaybooksCreate, cmd = m.pageLockerPlaybooksCreate.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageLockerPlaybooksEdit, cmd = m.pageLockerPlaybooksEdit.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageNewBattleSelection, cmd = m.pageNewBattleSelection.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageGame, cmd = m.pageGame.Update(msg)
-		cmds = append(cmds, cmd)
-		m.pageGameComplete, cmd = m.pageGameComplete.Update(msg)
-		cmds = append(cmds, cmd)
-		return m, tea.Batch(cmds...)
+		return m.handleWindowSize(msg)
 	}
 
+	return m.updateCurrentPage(msg)
+}
+
+func (m *RootModel) handleStateUpdated(msg uistate.MsgStateUpdated) (tea.Model, tea.Cmd) {
+	m.globalState.Coach = msg.Coach
+	m.globalState.Team = msg.Team
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
+	m.pageTitle, cmd = m.pageTitle.Update(msg)
+	cmds = append(cmds, cmd)
+	if m.currentPage == uistate.PageCreateCoach {
+		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
+		cmds = append(cmds, cmd)
+	}
+	return m, tea.Batch(cmds...)
+}
+
+func (m *RootModel) handleWindowSize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
+	m.width = msg.Width
+	m.height = msg.Height
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
+	m.pageTitle, cmd = m.pageTitle.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageLocker, cmd = m.pageLocker.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
+	cmds = append(cmds, cmd)
+	m.pageGame, cmd = m.pageGame.Update(msg)
+	cmds = append(cmds, cmd)
+	return m, tea.Batch(cmds...)
+}
+
+func (m *RootModel) updateCurrentPage(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch m.currentPage {
-	case PageTitle:
+	case uistate.PageTitle:
 		m.pageTitle, cmd = m.pageTitle.Update(msg)
-	case PageCreateCoach:
+	case uistate.PageCreateCoach:
 		m.pageCreateCoach, cmd = m.pageCreateCoach.Update(msg)
-	case PageLockerRoom:
-		m.pageLockerRoom, cmd = m.pageLockerRoom.Update(msg)
-	case PageLockerPlayers:
-		m.pageLockerPlayers, cmd = m.pageLockerPlayers.Update(msg)
-	case PageLockerPlaybooksList:
-		m.pageLockerPlaybooksList, cmd = m.pageLockerPlaybooksList.Update(msg)
-	case PageLockerPlaybooksCreate:
-		m.pageLockerPlaybooksCreate, cmd = m.pageLockerPlaybooksCreate.Update(msg)
-	case PageLockerPlaybooksEdit:
-		m.pageLockerPlaybooksEdit, cmd = m.pageLockerPlaybooksEdit.Update(msg)
-	case PageNewTournament:
+	case uistate.PageLockerRoom:
+		m.pageLocker, cmd = m.pageLocker.Update(msg)
+	case uistate.PageNewTournament:
 		m.pageNewTournament, cmd = m.pageNewTournament.Update(msg)
-	case PageNewBattleSelection:
-		m.pageNewBattleSelection, cmd = m.pageNewBattleSelection.Update(msg)
-	case PageTitleSettings:
-		m.pageTitleSettings, cmd = m.pageTitleSettings.Update(msg)
-	case PageGame:
+	case uistate.PageNewBattle:
+		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
+	case uistate.PageGame:
 		m.pageGame, cmd = m.pageGame.Update(msg)
-	case PageGameComplete:
-		m.pageGameComplete, cmd = m.pageGameComplete.Update(msg)
 	}
-	cmds = append(cmds, cmd)
-
-	return m, tea.Batch(cmds...)
+	return m, cmd
 }
 
 func (m *RootModel) View() tea.View {
@@ -218,30 +153,18 @@ func (m *RootModel) View() tea.View {
 	}
 
 	switch m.currentPage {
-	case PageTitle:
+	case uistate.PageTitle:
 		return m.pageTitle.View()
-	case PageCreateCoach:
+	case uistate.PageCreateCoach:
 		return m.pageCreateCoach.View()
-	case PageLockerRoom:
-		return m.pageLockerRoom.View()
-	case PageLockerPlayers:
-		return m.pageLockerPlayers.View()
-	case PageLockerPlaybooksList:
-		return m.pageLockerPlaybooksList.View()
-	case PageLockerPlaybooksCreate:
-		return m.pageLockerPlaybooksCreate.View()
-	case PageLockerPlaybooksEdit:
-		return m.pageLockerPlaybooksEdit.View()
-	case PageNewTournament:
+	case uistate.PageLockerRoom:
+		return m.pageLocker.View()
+	case uistate.PageNewTournament:
 		return m.pageNewTournament.View()
-	case PageNewBattleSelection:
-		return m.pageNewBattleSelection.View()
-	case PageTitleSettings:
-		return m.pageTitleSettings.View()
-	case PageGame:
+	case uistate.PageNewBattle:
+		return m.pageNewBattle.View()
+	case uistate.PageGame:
 		return m.pageGame.View()
-	case PageGameComplete:
-		return m.pageGameComplete.View()
 	}
 
 	return tea.NewView("unknown page")

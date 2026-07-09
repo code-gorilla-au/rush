@@ -1,4 +1,4 @@
-package ui
+package uilocker
 
 import (
 	"fmt"
@@ -8,12 +8,12 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type lockerPlaybooksCreateKeyMap struct {
-	components.CommonKeys
-	Back  key.Binding
-	Enter key.Binding
+	uistate.KeyMap
 }
 
 func (k lockerPlaybooksCreateKeyMap) ShortHelp() []key.Binding {
@@ -28,23 +28,14 @@ func (k lockerPlaybooksCreateKeyMap) FullHelp() [][]key.Binding {
 
 func newLockerPlaybooksCreateKeyMap() lockerPlaybooksCreateKeyMap {
 	return lockerPlaybooksCreateKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "confirm"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 
 type ModelLockerPlaybooksCreate struct {
 	width        int
 	height       int
-	theme        IceTheme
-	globalState  *GlobalState
+	theme        styles.IceTheme
 	playbookSvc  *playbooks.Service
 	keys         lockerPlaybooksCreateKeyMap
 	footer       components.Footer
@@ -54,10 +45,9 @@ type ModelLockerPlaybooksCreate struct {
 	err          error
 }
 
-func NewModelLockerPlaybooksCreate(state *GlobalState, playbookSvc *playbooks.Service) *ModelLockerPlaybooksCreate {
+func NewModelLockerPlaybooksCreate(state *uistate.GlobalState, playbookSvc *playbooks.Service, theme styles.IceTheme) *ModelLockerPlaybooksCreate {
 	return &ModelLockerPlaybooksCreate{
-		theme:        NewIceTheme(),
-		globalState:  state,
+		theme:        theme,
 		playbookSvc:  playbookSvc,
 		keys:         newLockerPlaybooksCreateKeyMap(),
 		footer:       components.NewFooter(newLockerPlaybooksCreateKeyMap()),
@@ -73,47 +63,17 @@ func (m *ModelLockerPlaybooksCreate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
-		m.globalState.Coach = msg.Coach
-		m.globalState.Team = msg.Team
-	case MsgSwitchPage:
-		if msg.NewPage == PageLockerPlaybooksCreate {
-			if msg.Playbook != nil {
-				m.load(msg.Playbook)
-			} else {
-				m.reset()
-			}
-		}
+	case MsgSwitchLockerPage:
+		m.handleSwitchLockerPage(msg)
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Back):
-			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageLockerPlaybooksList}
-			}
-		case key.Matches(msg, m.keys.Enter):
-			name, description := m.playbookForm.Values()
-			if name != "" {
-				return m, func() tea.Msg {
-					return MsgSwitchPage{
-						NewPage: PageLockerPlaybooksEdit,
-						Playbook: &playbooks.Playbook{
-							ID:          m.playbookID,
-							Name:        name,
-							Description: description,
-							Formations:  m.formations,
-						},
-					}
-				}
-			}
+		model, cmd, done := m.handleKey(msg)
+		if done {
+			return model, cmd
 		}
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		m.footer.Update(msg)
+		m.handleWindowSize(msg)
 	}
 
 	var cmd tea.Cmd
@@ -121,6 +81,54 @@ func (m *ModelLockerPlaybooksCreate) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *ModelLockerPlaybooksCreate) handleSwitchLockerPage(msg MsgSwitchLockerPage) {
+	if msg.NewPage == SubPageLockerPlaybooksCreate {
+		if msg.Playbook != nil {
+			m.load(msg.Playbook)
+		} else {
+			m.reset()
+		}
+	}
+}
+
+func (m *ModelLockerPlaybooksCreate) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, m.keys.Quit):
+		return m, tea.Quit, true
+	case key.Matches(msg, m.keys.Back):
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList}
+		}, true
+	case key.Matches(msg, m.keys.Enter):
+		return m.handleEnter()
+	}
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlaybooksCreate) handleEnter() (tea.Model, tea.Cmd, bool) {
+	name, description := m.playbookForm.Values()
+	if name != "" {
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{
+				NewPage: SubPageLockerPlaybooksEdit,
+				Playbook: &playbooks.Playbook{
+					ID:          m.playbookID,
+					Name:        name,
+					Description: description,
+					Formations:  m.formations,
+				},
+			}
+		}, true
+	}
+	return nil, nil, false
+}
+
+func (m *ModelLockerPlaybooksCreate) handleWindowSize(msg tea.WindowSizeMsg) {
+	m.width = msg.Width
+	m.height = msg.Height
+	m.footer.Update(msg)
 }
 
 func (m *ModelLockerPlaybooksCreate) reset() {
@@ -161,7 +169,7 @@ func (m *ModelLockerPlaybooksCreate) View() tea.View {
 		"",
 		content,
 		"",
-		m.footer.View(m.theme.Footer),
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

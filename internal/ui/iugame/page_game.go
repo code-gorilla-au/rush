@@ -1,4 +1,4 @@
-package ui
+package iugame
 
 import (
 	"strings"
@@ -7,22 +7,24 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type PageGameModel struct {
 	width       int
 	height      int
-	theme       IceTheme
-	globalState *GlobalState
+	theme       styles.IceTheme
+	globalState *uistate.GlobalState
 	gameSvc     *games.Service
 	gameID      int64
 	game        *games.Game
 	gameComp    components.Game
 }
 
-func NewModelGame(state *GlobalState, gameSvc *games.Service) *PageGameModel {
+func NewModelGame(state *uistate.GlobalState, gameSvc *games.Service, theme styles.IceTheme) *PageGameModel {
 	return &PageGameModel{
-		theme:       NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		gameSvc:     gameSvc,
 	}
@@ -41,6 +43,7 @@ func (m *PageGameModel) SetGameID(id int64) {
 }
 
 func (m *PageGameModel) Init() tea.Cmd {
+	m.game = nil
 	return func() tea.Msg {
 		game, err := m.gameSvc.GetGame(m.globalState.Context(), m.gameID)
 		if err != nil {
@@ -54,7 +57,7 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case MsgStateUpdated:
+	case uistate.MsgStateUpdated:
 		m.globalState.Coach = msg.Coach
 		m.globalState.Team = msg.Team
 	case tea.WindowSizeMsg:
@@ -64,7 +67,7 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.game = new(games.Game)
 		*m.game = msg.Game
 		teamA, teamB := getTeamNames(m.game.Name())
-		m.gameComp = components.NewGame(m.game, teamA, teamB, nil)
+		m.gameComp = components.NewGame(m.game, teamA, teamB, games.NewDecisionEngine())
 		cmds = append(cmds, m.gameComp.Init())
 	case components.MsgResolveRound:
 		cmds = append(cmds, m.gameComp.Update(msg))
@@ -78,7 +81,7 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case components.MsgNextRound:
 		if !m.game.IsGameComplete() {
 			teamA, teamB := getTeamNames(m.game.Name())
-			m.gameComp = components.NewGame(m.game, teamA, teamB, nil)
+			m.gameComp = components.NewGame(m.game, teamA, teamB, games.NewDecisionEngine())
 			cmds = append(cmds, m.gameComp.Init())
 		} else {
 			cmds = append(cmds, func() tea.Msg {
@@ -86,8 +89,8 @@ func (m *PageGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if err != nil {
 					return MsgGameError{Err: err}
 				}
-				return MsgSwitchPage{
-					NewPage: PageGameComplete,
+				return MsgSwitchGamePage{
+					NewPage: SubPageGameComplete,
 					GameID:  m.game.ID(),
 				}
 			})
@@ -117,7 +120,7 @@ func (m *PageGameModel) View() tea.View {
 	if m.game == nil {
 		mainContent = "Loading Game..."
 	} else {
-		mainContent = m.gameComp.View()
+		mainContent = m.gameComp.View(m.theme)
 	}
 
 	centeredContent := lipgloss.Place(

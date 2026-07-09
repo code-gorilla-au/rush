@@ -19,12 +19,12 @@ const (
 	StatusComplete GameStatus = "complete"
 )
 
-type ResultOutcome string
+type Outcome string
 
 const (
-	ResultDraw  ResultOutcome = "draw"
-	ResultTeamA ResultOutcome = "team_a"
-	ResultTeamB ResultOutcome = "team_b"
+	Draw  Outcome = "draw"
+	TeamA Outcome = "team_a"
+	TeamB Outcome = "team_b"
 )
 
 type Game struct {
@@ -37,37 +37,60 @@ type Game struct {
 	status       GameStatus
 	rounds       [10]Round
 	currentRound int64
-	results      []Result
+	results      []RoundResult
 	createdAt    time.Time
 	updatedAt    time.Time
 }
 
 type Round struct {
-	TeamA TeamFormation
-	TeamB TeamFormation
+	TeamA       TeamFormation `json:"team_a"`
+	TeamB       TeamFormation `json:"team_b"`
+	DuelResults []DuelResult  `json:"duel_results"`
+}
+
+type DuelResult struct {
+	Player    int64   `json:"player"`
+	Outcome   Outcome `json:"outcome"`
+	Roll      int     `json:"roll"`
+	RollDelta int     `json:"roll_delta"`
+}
+
+type TeamStatistics struct {
+	GamesPlayed       int     `json:"games_played,omitempty"`
+	Wins              int     `json:"wins,omitempty"`
+	Draws             int     `json:"draws,omitempty"`
+	Losses            int     `json:"losses,omitempty"`
+	WinRate           float64 `json:"win_rate,omitempty"`
+	RoundsWon         int     `json:"rounds_won,omitempty"`
+	RoundsLost        int     `json:"rounds_lost,omitempty"`
+	RoundDifferential int     `json:"round_differential,omitempty"`
+	AverageRoundsWon  float64 `json:"average_rounds_won,omitempty"`
+	AverageRoundsLost float64 `json:"average_rounds_lost,omitempty"`
 }
 
 type TeamConfig struct {
-	TeamID     int64
-	TeamName   string
-	Formations []playbooks.Formation
+	TeamID     int64                 `json:"team_id"`
+	TeamName   string                `json:"team_name"`
+	Players    []int64               `json:"players"`
+	Formations []playbooks.Formation `json:"formations"`
 }
 
 type TeamFormation struct {
-	TeamID int64
-	Lanes  [3][]int
+	TeamID int64      `json:"team_id,omitempty"`
+	Lanes  [3][]int64 `json:"lanes,omitempty"`
 }
 
 type LanesConfig struct {
-	TeamID int64
-	Lane1  int
-	Lane2  int
-	Lane3  int
+	TeamID  int64   `json:"team_id"`
+	Players []int64 `json:"players"`
+	Lane1   int     `json:"lane_1"`
+	Lane2   int     `json:"lane_2"`
+	Lane3   int     `json:"lane_3"`
 }
 
-type Result struct {
-	Outcome          ResultOutcome
-	RemainingPlayers int
+type RoundResult struct {
+	Outcome          Outcome `json:"outcome"`
+	RemainingPlayers int     `json:"remaining_players"`
 }
 
 type RollFn func() int

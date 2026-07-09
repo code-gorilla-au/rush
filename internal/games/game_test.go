@@ -12,8 +12,8 @@ func TestGame_ToGameModel(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	group.Test("should marshal rounds correctly", func(t *testing.T) {
-		teamA := TeamConfig{TeamID: 1, TeamName: "A", Formations: make([]playbooks.Formation, 10)}
-		teamB := TeamConfig{TeamID: 2, TeamName: "B", Formations: make([]playbooks.Formation, 10)}
+		teamA := TeamConfig{TeamID: 1, TeamName: "A", Players: []int64{101, 102, 103}, Formations: make([]playbooks.Formation, 10)}
+		teamB := TeamConfig{TeamID: 2, TeamName: "B", Players: []int64{201, 202, 203}, Formations: make([]playbooks.Formation, 10)}
 		game := Game{
 			rounds: generateRounds(teamA, teamB),
 		}
@@ -36,8 +36,8 @@ func TestGame_ResolveRound(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	group.Test("should resolve the first round (index 0)", func(t *testing.T) {
-		teamA := TeamConfig{TeamID: 1, TeamName: "A", Formations: make([]playbooks.Formation, 10)}
-		teamB := TeamConfig{TeamID: 2, TeamName: "B", Formations: make([]playbooks.Formation, 10)}
+		teamA := TeamConfig{TeamID: 1, TeamName: "A", Players: []int64{101, 102, 103}, Formations: make([]playbooks.Formation, 10)}
+		teamB := TeamConfig{TeamID: 2, TeamName: "B", Players: []int64{201, 202, 203}, Formations: make([]playbooks.Formation, 10)}
 
 		// Fill some players in round 0
 		teamA.Formations[0] = playbooks.Formation{Lane1: 1, Lane2: 1, Lane3: 1}
@@ -48,17 +48,17 @@ func TestGame_ResolveRound(t *testing.T) {
 			rounds:       generateRounds(teamA, teamB),
 		}
 
-		rolls := []int{6, 1}
+		rolls := []int{1, 6}
 		idx := 0
 		rollFn := func() int {
 			val := rolls[idx%2]
 			idx++
 			return val
 		}
-		res, err := game.ResolveRound(rollFn)
+		res, err := game.ResolveRound(&TestEngine{RollFn: rollFn})
 
 		odize.AssertNoError(t, err)
-		odize.AssertTrue(t, res.Outcome == ResultTeamA || res.Outcome == ResultTeamB)
+		odize.AssertTrue(t, res.Outcome == TeamA || res.Outcome == TeamB)
 		odize.AssertEqual(t, int64(1), game.currentRound)
 
 		// Check if players were removed from round 0

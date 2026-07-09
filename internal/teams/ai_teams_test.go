@@ -81,11 +81,14 @@ func TestGenerateAITeams(t *testing.T) {
 
 			for i, team := range _teams {
 				odize.AssertTrue(t, team.Persona != "")
+				odize.AssertTrue(t, team.CoachPersona != "")
 				odize.AssertTrue(t, len(team.Formations) == 10)
 
 				// Verify personas are assigned in order
 				expectedPersona := personas[i%len(personas)].Name
 				odize.AssertTrue(t, team.Persona == expectedPersona)
+				expectedCoachPersona := personas[i%len(personas)].CoachPersona
+				odize.AssertTrue(t, team.CoachPersona == expectedCoachPersona)
 			}
 		}).
 		Run()
@@ -115,7 +118,8 @@ func TestTeamsService_GenerateTeams(t *testing.T) {
 
 			mStore.createCoachFunc = func(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error) {
 				coachCount++
-				return database.Coach{ID: int64(coachCount), Name: arg.Name}, nil
+				odize.AssertTrue(t, arg.Persona != "")
+				return database.Coach{ID: int64(coachCount), Name: arg.Name, Persona: arg.Persona}, nil
 			}
 			mStore.createTeamFunc = func(ctx context.Context, arg database.CreateTeamParams) (database.Team, error) {
 				teamCount++

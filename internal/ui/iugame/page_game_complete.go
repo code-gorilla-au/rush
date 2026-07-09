@@ -1,4 +1,4 @@
-package ui
+package iugame
 
 import (
 	"fmt"
@@ -8,13 +8,15 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type PageGameCompleteModel struct {
 	width       int
 	height      int
-	theme       IceTheme
-	globalState *GlobalState
+	theme       styles.IceTheme
+	globalState *uistate.GlobalState
 	teamsSvc    *teams.Service
 	gameSvc     *games.Service
 	gameID      int64
@@ -24,9 +26,9 @@ type PageGameCompleteModel struct {
 	err         error
 }
 
-func NewPageGameComplete(state *GlobalState, teamsSvc *teams.Service, gameSvc *games.Service) *PageGameCompleteModel {
+func NewPageGameComplete(state *uistate.GlobalState, teamsSvc *teams.Service, gameSvc *games.Service, theme styles.IceTheme) *PageGameCompleteModel {
 	return &PageGameCompleteModel{
-		theme:       NewIceTheme(),
+		theme:       theme,
 		globalState: state,
 		teamsSvc:    teamsSvc,
 		gameSvc:     gameSvc,
@@ -89,7 +91,7 @@ func (m *PageGameCompleteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "enter":
 			return m, func() tea.Msg {
-				return MsgSwitchPage{NewPage: PageTitle}
+				return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 			}
 		}
 	}
@@ -113,7 +115,7 @@ func (m *PageGameCompleteModel) View() tea.View {
 	if m.winnerTeam == nil && !m.isDraw {
 		content = "Loading Results..."
 	} else {
-		content = m.renderMainContent(content)
+		content = m.renderMainContent()
 	}
 
 	centered := lipgloss.Place(
@@ -130,34 +132,29 @@ func (m *PageGameCompleteModel) View() tea.View {
 	return view
 }
 
-func (m *PageGameCompleteModel) renderMainContent(content string) string {
-	winMsg := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#A5F2F3")).
-		Bold(true).
+func (m *PageGameCompleteModel) renderMainContent() string {
+	winMsg := m.theme.Logo.
 		Padding(1, 0).
 		Render("🏆 GAME COMPLETE 🏆")
 
 	var mainContent string
 	if m.isDraw {
-		mainContent = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFFFF")).
-			Bold(true).
+		mainContent = m.theme.SecondaryHeader.
 			Render("It's a DRAW!")
 	} else {
 		if m.winnerCoach.IsHuman {
-			mainContent = components.NewCoachWinnerHuman(m.winnerTeam, m.winnerCoach).View(m.theme.CoachName)
+			mainContent = components.NewCoachWinnerHuman(m.winnerTeam, m.winnerCoach).View(m.theme)
 		} else {
-			mainContent = components.NewCoachWinnerAI(m.winnerTeam, m.winnerCoach).View(m.theme.CoachName)
+			mainContent = components.NewCoachWinnerAI(m.winnerTeam, m.winnerCoach).View(m.theme)
 		}
 	}
 
 	footer := m.theme.Footer.Render("\nPress Enter to continue")
 
-	content = lipgloss.JoinVertical(
+	return lipgloss.JoinVertical(
 		lipgloss.Center,
 		winMsg,
 		mainContent,
 		footer,
 	)
-	return content
 }

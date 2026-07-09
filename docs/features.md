@@ -2,7 +2,12 @@
 
 List of features intended for the project.
 
-- [ ] Single battle
+- [X] Single battle
+- [X] Battle confirmation upgrade
+- [X] Better player names
+- [ ] Better coach creation journey
+- [ ] Events emitted for lane battles
+- [ ] Settings to clear game data
 - [ ] Tournament mode
-- [ ] Record battles
-- [ ] Team statistics
+- [X] Record battles
+- [X] Team statistics

@@ -1,12 +1,14 @@
 package teams
 
 import (
+	"cmp"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/go-faker/faker/v4"
 )
 
 type Service struct {
@@ -23,13 +25,15 @@ func NewTeamsService(store Store, playbookSvc PlaybookCreatGetter) *Service {
 
 type CreateCoachParams struct {
 	Name      string
+	Persona   CoachPersona
 	IsHuman   bool
 	IsDefault bool
 }
 
 func (s *Service) CreateCoach(ctx context.Context, params CreateCoachParams) (Coach, error) {
 	model, err := s.store.CreateCoach(ctx, database.CreateCoachParams{
-		Name: params.Name,
+		Name:    params.Name,
+		Persona: string(cmp.Or(params.Persona, CoachPersonaWildcard)),
 		IsHuman: sql.NullBool{
 			Bool:  params.IsHuman,
 			Valid: true,
@@ -134,23 +138,6 @@ func (s *Service) GetCoachByID(ctx context.Context, id int64) (Coach, error) {
 	return fromCoachModel(model), nil
 }
 
-func (s *Service) getTeamPlayers(ctx context.Context, teamID int64) ([]Player, error) {
-	models, err := s.store.GetTeamMembers(ctx, sql.NullInt64{
-		Int64: teamID,
-		Valid: true,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("getting team players: %w", err)
-	}
-
-	players := make([]Player, len(models))
-	for i, model := range models {
-		players[i] = fromPlayerModel(model)
-	}
-
-	return players, nil
-}
-
 func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, isDefault bool) (Team, error) {
 	model, err := s.store.CreateTeam(ctx, database.CreateTeamParams{
 		Name: name,
@@ -175,17 +162,28 @@ func (s *Service) CreateTeam(ctx context.Context, name string, coachID int64, is
 	return fromTeamModel(model, playersModel), nil
 }
 
+type createPlayerParams struct {
+	Name string `faker:"name"`
+}
+
 func (s *Service) createPlayers(ctx context.Context, teamID int64) ([]database.Player, error) {
 	modelPlayers := make([]database.Player, 5)
 
 	for i := 0; i < 5; i++ {
+		playerName := createPlayerParams{}
+
+		if err := faker.FakeData(&playerName); err != nil {
+			return modelPlayers, fmt.Errorf("creating player: %w", err)
+		}
+
 		model, err := s.store.CreatePlayer(ctx, database.CreatePlayerParams{
-			Name: "Player " + fmt.Sprint(i+1),
+			Name: playerName.Name,
 			TeamID: sql.NullInt64{
 				Int64: teamID,
 				Valid: true,
 			},
 		})
+
 		if err != nil {
 			return modelPlayers, fmt.Errorf("creating player: %w", err)
 		}

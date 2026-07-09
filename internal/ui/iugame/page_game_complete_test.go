@@ -1,7 +1,6 @@
-package ui
+package iugame
 
 import (
-	"database/sql"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
@@ -10,44 +9,26 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
-	_ "modernc.org/sqlite"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
+	"github.com/code-gorilla-au/rush/internal/ui/uitest"
 )
-
-func setupTestDB(t *testing.T) *sql.DB {
-	db, err := sql.Open("sqlite", ":memory:")
-	if err != nil {
-		t.Fatalf("failed to open database: %v", err)
-	}
-
-	migrator := database.NewMigrator(db, database.SchemaFS)
-	if err := migrator.Migrate(t.Context()); err != nil {
-		t.Fatalf("failed to migrate database: %v", err)
-	}
-
-	return db
-}
 
 func TestPageGameCompleteModel(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
-	var db *sql.DB
 	var queries *database.Queries
 	var teamsSvc *teams.Service
 	var gameSvc *games.Service
-	var state *GlobalState
+	var state *uistate.GlobalState
 
 	group.BeforeEach(func() {
-		db = setupTestDB(t)
+		db := uitest.SetupTestDB(t)
+		t.Cleanup(func() { _ = db.Close() })
 		queries = database.New(db)
 		teamsSvc = teams.NewTeamsService(queries, playbooks.NewPlaybooksService(queries))
 		gameSvc = games.NewService(queries)
-		state = &GlobalState{}
-	})
-
-	group.AfterEach(func() {
-		if db != nil {
-			db.Close()
-		}
+		state = &uistate.GlobalState{}
 	})
 
 	err := group.
@@ -88,11 +69,13 @@ func TestPageGameCompleteModel(t *testing.T) {
 				TeamA: games.TeamConfig{
 					TeamID:     team.ID,
 					TeamName:   team.Name,
+					Players:    []int64{1, 2, 3},
 					Formations: formationsA,
 				},
 				TeamB: games.TeamConfig{
 					TeamID:     teamB.ID,
 					TeamName:   teamB.Name,
+					Players:    []int64{4, 5, 6},
 					Formations: formationsB,
 				},
 			})
@@ -101,7 +84,7 @@ func TestPageGameCompleteModel(t *testing.T) {
 			// Simulate game completion with Team A as winner
 			rollIdx := 0
 			rollFn := func() int {
-				rolls := []int{10, 1}
+				rolls := []int{1, 10}
 				r := rolls[rollIdx%2]
 				rollIdx++
 				return r
@@ -109,13 +92,14 @@ func TestPageGameCompleteModel(t *testing.T) {
 
 			// Finish all rounds
 			for i := 0; i < 10; i++ {
-				game.ResolveRound(rollFn)
+				_, _ = game.ResolveRound(&games.TestEngine{RollFn: rollFn})
 			}
 
 			_, err = gameSvc.CompleteGame(ctx, game)
 			odize.AssertNoError(t, err)
 
-			m := NewPageGameComplete(state, teamsSvc, gameSvc)
+			theme := styles.NewIceTheme()
+			m := NewPageGameComplete(state, teamsSvc, gameSvc, theme)
 			m.SetGameID(game.ID())
 
 			// Execute Init
@@ -129,16 +113,17 @@ func TestPageGameCompleteModel(t *testing.T) {
 			odize.AssertFalse(t, winnerMsg.IsDraw)
 		}).
 		Test("should handle enter key and switch to title page", func(t *testing.T) {
-			m := NewPageGameComplete(state, teamsSvc, gameSvc)
+			theme := styles.NewIceTheme()
+			m := NewPageGameComplete(state, teamsSvc, gameSvc, theme)
 			_, cmd := m.Update(tea.KeyPressMsg{
 				Text: "enter",
 			})
 
 			odize.AssertTrue(t, cmd != nil)
 			msg := cmd()
-			switchMsg, ok := msg.(MsgSwitchPage)
+			switchMsg, ok := msg.(uistate.MsgSwitchPage)
 			odize.AssertTrue(t, ok)
-			odize.AssertEqual(t, PageTitle, switchMsg.NewPage)
+			odize.AssertEqual(t, uistate.PageTitle, switchMsg.NewPage)
 		}).
 		Run()
 

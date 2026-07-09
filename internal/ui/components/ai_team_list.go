@@ -1,102 +1,54 @@
 package components
 
 import (
-	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
-type AITeamItem struct {
-	team teams.AITeam
-}
-
-func (i AITeamItem) Title() string       { return i.team.Team.Name }
-func (i AITeamItem) Description() string { return i.team.Coach.Name }
-func (i AITeamItem) FilterValue() string { return i.team.Team.Name }
-
 type AITeamList struct {
-	list   list.Model
-	active bool
+	List[teams.AITeam]
 }
 
-func NewAITeamList(items []teams.AITeam) AITeamList {
-	listItems := make([]list.Item, len(items))
-	for i, item := range items {
-		listItems[i] = AITeamItem{team: item}
-	}
-
-	delegate := list.NewDefaultDelegate()
-	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("#A5F2F3")).BorderForeground(lipgloss.Color("#A5F2F3"))
-	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#87CEEB")).BorderForeground(lipgloss.Color("#A5F2F3"))
-
-	l := list.New(listItems, delegate, 0, 0)
-	l.Title = "AI Teams"
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(true)
-	l.Styles.Title = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color("#A5F2F3")).Bold(true)
-
+func NewAITeamList(items []teams.AITeam, theme styles.IceTheme) AITeamList {
 	return AITeamList{
-		list:   l,
-		active: true,
+		List: NewList(ListConfig[teams.AITeam]{
+			Items: items,
+			ItemMapper: func(item teams.AITeam) ListItem[teams.AITeam] {
+				return ListItem[teams.AITeam]{
+					Data:      item,
+					TitleVal:  item.Team.Name,
+					DescVal:   item.Coach.Name,
+					FilterVal: item.Team.Name,
+				}
+			},
+			EnableFiltering:   true,
+			DisableAutoResize: true,
+		}, theme),
 	}
 }
 
 func (l *AITeamList) Update(msg tea.Msg) (AITeamList, tea.Cmd) {
 	var cmd tea.Cmd
-	l.list, cmd = l.list.Update(msg)
+	l.List, cmd = l.List.Update(msg)
 	return *l, cmd
 }
 
-func (l *AITeamList) View() string {
-	activeStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#A5F2F3")).
-		Padding(1)
-
-	inactiveStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#333333")).
-		Padding(1).
-		Foreground(lipgloss.Color("#666666"))
-
-	if l.active {
-		return activeStyle.Render(l.list.View())
-	}
-	return inactiveStyle.Render(l.list.View())
+func (l *AITeamList) View(theme styles.IceTheme) string {
+	return l.List.View()
 }
 
-func (l *AITeamList) SetActive(active bool) {
-	l.active = active
-}
-
-func (l *AITeamList) SelectedAITeam() *teams.AITeam {
-	if item, ok := l.list.SelectedItem().(AITeamItem); ok {
-		return &item.team
+func (l *AITeamList) SelectedItem() *teams.AITeam {
+	if item, ok := l.List.SelectedItem(); ok {
+		return &item
 	}
 	return nil
 }
 
-func (l *AITeamList) SetSize(width, height int) {
-	l.list.SetSize(width, height)
-}
-
 func (l *AITeamList) SetItems(items []teams.AITeam) tea.Cmd {
-	listItems := make([]list.Item, len(items))
-	for i, item := range items {
-		listItems[i] = AITeamItem{team: item}
-	}
-	return l.list.SetItems(listItems)
+	return l.List.SetItems(items)
 }
 
 func (l *AITeamList) SetTitle(title string) {
-	l.list.Title = title
-}
-
-func (l *AITeamList) Len() int {
-	return len(l.list.Items())
-}
-
-func (l *AITeamList) IsFiltering() bool {
-	return l.list.FilterState() == list.Filtering
+	l.Model.Title = title
 }

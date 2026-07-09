@@ -1,41 +1,22 @@
 package ui
 
 import (
-	"database/sql"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/odize"
-	"github.com/code-gorilla-au/rush/internal/database"
-	"github.com/code-gorilla-au/rush/internal/games"
-	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
+	"github.com/code-gorilla-au/rush/internal/ui/uitest"
 )
-
-func setupServices(t *testing.T) (*teams.Service, *playbooks.Service, *games.Service) {
-	db, err := sql.Open("sqlite", ":memory:")
-	if err != nil {
-		t.Fatalf("failed to open database: %v", err)
-	}
-
-	migrator := database.NewMigrator(db, database.SchemaFS)
-	if err := migrator.Migrate(t.Context()); err != nil {
-		t.Fatalf("failed to migrate database: %v", err)
-	}
-
-	queries := database.New(db)
-	ps := playbooks.NewPlaybooksService(queries)
-	ts := teams.NewTeamsService(queries, ps)
-	gs := games.NewService(queries)
-	return ts, ps, gs
-}
 
 func TestTheme(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	err := group.
 		Test("NewIceTheme should return a theme with correct colors", func(t *testing.T) {
-			theme := NewIceTheme()
+			theme := styles.NewIceTheme()
 			// We can't easily check the color values from the Style object in Lipgloss v2
 			// without deep inspection, but we can check if they are not empty.
 			odize.AssertTrue(t, theme.Logo.GetForeground() != nil)
@@ -52,7 +33,7 @@ func TestNew(t *testing.T) {
 
 	err := group.
 		Test("New should initialize model with IceTheme", func(t *testing.T) {
-			s, ps, gs := setupServices(t)
+			s, ps, gs := uitest.SetupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
@@ -61,7 +42,7 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, m.theme.Logo.GetForeground() != nil)
 		}).
 		Test("Init should return a command", func(t *testing.T) {
-			s, ps, gs := setupServices(t)
+			s, ps, gs := uitest.SetupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
@@ -71,7 +52,7 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle Quit keys", func(t *testing.T) {
-			s, ps, gs := setupServices(t)
+			s, ps, gs := uitest.SetupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
@@ -84,16 +65,37 @@ func TestNew(t *testing.T) {
 			odize.AssertTrue(t, cmd != nil)
 		}).
 		Test("Update should handle WindowSizeMsg", func(t *testing.T) {
-			s, ps, gs := setupServices(t)
+			s, ps, gs := uitest.SetupServices(t)
 			m := New(Dependencies{
 				TeamsSvc:    s,
 				PlaybookSvc: ps,
 				GameSvc:     gs,
 			})
 			newModel, _ := m.Update(tea.WindowSizeMsg{Width: 100, Height: 50})
-			updatedModel := newModel.(*RootModel)
+			updatedModel, ok := newModel.(*RootModel)
+			odize.AssertTrue(t, ok)
 			odize.AssertTrue(t, updatedModel.width == 100)
 			odize.AssertTrue(t, updatedModel.height == 50)
+		}).
+		Test("Update should route from create coach to locker room when state is updated", func(t *testing.T) {
+			s, ps, gs := uitest.SetupServices(t)
+			m := New(Dependencies{
+				TeamsSvc:    s,
+				PlaybookSvc: ps,
+				GameSvc:     gs,
+			})
+
+			_, _ = m.Update(uistate.MsgSwitchPage{NewPage: uistate.PageCreateCoach})
+
+			coach := teams.Coach{ID: 1}
+			team := teams.Team{ID: 1}
+
+			_, cmd := m.Update(uistate.MsgStateUpdated{Coach: &coach, Team: &team})
+			odize.AssertTrue(t, cmd != nil)
+
+			routedMsg, ok := cmd().(uistate.MsgSwitchPage)
+			odize.AssertTrue(t, ok)
+			odize.AssertEqual(t, uistate.PageLockerRoom, routedMsg.NewPage)
 		}).
 		Run()
 

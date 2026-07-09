@@ -2,9 +2,8 @@ package components
 
 import (
 	"charm.land/bubbles/v2/help"
-	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 // Footer is a reusable component for displaying help information.
@@ -30,33 +29,6 @@ func (f *Footer) Update(msg tea.Msg) {
 }
 
 // View renders the footer component.
-func (f Footer) View(style lipgloss.Style) string {
-	return style.Render(f.Help.View(f.KeyMap))
-}
-
-// CommonKeys defines keys that are shared across many pages.
-type CommonKeys struct {
-	Quit key.Binding
-}
-
-// ShortHelp returns keybindings to be shown in the mini help view.
-func (k CommonKeys) ShortHelp() []key.Binding {
-	return []key.Binding{k.Quit}
-}
-
-// FullHelp returns keybindings for the expanded help view.
-func (k CommonKeys) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.Quit},
-	}
-}
-
-// NewCommonKeys returns a default set of common keys.
-func NewCommonKeys() CommonKeys {
-	return CommonKeys{
-		Quit: key.NewBinding(
-			key.WithKeys("q", "ctrl+c"),
-			key.WithHelp("q", "quit"),
-		),
-	}
+func (f *Footer) View(theme styles.IceTheme) string {
+	return theme.Footer.Render(f.Help.View(f.KeyMap))
 }

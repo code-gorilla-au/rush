@@ -1,8 +1,7 @@
 package components
 
 import (
-	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type TitleItem int
@@ -12,7 +11,6 @@ const (
 	TitleItemLockerRoom
 	TitleItemNewTournament
 	TitleItemNewBattleSelection
-	TitleItemSettings
 )
 
 func (i TitleItem) String() string {
@@ -25,8 +23,6 @@ func (i TitleItem) String() string {
 		return "New Tournament"
 	case TitleItemNewBattleSelection:
 		return "New Battle"
-	case TitleItemSettings:
-		return "Settings"
 	}
 	return ""
 }
@@ -41,36 +37,32 @@ func NewTitleMenu(hasCoach bool) TitleMenu {
 	if !hasCoach {
 		items = []TitleItem{TitleItemCreateCoach}
 	} else {
-		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattleSelection, TitleItemSettings}
+		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattleSelection}
 	}
 	return TitleMenu{
 		items: items,
 	}
 }
 
-func (m *TitleMenu) Update(msg tea.Msg) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down", "j":
-			if m.cursor < len(m.items)-1 {
-				m.cursor++
-			}
-		}
+func (m *TitleMenu) MoveUp() {
+	if m.cursor > 0 {
+		m.cursor--
 	}
 }
 
-func (m *TitleMenu) View(itemStyle lipgloss.Style, selectedStyle lipgloss.Style) string {
+func (m *TitleMenu) MoveDown() {
+	if m.cursor < len(m.items)-1 {
+		m.cursor++
+	}
+}
+
+func (m *TitleMenu) View(theme styles.IceTheme) string {
 	var s string
 	for i, item := range m.items {
 		if i == m.cursor {
-			s += selectedStyle.Render("> " + item.String())
+			s += theme.ListSelected.Render(">  " + item.String())
 		} else {
-			s += itemStyle.Render("  " + item.String())
+			s += theme.Base.Render("   " + item.String())
 		}
 		if i < len(m.items)-1 {
 			s += "\n"
@@ -91,7 +83,7 @@ func (m *TitleMenu) SetHasCoach(hasCoach bool) {
 	if !hasCoach {
 		items = []TitleItem{TitleItemCreateCoach}
 	} else {
-		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattleSelection, TitleItemSettings}
+		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattleSelection}
 	}
 	m.items = items
 	if m.cursor >= len(m.items) {

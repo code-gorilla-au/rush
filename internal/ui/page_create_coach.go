@@ -7,16 +7,12 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type createCoachKeyMap struct {
-	components.CommonKeys
-	Back     key.Binding
-	Enter    key.Binding
-	Up       key.Binding
-	Down     key.Binding
-	Tab      key.Binding
-	ShiftTab key.Binding
+	uistate.KeyMap
 }
 
 func (k createCoachKeyMap) ShortHelp() []key.Binding {
@@ -33,39 +29,15 @@ func (k createCoachKeyMap) FullHelp() [][]key.Binding {
 
 func newCreateCoachKeyMap() createCoachKeyMap {
 	return createCoachKeyMap{
-		CommonKeys: components.NewCommonKeys(),
-		Back: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "back"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "continue"),
-		),
-		Up: key.NewBinding(
-			key.WithKeys("up"),
-			key.WithHelp("↑", "up"),
-		),
-		Down: key.NewBinding(
-			key.WithKeys("down"),
-			key.WithHelp("↓", "down"),
-		),
-		Tab: key.NewBinding(
-			key.WithKeys("tab"),
-			key.WithHelp("tab", "next"),
-		),
-		ShiftTab: key.NewBinding(
-			key.WithKeys("shift+tab"),
-			key.WithHelp("shift+tab", "prev"),
-		),
+		KeyMap: uistate.NewKeyMap(),
 	}
 }
 
 type ModelCreateCoach struct {
 	width       int
 	height      int
-	theme       IceTheme
-	globalState *GlobalState
+	theme       styles.IceTheme
+	globalState *uistate.GlobalState
 	teamsSvc    *teams.Service
 
 	coachInput textinput.Model
@@ -76,7 +48,7 @@ type ModelCreateCoach struct {
 	footer     components.Footer
 }
 
-func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service) *ModelCreateCoach {
+func NewModelCreateCoach(state *uistate.GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelCreateCoach {
 	c := textinput.New()
 	c.Placeholder = "Coach Name"
 	c.Focus()
@@ -86,7 +58,7 @@ func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service) *ModelCrea
 	t := textinput.New()
 	t.Placeholder = "Team Name"
 	t.CharLimit = 156
-	c.SetWidth(20)
+	t.SetWidth(20)
 
 	keys := newCreateCoachKeyMap()
 
@@ -95,7 +67,7 @@ func NewModelCreateCoach(state *GlobalState, teamsSvc *teams.Service) *ModelCrea
 		teamsSvc:    teamsSvc,
 		coachInput:  c,
 		teamInput:   t,
-		theme:       NewIceTheme(),
+		theme:       theme,
 		keys:        keys,
 		footer:      components.NewFooter(keys),
 	}
@@ -107,6 +79,10 @@ func (m *ModelCreateCoach) Init() tea.Cmd {
 
 func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case uistate.MsgSwitchPage:
+		if msg.NewPage == uistate.PageCreateCoach {
+			return m, m.Init()
+		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -117,7 +93,10 @@ func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
-	case MsgStateUpdated:
+	case error:
+		m.err = msg
+
+	case uistate.MsgStateUpdated:
 		return m.handleStateUpdated(msg)
 	}
 
@@ -155,19 +134,19 @@ func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
 
 	case key.Matches(msg, m.keys.Back):
 		return func() tea.Msg {
-			return MsgSwitchPage{NewPage: PageTitle}
+			return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 		}, true
 	}
 
 	return nil, false
 }
 
-func (m *ModelCreateCoach) handleStateUpdated(msg MsgStateUpdated) (tea.Model, tea.Cmd) {
+func (m *ModelCreateCoach) handleStateUpdated(msg uistate.MsgStateUpdated) (tea.Model, tea.Cmd) {
 	m.globalState.Coach = msg.Coach
 	m.globalState.Team = msg.Team
 
 	return m, func() tea.Msg {
-		return MsgSwitchPage{NewPage: PageLockerRoom}
+		return uistate.MsgSwitchPage{NewPage: uistate.PageLockerRoom}
 	}
 }
 
@@ -211,7 +190,7 @@ func (m *ModelCreateCoach) submit() tea.Cmd {
 			return err
 		}
 
-		return MsgStateUpdated{
+		return uistate.MsgStateUpdated{
 			Coach: &coach,
 			Team:  &team,
 		}
@@ -222,17 +201,24 @@ func (m *ModelCreateCoach) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
 
+	errorView := ""
+	if m.err != nil {
+		errorView = m.theme.Muted.Render(m.err.Error())
+	}
+
 	form := lipgloss.JoinVertical(
 		lipgloss.Left,
 		m.theme.Logo.Render("RUSH - NEW CAREER"),
 		"",
-		"Coach Details",
+		m.theme.SecondaryHeader.Render("Coach Details"),
 		m.coachInput.View(),
 		"",
-		"Team Details",
+		m.theme.SecondaryHeader.Render("Team Details"),
 		m.teamInput.View(),
 		"",
-		m.footer.View(m.theme.Footer),
+		errorView,
+		"",
+		m.footer.View(m.theme),
 	)
 
 	centeredContent := lipgloss.Place(

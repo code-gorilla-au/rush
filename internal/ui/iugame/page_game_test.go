@@ -1,4 +1,4 @@
-package ui
+package iugame
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 	"github.com/code-gorilla-au/rush/internal/database"
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/ui/components"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
+	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
 type pageGameMockStore struct {
@@ -19,7 +21,10 @@ type pageGameMockStore struct {
 
 func (m *pageGameMockStore) GetGameByID(ctx context.Context, id int64) (database.Game, error) {
 	rounds := [10]games.Round{}
-	roundsData, _ := json.Marshal(rounds)
+	roundsData, err := json.Marshal(rounds)
+	if err != nil {
+		return database.Game{}, err
+	}
 
 	return database.Game{
 		ID:           id,
@@ -46,12 +51,13 @@ func (m *pageGameMockStore) UpdateGame(ctx context.Context, arg database.UpdateG
 func TestPageGameModel(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
-	state := &GlobalState{}
+	state := &uistate.GlobalState{}
 	store := &pageGameMockStore{}
 	gameSvc := games.NewService(store)
 
 	group.Test("should handle MsgGameLoaded and initialize gameComp", func(t *testing.T) {
-		m := NewModelGame(state, gameSvc)
+		theme := styles.NewIceTheme()
+		m := NewModelGame(state, gameSvc, theme)
 		m.SetGameID(1)
 
 		game, _ := gameSvc.GetGame(context.Background(), 1)
@@ -66,7 +72,8 @@ func TestPageGameModel(t *testing.T) {
 	})
 
 	group.Test("should persist game on MsgResolveRound", func(t *testing.T) {
-		m := NewModelGame(state, gameSvc)
+		theme := styles.NewIceTheme()
+		m := NewModelGame(state, gameSvc, theme)
 		m.SetGameID(1)
 		game, _ := gameSvc.GetGame(context.Background(), 1)
 		m.Update(MsgGameLoaded{Game: game})
@@ -92,13 +99,15 @@ func TestPageGameModel(t *testing.T) {
 	})
 
 	group.Test("should handle MsgNextRound and reset gameComp", func(t *testing.T) {
-		m := NewModelGame(state, gameSvc)
+		theme := styles.NewIceTheme()
+		m := NewModelGame(state, gameSvc, theme)
 		m.SetGameID(1)
 		game, _ := gameSvc.GetGame(context.Background(), 1)
 		m.Update(MsgGameLoaded{Game: game})
 
 		// Simulate round resolved (currentRound incremented)
-		m.game.ResolveRound(func() int { return 1 })
+		_, err := m.game.ResolveRound(&games.TestEngine{RollFn: func() int { return 1 }})
+		odize.AssertNoError(t, err)
 
 		_, cmd := m.Update(components.MsgNextRound{})
 

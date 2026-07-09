@@ -1,11 +1,16 @@
 package games
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/code-gorilla-au/rush/internal/augments"
+)
 
 func NewRound() Round {
 	return Round{
-		TeamA: TeamFormation{Lanes: [3][]int{}},
-		TeamB: TeamFormation{Lanes: [3][]int{}},
+		TeamA:       TeamFormation{Lanes: [3][]int64{}},
+		TeamB:       TeamFormation{Lanes: [3][]int64{}},
+		DuelResults: []DuelResult{},
 	}
 }
 
@@ -14,8 +19,8 @@ func (r *Round) FillSquad(a LanesConfig, b LanesConfig) {
 	r.TeamB.FillLanes(b)
 }
 
-func (r *Round) ResolveLanes(rollFn RollFn) Result {
-	var result []Result
+func (r *Round) ResolveLanes(rollFn RollStrategy) RoundResult {
+	var result []RoundResult
 
 	for lane := 0; lane < len(r.TeamA.Lanes); lane++ {
 		laneResult := r.ResolveLane(lane, rollFn)
@@ -26,7 +31,7 @@ func (r *Round) ResolveLanes(rollFn RollFn) Result {
 
 }
 
-func (r *Round) calculateWinner(result []Result) Result {
+func (r *Round) calculateWinner(result []RoundResult) RoundResult {
 
 	teamAPlayers := 0
 	teamBPlayers := 0
@@ -34,51 +39,73 @@ func (r *Round) calculateWinner(result []Result) Result {
 	for _, laneResult := range result {
 
 		switch laneResult.Outcome {
-		case ResultTeamA:
+		case TeamA:
 			teamAPlayers += laneResult.RemainingPlayers
-		case ResultTeamB:
+		case TeamB:
 			teamBPlayers += laneResult.RemainingPlayers
 		}
 
 	}
 
 	if teamAPlayers > teamBPlayers {
-		return Result{
-			Outcome:          ResultTeamA,
+		return RoundResult{
+			Outcome:          TeamA,
 			RemainingPlayers: teamAPlayers,
 		}
 	}
 
 	if teamAPlayers < teamBPlayers {
-		return Result{
-			Outcome:          ResultTeamB,
+		return RoundResult{
+			Outcome:          TeamB,
 			RemainingPlayers: teamBPlayers,
 		}
 	}
 
-	return Result{
-		Outcome:          ResultDraw,
+	return RoundResult{
+		Outcome:          Draw,
 		RemainingPlayers: 0,
 	}
 }
 
-func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {
+func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
 	for r.TeamA.LaneHasPlayers(lane) && r.TeamB.LaneHasPlayers(lane) {
-		aRoll := rollFn()
-		bRoll := rollFn()
+		playerA := r.TeamA.LanePeak(lane)
+		playerB := r.TeamB.LanePeak(lane)
 
-		for aRoll == bRoll {
-			bRoll = rollFn()
-			aRoll = rollFn()
+		var lastRound *DuelResult
+		if len(r.DuelResults) > 0 {
+			lastRound = new(r.DuelResults[len(r.DuelResults)-1])
 		}
 
-		if aRoll > bRoll {
+		rollInput := DecisionInput{
+			lastRound: lastRound,
+			teamA: TeamDecisionInput{
+				activeAugment:    augments.Effect{},
+				passivesAugments: []augments.Effect{},
+				player:           playerA,
+				roll:             0,
+			},
+			teamB: TeamDecisionInput{
+				activeAugment:    augments.Effect{},
+				passivesAugments: []augments.Effect{},
+				player:           playerB,
+				roll:             0,
+			},
+		}
+
+		re := rollFn.Run(rollInput)
+
+		for re.Outcome == Draw {
+			re = rollFn.Run(rollInput)
+		}
+
+		r.DuelResults = append(r.DuelResults, re)
+		if re.Outcome == TeamA {
 			_, err := r.TeamB.LanePop(lane)
 			if errors.Is(err, ErrNoPlayer) {
 				break
 			}
-
-		} else if bRoll > aRoll {
+		} else {
 			_, err := r.TeamA.LanePop(lane)
 			if errors.Is(err, ErrNoPlayer) {
 				break
@@ -88,14 +115,14 @@ func (r *Round) ResolveLane(lane int, rollFn RollFn) Result {
 	}
 
 	if r.TeamA.LaneHasPlayers(lane) {
-		return Result{
-			Outcome:          ResultTeamA,
+		return RoundResult{
+			Outcome:          TeamA,
 			RemainingPlayers: r.TeamA.LaneCount(lane),
 		}
 	}
 
-	return Result{
-		Outcome:          ResultTeamB,
+	return RoundResult{
+		Outcome:          TeamB,
 		RemainingPlayers: r.TeamB.LaneCount(lane),
 	}
 
@@ -109,27 +136,40 @@ func (s *TeamFormation) LaneHasPlayers(lane int) bool {
 	return len(s.Lanes[lane]) > 0
 }
 
-func (s *TeamFormation) LanePop(lane int) (int, error) {
+func (s *TeamFormation) LanePeak(lane int) int64 {
+	return s.Lanes[lane][len(s.Lanes[lane])-1]
+}
+
+func (s *TeamFormation) LanePop(lane int) (int64, error) {
 	tmpLane := s.Lanes[lane]
 	if len(tmpLane) == 0 {
 		return 0, ErrNoPlayer
 	}
 
+	item := tmpLane[len(tmpLane)-1]
 	s.Lanes[lane] = tmpLane[:len(tmpLane)-1]
 
-	return 1, nil
+	return item, nil
 }
 
 func (s *TeamFormation) FillLanes(f LanesConfig) {
 	s.TeamID = f.TeamID
 
-	s.LaneFill(0, f.Lane1)
-	s.LaneFill(1, f.Lane2)
-	s.LaneFill(2, f.Lane3)
+	remainder := s.LaneFill(0, f.Lane1, f.Players)
+	remainder = s.LaneFill(1, f.Lane2, remainder)
+	s.LaneFill(2, f.Lane3, remainder)
 }
 
-func (s *TeamFormation) LaneFill(lane int, players int) {
+func (s *TeamFormation) LaneFill(lane int, players int, teamPlayers []int64) []int64 {
+	remainder := teamPlayers
 	for i := 0; i < players; i++ {
-		s.Lanes[lane] = append(s.Lanes[lane], i)
+		if len(remainder) == 0 {
+			break
+		}
+		player := remainder[0]
+		remainder = remainder[1:]
+		s.Lanes[lane] = append(s.Lanes[lane], player)
 	}
+
+	return remainder
 }

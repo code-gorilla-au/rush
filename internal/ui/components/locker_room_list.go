@@ -2,71 +2,62 @@ package components
 
 import (
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
+	"github.com/code-gorilla-au/rush/internal/ui/styles"
 )
 
 type LockerRoomItem int
 
 const (
 	ItemPlayers LockerRoomItem = iota
+	ItemTeamStatistics
 	ItemPlaybooks
-	ItemSettings
 )
 
 func (i LockerRoomItem) String() string {
 	switch i {
 	case ItemPlayers:
 		return "Players"
+	case ItemTeamStatistics:
+		return "Team Statistics"
 	case ItemPlaybooks:
 		return "Playbooks"
-	case ItemSettings:
-		return "Settings"
 	}
 	return ""
 }
 
 type LockerRoomList struct {
-	cursor int
-	items  []LockerRoomItem
+	List[LockerRoomItem]
 }
 
-func NewLockerRoomList() LockerRoomList {
+func NewLockerRoomList(theme styles.IceTheme) LockerRoomList {
 	return LockerRoomList{
-		items: []LockerRoomItem{ItemPlayers, ItemPlaybooks, ItemSettings},
+		List: NewList(ListConfig[LockerRoomItem]{
+			Items: []LockerRoomItem{ItemPlayers, ItemTeamStatistics, ItemPlaybooks},
+			ItemMapper: func(i LockerRoomItem) ListItem[LockerRoomItem] {
+				return ListItem[LockerRoomItem]{
+					Data:     i,
+					TitleVal: i.String(),
+				}
+			},
+			EnableFiltering:   false,
+			DisableAutoResize: true,
+		}, theme),
 	}
 }
 
-func (l *LockerRoomList) Update(msg tea.Msg) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "up", "k":
-			if l.cursor > 0 {
-				l.cursor--
-			}
-		case "down", "j":
-			if l.cursor < len(l.items)-1 {
-				l.cursor++
-			}
-		}
-	}
+func (l *LockerRoomList) Update(msg tea.Msg) (LockerRoomList, tea.Cmd) {
+	var cmd tea.Cmd
+	l.List, cmd = l.List.Update(msg)
+	return *l, cmd
 }
 
-func (l *LockerRoomList) View(itemStyle lipgloss.Style, selectedStyle lipgloss.Style) string {
-	var s string
-	for i, item := range l.items {
-		if i == l.cursor {
-			s += selectedStyle.Render("> " + item.String())
-		} else {
-			s += itemStyle.Render("  " + item.String())
-		}
-		if i < len(l.items)-1 {
-			s += "\n"
-		}
-	}
-	return s
+func (l *LockerRoomList) View(theme styles.IceTheme) string {
+	return l.List.View()
 }
 
 func (l *LockerRoomList) SelectedItem() LockerRoomItem {
-	return l.items[l.cursor]
+	if item, ok := l.List.SelectedItem(); ok {
+		return item
+	}
+	return -1
 }

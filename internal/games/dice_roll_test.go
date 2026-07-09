@@ -33,6 +33,7 @@ func TestRuleTwistOfFate(t *testing.T) {
 		input := DecisionInput{
 			lastRound: &DuelResult{Outcome: TeamB},
 			teamA: TeamDecisionInput{
+				triggeredAugment: augments.NoAugment,
 				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
 				roll:             2,
 			},

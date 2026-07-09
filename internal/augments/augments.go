@@ -21,7 +21,7 @@ var (
 		Overpower: {
 			Name:     Overpower,
 			Category: CategoryOffense,
-			Type:     TypeActive,
+			Type:     TypePassive,
 			Trigger:  TriggerConditionBeforeRoll,
 			Effect:   "Gain +1 to your roll total this duel.",
 			Intent:   "Reliable low-variance push.",

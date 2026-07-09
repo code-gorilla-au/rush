@@ -38,7 +38,7 @@ func ruleTwistOfFate(input DecisionInput, roll RollFn) DecisionInput {
 
 	switch input.lastRound.Outcome {
 	case TeamB:
-		if hasPassiveAugment(input.teamA.passivesAugments, augments.TwistOfFate) {
+		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.TwistOfFate) {
 			input.teamA.triggeredAugment = augments.TwistOfFate
 
 			secondRoll := roll()
@@ -48,7 +48,7 @@ func ruleTwistOfFate(input DecisionInput, roll RollFn) DecisionInput {
 		}
 
 	case TeamA:
-		if hasPassiveAugment(input.teamB.passivesAugments, augments.TwistOfFate) {
+		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.TwistOfFate) {
 			input.teamB.triggeredAugment = augments.TwistOfFate
 
 			secondRoll := roll()
@@ -129,8 +129,12 @@ func makeDecision(input DecisionInput) DuelResult {
 
 }
 
-func hasPassiveAugment(list []augments.Effect, name augments.Name) bool {
-	return slices.ContainsFunc(list, func(e augments.Effect) bool {
+func canTriggerAugment(activeAugment augments.Name, list []augments.Effect, name augments.Name) bool {
+	noActiveAugment := activeAugment == augments.NoAugment || activeAugment == ""
+
+	hasAugmentInList := slices.ContainsFunc(list, func(e augments.Effect) bool {
 		return e.Name == name
 	})
+
+	return noActiveAugment && hasAugmentInList
 }

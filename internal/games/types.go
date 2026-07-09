@@ -50,10 +50,11 @@ type Round struct {
 }
 
 type DuelResult struct {
-	Player    int64   `json:"player"`
-	Outcome   Outcome `json:"outcome"`
-	Roll      int     `json:"roll"`
-	RollDelta int     `json:"roll_delta"`
+	Player           int64         `json:"player"`
+	Outcome          Outcome       `json:"outcome"`
+	Roll             int           `json:"roll"`
+	RollDelta        int           `json:"roll_delta"`
+	TriggeredAugment augments.Name `json:"triggered_augment"`
 }
 
 type TeamStatistics struct {
@@ -78,16 +79,18 @@ type TeamConfig struct {
 }
 
 type TeamFormation struct {
-	TeamID int64      `json:"team_id,omitempty"`
-	Lanes  [3][]int64 `json:"lanes,omitempty"`
+	TeamID   int64             `json:"team_id,omitempty"`
+	Augments []augments.Effect `json:"augments"`
+	Lanes    [3][]int64        `json:"lanes,omitempty"`
 }
 
 type LanesConfig struct {
-	TeamID  int64   `json:"team_id"`
-	Players []int64 `json:"players"`
-	Lane1   int     `json:"lane_1"`
-	Lane2   int     `json:"lane_2"`
-	Lane3   int     `json:"lane_3"`
+	TeamID   int64             `json:"team_id"`
+	Players  []int64           `json:"players"`
+	Augments []augments.Effect `json:"augments"`
+	Lane1    int               `json:"lane_1"`
+	Lane2    int               `json:"lane_2"`
+	Lane3    int               `json:"lane_3"`
 }
 
 type RoundResult struct {

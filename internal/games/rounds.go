@@ -80,14 +80,14 @@ func (r *Round) ResolveLane(lane int, rollFn RollStrategy) RoundResult {
 		rollInput := DecisionInput{
 			lastRound: lastRound,
 			teamA: TeamDecisionInput{
-				activeAugment:    augments.Effect{},
-				passivesAugments: []augments.Effect{},
+				triggeredAugment: augments.NoAugment,
+				passivesAugments: r.TeamA.Augments,
 				player:           playerA,
 				roll:             0,
 			},
 			teamB: TeamDecisionInput{
-				activeAugment:    augments.Effect{},
-				passivesAugments: []augments.Effect{},
+				triggeredAugment: augments.NoAugment,
+				passivesAugments: r.TeamB.Augments,
 				player:           playerB,
 				roll:             0,
 			},
@@ -154,6 +154,7 @@ func (s *TeamFormation) LanePop(lane int) (int64, error) {
 
 func (s *TeamFormation) FillLanes(f LanesConfig) {
 	s.TeamID = f.TeamID
+	s.Augments = f.Augments
 
 	remainder := s.LaneFill(0, f.Lane1, f.Players)
 	remainder = s.LaneFill(1, f.Lane2, remainder)

@@ -10,9 +10,9 @@ var (
 		TwistOfFate: {
 			Name:     TwistOfFate,
 			Category: CategoryOffense,
-			Type:     TypeActive,
+			Type:     TypePassive,
 			Trigger:  TriggerConditionAfterRoll,
-			Effect:   "Roll 2d6 and keep the highest.",
+			Effect:   "If last round was a loss, roll 2d6 and keep the highest.",
 			Intent:   "Front-load pressure in must-win lanes.",
 			Action:   ActionAddDie,
 			Target:   TargetSelf,

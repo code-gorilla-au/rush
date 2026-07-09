@@ -12,13 +12,14 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 	group.Test("should not modify input struct (immutability)", func(t *testing.T) {
 		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: Draw},
 			teamA: TeamDecisionInput{
-				activeAugment: augments.Effect{Name: augments.TwistOfFate},
-				roll:          1,
+				triggeredAugment: augments.TwistOfFate,
+				roll:             1,
 			},
 			teamB: TeamDecisionInput{
-				activeAugment: augments.Effect{Name: augments.TwistOfFate},
-				roll:          1,
+				triggeredAugment: augments.TwistOfFate,
+				roll:             1,
 			},
 		}
 
@@ -30,9 +31,10 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 	group.Test("should increase roll for Team A when TwistOfFate provides a higher roll", func(t *testing.T) {
 		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamB},
 			teamA: TeamDecisionInput{
-				activeAugment: augments.Effect{Name: augments.TwistOfFate},
-				roll:          2,
+				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
+				roll:             2,
 			},
 			teamB: TeamDecisionInput{
 				roll: 3,
@@ -48,9 +50,10 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 	group.Test("should not change roll for Team A when TwistOfFate provides a lower roll", func(t *testing.T) {
 		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamB},
 			teamA: TeamDecisionInput{
-				activeAugment: augments.Effect{Name: augments.TwistOfFate},
-				roll:          4,
+				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
+				roll:             4,
 			},
 		}
 
@@ -62,9 +65,10 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 	group.Test("should increase roll for Team B when TwistOfFate provides a higher roll", func(t *testing.T) {
 		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamA},
 			teamB: TeamDecisionInput{
-				activeAugment: augments.Effect{Name: augments.TwistOfFate},
-				roll:          2,
+				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
+				roll:             2,
 			},
 			teamA: TeamDecisionInput{
 				roll: 3,
@@ -80,9 +84,10 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 	group.Test("should not change rolls when TwistOfFate augment is not present", func(t *testing.T) {
 		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamB},
 			teamA: TeamDecisionInput{
-				activeAugment: augments.Effect{Name: "Some Other Effect"},
-				roll:          3,
+				triggeredAugment: "Some Other Effect",
+				roll:             3,
 			},
 			teamB: TeamDecisionInput{
 				roll: 4,
@@ -98,28 +103,25 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 	group.Test("should handle both teams having TwistOfFate", func(t *testing.T) {
 		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamB},
 			teamA: TeamDecisionInput{
-				activeAugment: augments.Effect{Name: augments.TwistOfFate},
-				roll:          2,
+				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
+				roll:             2,
 			},
 			teamB: TeamDecisionInput{
-				activeAugment: augments.Effect{Name: augments.TwistOfFate},
-				roll:          3,
+				passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
+				roll:             3,
 			},
 		}
 
-		rolls := []int{5, 6} // Team B gets 5, Team A gets 6
-		idx := 0
 		mockRoll := func() int {
-			val := rolls[idx]
-			idx++
-			return val
+			return 6
 		}
 
 		res := ruleTwistOfFate(input, mockRoll)
 
 		odize.AssertEqual(t, 6, res.teamA.roll)
-		odize.AssertEqual(t, 5, res.teamB.roll)
+		odize.AssertEqual(t, 3, res.teamB.roll)
 	})
 
 	err := group.Run()
@@ -185,9 +187,10 @@ func TestEngineRun(t *testing.T) {
 			}
 
 			result := engine.Run(DecisionInput{
+				lastRound: &DuelResult{Outcome: TeamB},
 				teamA: TeamDecisionInput{
-					player:        101,
-					activeAugment: augments.Effect{Name: augments.TwistOfFate},
+					player:           101,
+					passivesAugments: []augments.Effect{{Name: augments.TwistOfFate}},
 				},
 				teamB: TeamDecisionInput{player: 202},
 			})
@@ -212,9 +215,10 @@ func TestEngineRun(t *testing.T) {
 			}
 
 			result := engine.Run(DecisionInput{
+				lastRound: &DuelResult{Outcome: TeamB},
 				teamA: TeamDecisionInput{
-					player:        101,
-					activeAugment: augments.Effect{Name: augments.Brace},
+					player:           101,
+					triggeredAugment: augments.Brace,
 				},
 				teamB: TeamDecisionInput{player: 202},
 			})

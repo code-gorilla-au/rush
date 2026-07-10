@@ -45,7 +45,7 @@ func TestRuleTwistOfFate(t *testing.T) {
 		mockRoll := func() int { return 5 }
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 5, res.teamA.roll) // max(2, 5) + 1
+		odize.AssertEqual(t, 5, res.teamA.roll)
 		odize.AssertEqual(t, 3, res.teamB.roll) // Team B unchanged
 	})
 
@@ -61,7 +61,7 @@ func TestRuleTwistOfFate(t *testing.T) {
 		mockRoll := func() int { return 2 }
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 4, res.teamA.roll) // max(4, 2) + 1
+		odize.AssertEqual(t, 4, res.teamA.roll)
 	})
 
 	group.Test("should increase roll for Team B when TwistOfFate provides a higher roll", func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestRuleTwistOfFate(t *testing.T) {
 		mockRoll := func() int { return 5 }
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 5, res.teamB.roll) // max(2, 5) + 1
+		odize.AssertEqual(t, 5, res.teamB.roll)
 		odize.AssertEqual(t, 3, res.teamA.roll) // Team A unchanged
 	})
 
@@ -121,7 +121,7 @@ func TestRuleTwistOfFate(t *testing.T) {
 
 		res := ruleTwistOfFate(input, mockRoll)
 
-		odize.AssertEqual(t, 6, res.teamA.roll) // max(2, 6) + 1
+		odize.AssertEqual(t, 6, res.teamA.roll)
 		odize.AssertEqual(t, 3, res.teamB.roll)
 	})
 

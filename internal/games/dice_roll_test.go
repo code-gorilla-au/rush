@@ -217,6 +217,23 @@ func TestRules(t *testing.T) {
 			odize.AssertEqual(t, augments.Name(""), result.teamA.triggeredAugment)
 			odize.AssertEqual(t, augments.MomentumSurge, result.teamB.triggeredAugment)
 		}).
+		Test("RulePrecisionStrike should increase roll by 2 if roll >= 4", func(t *testing.T) {
+			input := DecisionInput{
+				teamA: TeamDecisionInput{
+					roll:             4,
+					passivesAugments: []augments.Effect{{Name: augments.PrecisionStrike}},
+				},
+				teamB: TeamDecisionInput{
+					roll:             3,
+					passivesAugments: []augments.Effect{{Name: augments.PrecisionStrike}},
+				},
+			}
+			result := RulePrecisionStrike(input)
+			odize.AssertEqual(t, 6, result.teamA.roll) // 4 + 2
+			odize.AssertEqual(t, 3, result.teamB.roll) // No change because 3 < 4
+			odize.AssertEqual(t, augments.PrecisionStrike, result.teamA.triggeredAugment)
+			odize.AssertEqual(t, augments.Name(""), result.teamB.triggeredAugment)
+		}).
 		Run()
 
 	odize.AssertNoError(t, err)

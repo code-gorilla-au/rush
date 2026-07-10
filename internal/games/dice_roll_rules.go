@@ -36,6 +36,27 @@ func ruleTwistOfFate(input DecisionInput, roll RollFn) DecisionInput {
 	return input
 }
 
+func RulePrecisionStrike(input DecisionInput) DecisionInput {
+	effect, ok := augments.Get(augments.PrecisionStrike)
+	if !ok {
+		return input
+	}
+
+	if input.teamA.roll >= 4 && canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.PrecisionStrike) {
+		input.teamA.triggeredAugment = augments.PrecisionStrike
+
+		input.teamA.roll += effect.Amount
+	}
+
+	if input.teamB.roll >= 4 && canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.PrecisionStrike) {
+		input.teamB.triggeredAugment = augments.PrecisionStrike
+
+		input.teamB.roll += effect.Amount
+	}
+
+	return input
+}
+
 func RuleOverPower(input DecisionInput) DecisionInput {
 	effect, ok := augments.Get(augments.Overpower)
 	if !ok {

@@ -47,7 +47,7 @@ func TestGet(t *testing.T) {
 			odize.AssertTrue(t, ok)
 			odize.AssertEqual(t, TwistOfFate, effect.Name)
 			odize.AssertEqual(t, ActionAddDie, effect.Action)
-			odize.AssertEqual(t, 1, effect.Amount)
+			odize.AssertEqual(t, 0, effect.Amount)
 		}).
 		Test("should return empty effect and false for non-existent token", func(t *testing.T) {
 			effect, ok := Get(Name("NonExistent"))

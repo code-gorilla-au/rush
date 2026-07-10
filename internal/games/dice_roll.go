@@ -39,8 +39,9 @@ func NewDecisionEngine() *Engine {
 		beforeRoll: []DecisionEngineFunc{},
 		afterRoll: []DecisionEngineFunc{
 			RuleTwistOfFate,
-			RuleOverPower,
 			RuleMomentumSurge,
+			RulePrecisionStrike,
+			RuleOverPower,
 		},
 		afterAugments: []DecisionEngineFunc{},
 		rollFn:        DiceRoll,

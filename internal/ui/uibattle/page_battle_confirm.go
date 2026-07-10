@@ -208,6 +208,7 @@ func newTeamTile(team *teams.Team, coach *teams.Coach, playbook *playbooks.Playb
 	teamName := ""
 	coachName := ""
 	playbookName := ""
+	persona := ""
 	var playerNames []string
 
 	if team != nil {
@@ -217,13 +218,14 @@ func newTeamTile(team *teams.Team, coach *teams.Coach, playbook *playbooks.Playb
 
 	if coach != nil {
 		coachName = coach.Name
+		persona = coach.Persona.Name()
 	}
 
 	if playbook != nil {
 		playbookName = playbook.Name
 	}
 
-	return components.NewTeamTile(teamName, coachName, playbookName, playerNames)
+	return components.NewTeamTile(teamName, coachName, persona, playbookName, playerNames)
 }
 
 func getPlayerNames(players []teams.Player) []string {

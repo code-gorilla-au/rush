@@ -11,6 +11,10 @@ var _coachPersonaTokens = map[CoachPersona]augments.Category{
 	CoachPersonaWildcard:  augments.CategoryOffense,
 }
 
+func (p CoachPersona) Name() string {
+	return string(p)
+}
+
 func (p CoachPersona) Augments() []augments.Effect {
 	aug, ok := _coachPersonaTokens[p]
 	if !ok {

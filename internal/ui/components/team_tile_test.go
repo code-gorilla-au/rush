@@ -14,7 +14,7 @@ func TestTeamTile(t *testing.T) {
 
 	err := group.
 		Test("View should render team, coach, playbook, and players", func(t *testing.T) {
-			tile := NewTeamTile("Frost Wolves", "Coach Ice", "North Formation", []string{"Alice", "Bob"})
+			tile := NewTeamTile("Frost Wolves", "", "Coach Ice", "North Formation", []string{"Alice", "Bob"})
 
 			rendered := tile.View(styles.NewIceTheme(), 40)
 
@@ -25,7 +25,7 @@ func TestTeamTile(t *testing.T) {
 			odize.AssertTrue(t, strings.Contains(rendered, "Bob"))
 		}).
 		Test("View should show fallback values when data is empty", func(t *testing.T) {
-			tile := NewTeamTile("", "", "", []string{"", "   "})
+			tile := NewTeamTile("", "", "", "", []string{"", "   "})
 
 			rendered := tile.View(styles.NewIceTheme(), 30)
 

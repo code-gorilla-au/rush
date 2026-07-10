@@ -42,9 +42,12 @@ func NewDecisionEngine() *Engine {
 			RuleMomentumSurge,
 			RulePrecisionStrike,
 			RuleOverPower,
+			RuleFortify,
 		},
-		afterAugments: []DecisionEngineFunc{},
-		rollFn:        DiceRoll,
+		afterAugments: []DecisionEngineFunc{
+			RuleBrace,
+		},
+		rollFn: DiceRoll,
 	}
 }
 

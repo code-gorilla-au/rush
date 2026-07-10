@@ -1,6 +1,10 @@
 package games
 
-import "github.com/code-gorilla-au/rush/internal/augments"
+import (
+	"math"
+
+	"github.com/code-gorilla-au/rush/internal/augments"
+)
 
 func RuleTwistOfFate(input DecisionInput) DecisionInput {
 	return ruleTwistOfFate(input, DiceRoll)
@@ -98,6 +102,72 @@ func RuleMomentumSurge(input DecisionInput) DecisionInput {
 		input.teamB.triggeredAugment = augments.MomentumSurge
 
 		input.teamB.roll += effect.Amount
+	}
+
+	return input
+}
+
+func RuleBrace(input DecisionInput) DecisionInput {
+	effect, ok := augments.Get(augments.Brace)
+	if !ok {
+		return input
+	}
+
+	rollDelta := math.Abs(float64(input.teamA.roll) - float64(input.teamB.roll))
+	lostByOne := rollDelta == 1
+
+	if !lostByOne {
+		return input
+	}
+
+	if canTriggerAugment(
+		input.teamA.triggeredAugment,
+		input.teamA.passivesAugments,
+		augments.MomentumSurge,
+	) {
+		if input.teamA.roll < input.teamB.roll {
+			input.teamA.triggeredAugment = augments.Brace
+			input.teamA.roll = effect.Amount
+			input.teamB.roll = effect.Amount
+		}
+
+	}
+
+	if canTriggerAugment(
+		input.teamB.triggeredAugment,
+		input.teamB.passivesAugments,
+		augments.MomentumSurge,
+	) {
+		if input.teamB.roll < input.teamA.roll {
+			input.teamB.triggeredAugment = augments.Brace
+			input.teamA.roll = effect.Amount
+			input.teamB.roll = effect.Amount
+		}
+	}
+
+	return input
+}
+
+func RuleFortify(input DecisionInput) DecisionInput {
+	effect, ok := augments.Get(augments.Fortify)
+	if !ok {
+		return input
+	}
+
+	if input.lastRound == nil {
+		return input
+	}
+
+	if input.lastRound.Outcome == Draw {
+		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.Brace) {
+			input.teamA.triggeredAugment = augments.Fortify
+			input.teamA.roll += effect.Amount
+		}
+
+		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.Brace) {
+			input.teamB.triggeredAugment = augments.Fortify
+			input.teamB.roll += effect.Amount
+		}
 	}
 
 	return input

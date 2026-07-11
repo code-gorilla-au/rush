@@ -36,7 +36,9 @@ type Engine struct {
 
 func NewDecisionEngine() *Engine {
 	return &Engine{
-		beforeRoll: []DecisionEngineFunc{},
+		beforeRoll: []DecisionEngineFunc{
+			RulePocketSand,
+		},
 		afterRoll: []DecisionEngineFunc{
 			RuleTwistOfFate,
 			RuleMomentumSurge,
@@ -44,8 +46,9 @@ func NewDecisionEngine() *Engine {
 			RuleOverPower,
 			RuleFortify,
 			RuleSecondChance,
-			LastStand,
-			Hamstring,
+			RuleLastStand,
+			RuleHamstring,
+			RulePoisonEdge,
 		},
 		afterAugments: []DecisionEngineFunc{
 			RuleBrace,

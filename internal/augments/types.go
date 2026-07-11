@@ -4,6 +4,7 @@ type Name string
 
 const (
 	NoAugment       Name = "No Augment"
+	CanceledAugment Name = "Canceled Augment"
 	TwistOfFate     Name = "Twist of Fate"
 	SecondChance    Name = "Second Chance"
 	Overpower       Name = "Overpower"

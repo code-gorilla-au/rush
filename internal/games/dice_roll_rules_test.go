@@ -323,7 +323,7 @@ func TestLastStand(t *testing.T) {
 				passivesAugments: []augments.Effect{{Name: augments.LastStand}},
 			},
 		}
-		res := LastStand(input)
+		res := RuleLastStand(input)
 		odize.AssertEqual(t, augments.LastStand, res.teamA.triggeredAugment)
 		odize.AssertTrue(t, res.teamA.roll > 2)
 	})
@@ -336,7 +336,7 @@ func TestLastStand(t *testing.T) {
 				passivesAugments: []augments.Effect{{Name: augments.LastStand}},
 			},
 		}
-		res := LastStand(input)
+		res := RuleLastStand(input)
 		odize.AssertEqual(t, augments.LastStand, res.teamB.triggeredAugment)
 		odize.AssertTrue(t, res.teamB.roll > 2)
 	})
@@ -357,7 +357,7 @@ func TestHamstring(t *testing.T) {
 				roll: 5,
 			},
 		}
-		res := Hamstring(input)
+		res := RuleHamstring(input)
 		odize.AssertTrue(t, res.teamB.roll < 5)
 	})
 
@@ -370,8 +370,72 @@ func TestHamstring(t *testing.T) {
 				passivesAugments: []augments.Effect{{Name: augments.Hamstring}},
 			},
 		}
-		res := Hamstring(input)
+		res := RuleHamstring(input)
 		odize.AssertTrue(t, res.teamA.roll < 5)
+	})
+
+	err := group.Run()
+	odize.AssertNoError(t, err)
+}
+
+func TestRulePocketSand(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	group.Test("should trigger if Team A has PocketSand", func(t *testing.T) {
+		input := DecisionInput{
+			teamA: TeamDecisionInput{
+				passivesAugments: []augments.Effect{{Name: augments.PocketSand}},
+			},
+		}
+		res := RulePocketSand(input)
+		odize.AssertEqual(t, augments.PocketSand, res.teamA.triggeredAugment)
+		odize.AssertEqual(t, augments.CanceledAugment, res.teamB.triggeredAugment)
+	})
+
+	group.Test("should trigger if Team B has PocketSand", func(t *testing.T) {
+		input := DecisionInput{
+			teamB: TeamDecisionInput{
+				passivesAugments: []augments.Effect{{Name: augments.PocketSand}},
+			},
+		}
+		res := RulePocketSand(input)
+		odize.AssertEqual(t, augments.PocketSand, res.teamB.triggeredAugment)
+		odize.AssertEqual(t, augments.CanceledAugment, res.teamA.triggeredAugment)
+	})
+
+	err := group.Run()
+	odize.AssertNoError(t, err)
+}
+
+func TestRulePoisonEdge(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	group.Test("should not trigger if last round is not Draw", func(t *testing.T) {
+		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamA},
+			teamA: TeamDecisionInput{
+				passivesAugments: []augments.Effect{{Name: augments.PoisonEdge}},
+			},
+		}
+		res := RulePoisonEdge(input)
+		odize.AssertEqual(t, augments.Name(""), res.teamA.triggeredAugment)
+	})
+
+	group.Test("should trigger and reduce roll if Draw and TeamA has augment", func(t *testing.T) {
+		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: Draw},
+			teamA: TeamDecisionInput{
+				roll:             5,
+				passivesAugments: []augments.Effect{{Name: augments.PoisonEdge}},
+			},
+			teamB: TeamDecisionInput{
+				roll: 5,
+			},
+		}
+		res := RulePoisonEdge(input)
+		// Should trigger, TeamA.triggeredAugment = PoisonEdge, TeamB.roll reduced
+		odize.AssertEqual(t, augments.PoisonEdge, res.teamA.triggeredAugment)
+		odize.AssertTrue(t, res.teamB.roll < 5)
 	})
 
 	err := group.Run()

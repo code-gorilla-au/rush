@@ -197,7 +197,7 @@ func ruleSecondChance(input DecisionInput, rollFn RollFn) DecisionInput {
 	return input
 }
 
-func LastStand(input DecisionInput) DecisionInput {
+func RuleLastStand(input DecisionInput) DecisionInput {
 	effect, ok := augments.Get(augments.LastStand)
 	if !ok {
 		return input
@@ -224,17 +224,57 @@ func LastStand(input DecisionInput) DecisionInput {
 	return input
 }
 
-func Hamstring(input DecisionInput) DecisionInput {
-	effect, ok := augments.Get(augments.LastStand)
+func RuleHamstring(input DecisionInput) DecisionInput {
+	effect, ok := augments.Get(augments.Hamstring)
 	if !ok {
 		return input
 	}
 
 	if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.Hamstring) {
+		input.teamA.triggeredAugment = augments.Hamstring
 		input.teamB.roll -= effect.Amount
 	}
 
 	if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.Hamstring) {
+		input.teamB.triggeredAugment = augments.Hamstring
+		input.teamA.roll -= effect.Amount
+	}
+
+	return input
+}
+
+func RulePocketSand(input DecisionInput) DecisionInput {
+
+	if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.PocketSand) {
+		input.teamA.triggeredAugment = augments.PocketSand
+		input.teamB.triggeredAugment = augments.CanceledAugment
+	}
+
+	if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.PocketSand) {
+		input.teamB.triggeredAugment = augments.PocketSand
+		input.teamA.triggeredAugment = augments.CanceledAugment
+	}
+
+	return input
+}
+
+func RulePoisonEdge(input DecisionInput) DecisionInput {
+	effect, ok := augments.Get(augments.PoisonEdge)
+	if !ok {
+		return input
+	}
+
+	if input.lastRound == nil || input.lastRound.Outcome != Draw {
+		return input
+	}
+
+	if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.PoisonEdge) {
+		input.teamA.triggeredAugment = augments.PoisonEdge
+		input.teamB.roll -= effect.Amount
+	}
+
+	if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.PoisonEdge) {
+		input.teamB.triggeredAugment = augments.PoisonEdge
 		input.teamA.roll -= effect.Amount
 	}
 

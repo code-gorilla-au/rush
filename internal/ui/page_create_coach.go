@@ -40,12 +40,14 @@ type ModelCreateCoach struct {
 	globalState *uistate.GlobalState
 	teamsSvc    *teams.Service
 
-	coachInput textinput.Model
-	teamInput  textinput.Model
-	focusIndex int
-	err        error
-	keys       createCoachKeyMap
-	footer     components.Footer
+	coachInput   textinput.Model
+	teamInput    textinput.Model
+	personaIndex int
+	personas     []teams.CoachPersona
+	focusIndex   int
+	err          error
+	keys         createCoachKeyMap
+	footer       components.Footer
 }
 
 func NewModelCreateCoach(state *uistate.GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelCreateCoach {
@@ -67,9 +69,15 @@ func NewModelCreateCoach(state *uistate.GlobalState, teamsSvc *teams.Service, th
 		teamsSvc:    teamsSvc,
 		coachInput:  c,
 		teamInput:   t,
-		theme:       theme,
-		keys:        keys,
-		footer:      components.NewFooter(keys),
+		personas: []teams.CoachPersona{
+			teams.CoachPersonaVanguard,
+			teams.CoachPersonaBastion,
+			teams.CoachPersonaTrickster,
+			teams.CoachPersonaWildcard,
+		},
+		theme:  theme,
+		keys:   keys,
+		footer: components.NewFooter(keys),
 	}
 }
 
@@ -111,21 +119,21 @@ func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
 	case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.ShiftTab):
 		m.focusIndex--
 		if m.focusIndex < 0 {
-			m.focusIndex = 1
+			m.focusIndex = 2
 		}
 		m.updateFocus()
 		return nil, false
 
 	case key.Matches(msg, m.keys.Down), key.Matches(msg, m.keys.Tab):
 		m.focusIndex++
-		if m.focusIndex > 1 {
+		if m.focusIndex > 2 {
 			m.focusIndex = 0
 		}
 		m.updateFocus()
 		return nil, false
 
 	case key.Matches(msg, m.keys.Enter):
-		if m.focusIndex == 1 {
+		if m.focusIndex == 2 {
 			return m.submit(), true
 		}
 		m.focusIndex++
@@ -136,6 +144,24 @@ func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
 		return func() tea.Msg {
 			return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 		}, true
+
+	case key.Matches(msg, m.keys.Left):
+		if m.focusIndex == 1 {
+			m.personaIndex--
+			if m.personaIndex < 0 {
+				m.personaIndex = len(m.personas) - 1
+			}
+			return nil, false
+		}
+
+	case key.Matches(msg, m.keys.Right):
+		if m.focusIndex == 1 {
+			m.personaIndex++
+			if m.personaIndex >= len(m.personas) {
+				m.personaIndex = 0
+			}
+			return nil, false
+		}
 	}
 
 	return nil, false
@@ -164,10 +190,14 @@ func (m *ModelCreateCoach) updateInputs(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *ModelCreateCoach) updateFocus() {
-	if m.focusIndex == 0 {
+	switch m.focusIndex {
+	case 0:
 		m.coachInput.Focus()
 		m.teamInput.Blur()
-	} else {
+	case 1:
+		m.coachInput.Blur()
+		m.teamInput.Blur()
+	case 2:
 		m.coachInput.Blur()
 		m.teamInput.Focus()
 	}
@@ -178,6 +208,7 @@ func (m *ModelCreateCoach) submit() tea.Cmd {
 		ctx := m.globalState.Context()
 		coach, err := m.teamsSvc.CreateCoach(ctx, teams.CreateCoachParams{
 			Name:      m.coachInput.Value(),
+			Persona:   m.personas[m.personaIndex],
 			IsHuman:   true,
 			IsDefault: true,
 		})
@@ -197,6 +228,17 @@ func (m *ModelCreateCoach) submit() tea.Cmd {
 	}
 }
 
+func (m *ModelCreateCoach) formatPersona() string {
+	persona := m.personas[m.personaIndex]
+
+	style := m.theme.Muted
+	if m.focusIndex == 1 {
+		style = m.theme.Highlight
+	}
+
+	return style.Render("< " + persona.Name() + " >")
+}
+
 func (m *ModelCreateCoach) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
@@ -212,6 +254,9 @@ func (m *ModelCreateCoach) View() tea.View {
 		"",
 		m.theme.SecondaryHeader.Render("Coach Details"),
 		m.coachInput.View(),
+		"",
+		m.theme.SecondaryHeader.Render("Persona"),
+		m.formatPersona(),
 		"",
 		m.theme.SecondaryHeader.Render("Team Details"),
 		m.teamInput.View(),

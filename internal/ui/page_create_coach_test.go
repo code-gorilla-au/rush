@@ -33,14 +33,14 @@ func TestModelCreateCoach(t *testing.T) {
 	})
 
 	err := group.
-		Test("enter should move focus from coach to team input", func(t *testing.T) {
+		Test("enter should move focus from coach to persona", func(t *testing.T) {
 			m := NewModelCreateCoach(state, teamsSvc, theme)
 
 			_, _ = m.Update(tea.KeyPressMsg{Text: "enter"})
 
 			odize.AssertEqual(t, 1, m.focusIndex)
 			odize.AssertFalse(t, m.coachInput.Focused())
-			odize.AssertTrue(t, m.teamInput.Focused())
+			odize.AssertFalse(t, m.teamInput.Focused())
 		}).
 		Test("submit error from enter should be stored on model", func(t *testing.T) {
 			db := uitest.SetupTestDB(t)
@@ -52,7 +52,7 @@ func TestModelCreateCoach(t *testing.T) {
 			m := NewModelCreateCoach(state, brokenTeamsSvc, theme)
 			m.coachInput.SetValue("Coach")
 			m.teamInput.SetValue("Team")
-			m.focusIndex = 1
+			m.focusIndex = 2
 			m.updateFocus()
 
 			_, cmd := m.Update(tea.KeyPressMsg{Text: "enter"})

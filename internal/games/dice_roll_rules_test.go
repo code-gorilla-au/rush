@@ -311,3 +311,69 @@ func TestRuleSecondChance(t *testing.T) {
 	err := group.Run()
 	odize.AssertNoError(t, err)
 }
+
+func TestLastStand(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	group.Test("should trigger if Team A loses and has LastStand", func(t *testing.T) {
+		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamB},
+			teamA: TeamDecisionInput{
+				roll:             2,
+				passivesAugments: []augments.Effect{{Name: augments.LastStand}},
+			},
+		}
+		res := LastStand(input)
+		odize.AssertEqual(t, augments.LastStand, res.teamA.triggeredAugment)
+		odize.AssertTrue(t, res.teamA.roll > 2)
+	})
+
+	group.Test("should trigger if Team B loses and has LastStand", func(t *testing.T) {
+		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamA},
+			teamB: TeamDecisionInput{
+				roll:             2,
+				passivesAugments: []augments.Effect{{Name: augments.LastStand}},
+			},
+		}
+		res := LastStand(input)
+		odize.AssertEqual(t, augments.LastStand, res.teamB.triggeredAugment)
+		odize.AssertTrue(t, res.teamB.roll > 2)
+	})
+
+	err := group.Run()
+	odize.AssertNoError(t, err)
+}
+
+func TestHamstring(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	group.Test("should trigger if Team A has Hamstring", func(t *testing.T) {
+		input := DecisionInput{
+			teamA: TeamDecisionInput{
+				passivesAugments: []augments.Effect{{Name: augments.Hamstring}},
+			},
+			teamB: TeamDecisionInput{
+				roll: 5,
+			},
+		}
+		res := Hamstring(input)
+		odize.AssertTrue(t, res.teamB.roll < 5)
+	})
+
+	group.Test("should trigger if Team B has Hamstring", func(t *testing.T) {
+		input := DecisionInput{
+			teamA: TeamDecisionInput{
+				roll: 5,
+			},
+			teamB: TeamDecisionInput{
+				passivesAugments: []augments.Effect{{Name: augments.Hamstring}},
+			},
+		}
+		res := Hamstring(input)
+		odize.AssertTrue(t, res.teamA.roll < 5)
+	})
+
+	err := group.Run()
+	odize.AssertNoError(t, err)
+}

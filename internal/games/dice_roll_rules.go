@@ -198,10 +198,6 @@ func ruleSecondChance(input DecisionInput, rollFn RollFn) DecisionInput {
 }
 
 func LastStand(input DecisionInput) DecisionInput {
-	return lastStand(input, DiceRoll)
-}
-
-func lastStand(input DecisionInput, roll RollFn) DecisionInput {
 	effect, ok := augments.Get(augments.LastStand)
 	if !ok {
 		return input
@@ -223,6 +219,23 @@ func lastStand(input DecisionInput, roll RollFn) DecisionInput {
 			input.teamB.triggeredAugment = augments.LastStand
 			input.teamB.roll += effect.Amount
 		}
+	}
+
+	return input
+}
+
+func Hamstring(input DecisionInput) DecisionInput {
+	effect, ok := augments.Get(augments.LastStand)
+	if !ok {
+		return input
+	}
+
+	if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.Hamstring) {
+		input.teamB.roll -= effect.Amount
+	}
+
+	if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.Hamstring) {
+		input.teamA.roll -= effect.Amount
 	}
 
 	return input

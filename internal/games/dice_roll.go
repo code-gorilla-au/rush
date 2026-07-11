@@ -45,6 +45,7 @@ func NewDecisionEngine() *Engine {
 			RuleFortify,
 			RuleSecondChance,
 			LastStand,
+			Hamstring,
 		},
 		afterAugments: []DecisionEngineFunc{
 			RuleBrace,

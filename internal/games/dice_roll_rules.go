@@ -264,18 +264,21 @@ func RulePoisonEdge(input DecisionInput) DecisionInput {
 		return input
 	}
 
-	if input.lastRound == nil || input.lastRound.Outcome != Draw {
+	if input.lastRound == nil || input.lastRound.Outcome == Draw {
 		return input
 	}
 
-	if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.PoisonEdge) {
-		input.teamA.triggeredAugment = augments.PoisonEdge
-		input.teamB.roll -= effect.Amount
-	}
-
-	if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.PoisonEdge) {
-		input.teamB.triggeredAugment = augments.PoisonEdge
-		input.teamA.roll -= effect.Amount
+	switch input.lastRound.Outcome {
+	case TeamA:
+		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.PoisonEdge) {
+			input.teamB.triggeredAugment = augments.PoisonEdge
+			input.teamA.roll -= effect.Amount
+		}
+	case TeamB:
+		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.PoisonEdge) {
+			input.teamA.triggeredAugment = augments.PoisonEdge
+			input.teamB.roll -= effect.Amount
+		}
 	}
 
 	return input

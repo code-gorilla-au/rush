@@ -56,6 +56,14 @@ type DuelResult struct {
 	RollDelta        int           `json:"roll_delta"`
 	TriggeredAugment augments.Name `json:"triggered_augment"`
 	Lane             int           `json:"lane"`
+	TeamA            PlayerRoll    `json:"team_a"`
+	TeamB            PlayerRoll    `json:"team_b"`
+}
+
+type PlayerRoll struct {
+	Player           int64         `json:"player"`
+	Roll             int           `json:"roll"`
+	TriggeredAugment augments.Name `json:"triggered_augment"`
 }
 
 type TeamStatistics struct {

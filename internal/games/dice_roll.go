@@ -78,13 +78,27 @@ func (e *Engine) Run(input DecisionInput) DuelResult {
 }
 
 func makeDecision(input DecisionInput) DuelResult {
+	teamA := PlayerRoll{
+		Player:           input.teamA.player,
+		Roll:             input.teamA.roll,
+		TriggeredAugment: input.teamA.triggeredAugment,
+	}
+	teamB := PlayerRoll{
+		Player:           input.teamB.player,
+		Roll:             input.teamB.roll,
+		TriggeredAugment: input.teamB.triggeredAugment,
+	}
+
 	if input.teamA.roll == input.teamB.roll {
+
 		return DuelResult{
 			Player:           0,
 			Outcome:          Draw,
 			Roll:             0,
 			RollDelta:        0,
 			TriggeredAugment: augments.NoAugment,
+			TeamA:            teamA,
+			TeamB:            teamB,
 		}
 	}
 
@@ -95,6 +109,8 @@ func makeDecision(input DecisionInput) DuelResult {
 			Roll:             input.teamA.roll,
 			RollDelta:        input.teamA.roll - input.teamB.roll,
 			TriggeredAugment: input.teamA.triggeredAugment,
+			TeamA:            teamA,
+			TeamB:            teamB,
 		}
 	}
 
@@ -104,6 +120,8 @@ func makeDecision(input DecisionInput) DuelResult {
 		Roll:             input.teamB.roll,
 		RollDelta:        input.teamB.roll - input.teamA.roll,
 		TriggeredAugment: input.teamB.triggeredAugment,
+		TeamA:            teamA,
+		TeamB:            teamB,
 	}
 
 }

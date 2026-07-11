@@ -117,8 +117,8 @@ func (r *Round) executeDuels(lane int, rollFn RollStrategy) error {
 	re := rollFn.Run(rollInput)
 
 	re.Lane = lane
-	r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TriggeredAugment)
-	r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TriggeredAugment)
+	r.TeamB.Augments = popAugment(r.TeamB.Augments, re.TeamB.TriggeredAugment)
+	r.TeamA.Augments = popAugment(r.TeamA.Augments, re.TeamA.TriggeredAugment)
 
 	for re.Outcome == Draw {
 		re = rollFn.Run(rollInput)

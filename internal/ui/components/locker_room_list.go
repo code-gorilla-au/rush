@@ -35,7 +35,7 @@ type LockerRoomList struct {
 func NewLockerRoomList(theme styles.IceTheme) LockerRoomList {
 	return LockerRoomList{
 		List: NewList(ListConfig[LockerRoomItem]{
-			Items: []LockerRoomItem{ItemPlayers, ItemTeamStatistics, ItemPlaybooks},
+			Items: []LockerRoomItem{ItemPlayers, ItemTeamStatistics, ItemPlaybooks, ItemCoachEdit},
 			ItemMapper: func(i LockerRoomItem) ListItem[LockerRoomItem] {
 				return ListItem[LockerRoomItem]{
 					Data:     i,

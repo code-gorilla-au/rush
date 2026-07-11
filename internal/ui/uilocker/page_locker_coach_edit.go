@@ -105,6 +105,11 @@ func (m *PageLockerCoachEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
+	case MsgSwitchLockerPage:
+		if msg.NewPage == SubPageLockerCoachEdit {
+			m.refresh()
+		}
+
 	case error:
 		m.err = msg
 	}
@@ -211,6 +216,25 @@ func (m *PageLockerCoachEdit) formatPersona() string {
 	}
 
 	return style.Render("< " + persona.Name() + " >")
+}
+
+func (m *PageLockerCoachEdit) refresh() {
+	if m.globalState.Coach == nil {
+		return
+	}
+
+	if m.coachInput.Value() != m.globalState.Coach.Name {
+		m.coachInput.SetValue(m.globalState.Coach.Name)
+	}
+
+	for i, p := range m.personas {
+		if p == m.globalState.Coach.Persona {
+			if m.personaIndex != i {
+				m.personaIndex = i
+			}
+			break
+		}
+	}
 }
 
 func (m *PageLockerCoachEdit) View() tea.View {

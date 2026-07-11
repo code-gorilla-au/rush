@@ -441,3 +441,64 @@ func TestRulePoisonEdge(t *testing.T) {
 	err := group.Run()
 	odize.AssertNoError(t, err)
 }
+
+func TestRuleIceInVeins(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	group.Test("should not trigger if last round is nil", func(t *testing.T) {
+		input := DecisionInput{
+			lastRound: nil,
+			teamA: TeamDecisionInput{
+				passivesAugments: []augments.Effect{{Name: augments.IceInVeins}},
+			},
+		}
+		res := RuleIceInVeins(input)
+		odize.AssertEqual(t, augments.Name(""), res.teamA.triggeredAugment)
+	})
+
+	group.Test("should not trigger if last round is not Draw", func(t *testing.T) {
+		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: TeamA},
+			teamA: TeamDecisionInput{
+				passivesAugments: []augments.Effect{{Name: augments.IceInVeins}},
+			},
+		}
+		res := RuleIceInVeins(input)
+		odize.AssertEqual(t, augments.Name(""), res.teamA.triggeredAugment)
+	})
+
+	group.Test("should trigger and set opponent roll to 0 if Draw and TeamA has augment", func(t *testing.T) {
+		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: Draw},
+			teamA: TeamDecisionInput{
+				roll:             5,
+				passivesAugments: []augments.Effect{{Name: augments.IceInVeins}},
+			},
+			teamB: TeamDecisionInput{
+				roll: 5,
+			},
+		}
+		res := RuleIceInVeins(input)
+		odize.AssertEqual(t, augments.IceInVeins, res.teamA.triggeredAugment)
+		odize.AssertEqual(t, 0, res.teamB.roll)
+	})
+
+	group.Test("should trigger and set opponent roll to 0 if Draw and TeamB has augment", func(t *testing.T) {
+		input := DecisionInput{
+			lastRound: &DuelResult{Outcome: Draw},
+			teamA: TeamDecisionInput{
+				roll: 5,
+			},
+			teamB: TeamDecisionInput{
+				roll:             5,
+				passivesAugments: []augments.Effect{{Name: augments.IceInVeins}},
+			},
+		}
+		res := RuleIceInVeins(input)
+		odize.AssertEqual(t, augments.IceInVeins, res.teamB.triggeredAugment)
+		odize.AssertEqual(t, 0, res.teamA.roll)
+	})
+
+	err := group.Run()
+	odize.AssertNoError(t, err)
+}

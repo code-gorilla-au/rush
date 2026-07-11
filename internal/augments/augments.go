@@ -106,11 +106,11 @@ var (
 			Category: CategorySabotage,
 			Type:     TypeActive,
 			Trigger:  TriggerConditionAfterRoll,
-			Effect:   "Opponent gets -1 to their roll total this duel.",
+			Effect:   "Opponent gets -2 to their roll total this duel.",
 			Intent:   "Defensive denial and tempo slowdown.",
 			Action:   ActionDecrease,
 			Target:   TargetOpponent,
-			Amount:   1,
+			Amount:   2,
 		},
 		PocketSand: {
 			Name:     PocketSand,

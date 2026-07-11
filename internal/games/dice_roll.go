@@ -52,6 +52,7 @@ func NewDecisionEngine() *Engine {
 		},
 		afterAugments: []DecisionEngineFunc{
 			RuleBrace,
+			RuleIceInVeins,
 		},
 		rollFn: DiceRoll,
 	}

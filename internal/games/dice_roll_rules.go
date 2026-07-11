@@ -283,3 +283,31 @@ func RulePoisonEdge(input DecisionInput) DecisionInput {
 
 	return input
 }
+
+func RuleIceInVeins(input DecisionInput) DecisionInput {
+	effect, ok := augments.Get(augments.IceInVeins)
+	if !ok {
+		return input
+	}
+
+	if input.lastRound == nil || input.lastRound.Outcome != Draw {
+		return input
+	}
+
+	if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.IceInVeins) {
+		input.teamA.triggeredAugment = augments.IceInVeins
+		input.teamA.roll += effect.Amount
+
+		input.teamB.roll = 0
+
+	}
+
+	if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.IceInVeins) {
+		input.teamB.triggeredAugment = augments.IceInVeins
+		input.teamB.roll += effect.Amount
+
+		input.teamA.roll = 0
+	}
+
+	return input
+}

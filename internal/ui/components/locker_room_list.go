@@ -11,6 +11,7 @@ const (
 	ItemPlayers LockerRoomItem = iota
 	ItemTeamStatistics
 	ItemPlaybooks
+	ItemCoachEdit
 )
 
 func (i LockerRoomItem) String() string {
@@ -21,6 +22,8 @@ func (i LockerRoomItem) String() string {
 		return "Team Statistics"
 	case ItemPlaybooks:
 		return "Playbooks"
+	case ItemCoachEdit:
+		return "Coach Edit"
 	}
 	return ""
 }

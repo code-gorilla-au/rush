@@ -50,6 +50,18 @@ func (s *Service) CreateCoach(ctx context.Context, params CreateCoachParams) (Co
 	return fromCoachModel(model), nil
 }
 
+func (s *Service) UpdateCoach(ctx context.Context, id int64, name string, persona CoachPersona) error {
+	err := s.store.UpdateCoach(ctx, database.UpdateCoachParams{
+		ID:      id,
+		Name:    name,
+		Persona: string(persona),
+	})
+	if err != nil {
+		return fmt.Errorf("updating coach: %w", err)
+	}
+	return nil
+}
+
 func (s *Service) GetDefaultCoach(ctx context.Context) (Coach, error) {
 	model, err := s.store.GetDefaultCoach(ctx)
 	if err != nil {

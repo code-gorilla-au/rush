@@ -423,7 +423,7 @@ func TestRulePoisonEdge(t *testing.T) {
 
 	group.Test("should trigger and reduce roll if Draw and TeamA has augment", func(t *testing.T) {
 		input := DecisionInput{
-			lastRound: &DuelResult{Outcome: Draw},
+			lastRound: &DuelResult{Outcome: TeamB},
 			teamA: TeamDecisionInput{
 				roll:             5,
 				passivesAugments: []augments.Effect{{Name: augments.PoisonEdge}},

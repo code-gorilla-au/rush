@@ -16,7 +16,7 @@ const (
 	IceInVeins      Name = "Ice in Veins"
 	Brace           Name = "Brace"
 	Fortify         Name = "Fortify"
-	PoisonEdge      Name = "Critical Hit"
+	PoisonEdge      Name = "Poison Edge"
 )
 
 type Action string

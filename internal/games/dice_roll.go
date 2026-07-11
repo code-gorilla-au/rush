@@ -44,6 +44,7 @@ func NewDecisionEngine() *Engine {
 			RuleOverPower,
 			RuleFortify,
 			RuleSecondChance,
+			LastStand,
 		},
 		afterAugments: []DecisionEngineFunc{
 			RuleBrace,

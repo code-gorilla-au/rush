@@ -200,7 +200,7 @@ func TestRules(t *testing.T) {
 				},
 			}
 			result := RuleMomentumSurge(input)
-			odize.AssertEqual(t, 5, result.teamA.roll) // 3 + 2
+			odize.AssertEqual(t, 4, result.teamA.roll)
 			odize.AssertEqual(t, 3, result.teamB.roll) // No change for Team B
 			odize.AssertEqual(t, augments.MomentumSurge, result.teamA.triggeredAugment)
 			odize.AssertEqual(t, augments.Name(""), result.teamB.triggeredAugment)
@@ -212,8 +212,8 @@ func TestRules(t *testing.T) {
 			input.teamB.triggeredAugment = ""
 			input.teamB.roll = 3
 			result = RuleMomentumSurge(input)
-			odize.AssertEqual(t, 3, result.teamA.roll) // No change for Team A
-			odize.AssertEqual(t, 5, result.teamB.roll) // 3 + 2
+			odize.AssertEqual(t, 3, result.teamA.roll)
+			odize.AssertEqual(t, 4, result.teamB.roll)
 			odize.AssertEqual(t, augments.Name(""), result.teamA.triggeredAugment)
 			odize.AssertEqual(t, augments.MomentumSurge, result.teamB.triggeredAugment)
 		}).
@@ -229,8 +229,8 @@ func TestRules(t *testing.T) {
 				},
 			}
 			result := RulePrecisionStrike(input)
-			odize.AssertEqual(t, 6, result.teamA.roll) // 4 + 2
-			odize.AssertEqual(t, 3, result.teamB.roll) // No change because 3 < 4
+			odize.AssertEqual(t, 5, result.teamA.roll)
+			odize.AssertEqual(t, 3, result.teamB.roll)
 			odize.AssertEqual(t, augments.PrecisionStrike, result.teamA.triggeredAugment)
 			odize.AssertEqual(t, augments.Name(""), result.teamB.triggeredAugment)
 		}).

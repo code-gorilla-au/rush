@@ -114,7 +114,7 @@ func RuleBrace(input DecisionInput) DecisionInput {
 	}
 
 	rollDelta := math.Abs(float64(input.teamA.roll) - float64(input.teamB.roll))
-	lostByOne := rollDelta == 1
+	lostByOne := rollDelta <= 2
 
 	if !lostByOne {
 		return input
@@ -182,11 +182,7 @@ func ruleSecondChance(input DecisionInput, rollFn RollFn) DecisionInput {
 	aRoll := input.teamA.roll
 	bRoll := input.teamB.roll
 
-	if aRoll == bRoll {
-		return input
-	}
-
-	if aRoll < bRoll {
+	if aRoll <= bRoll {
 		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.SecondChance) {
 			input.teamA.triggeredAugment = augments.SecondChance
 			input.teamA.roll = rollFn()
@@ -195,6 +191,37 @@ func ruleSecondChance(input DecisionInput, rollFn RollFn) DecisionInput {
 		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.SecondChance) {
 			input.teamB.triggeredAugment = augments.SecondChance
 			input.teamB.roll = rollFn()
+		}
+	}
+
+	return input
+}
+
+func LastStand(input DecisionInput) DecisionInput {
+	return lastStand(input, DiceRoll)
+}
+
+func lastStand(input DecisionInput, roll RollFn) DecisionInput {
+	effect, ok := augments.Get(augments.LastStand)
+	if !ok {
+		return input
+	}
+
+	if input.lastRound == nil {
+		return input
+	}
+
+	switch input.lastRound.Outcome {
+	case TeamB:
+		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.LastStand) {
+			input.teamA.triggeredAugment = augments.LastStand
+			input.teamA.roll += effect.Amount
+		}
+
+	case TeamA:
+		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.LastStand) {
+			input.teamB.triggeredAugment = augments.LastStand
+			input.teamB.roll += effect.Amount
 		}
 	}
 

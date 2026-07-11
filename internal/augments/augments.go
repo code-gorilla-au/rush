@@ -92,7 +92,7 @@ var (
 			Category: CategoryDefense,
 			Type:     TypeActive,
 			Trigger:  TriggerConditionAfterRoll,
-			Effect:   "If last duel was a loss, and only 1 player remains in the lane, +2 to roll",
+			Effect:   "If last duel was a loss, add +2 to roll",
 			Intent:   "Slow down snowball effects.",
 			Action:   ActionIncrease,
 			Target:   TargetSelf,

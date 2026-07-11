@@ -159,14 +159,42 @@ func RuleFortify(input DecisionInput) DecisionInput {
 	}
 
 	if input.lastRound.Outcome == Draw {
-		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.Brace) {
+		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.Fortify) {
 			input.teamA.triggeredAugment = augments.Fortify
 			input.teamA.roll += effect.Amount
 		}
 
-		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.Brace) {
+		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.Fortify) {
 			input.teamB.triggeredAugment = augments.Fortify
 			input.teamB.roll += effect.Amount
+		}
+	}
+
+	return input
+}
+
+func RuleSecondChance(input DecisionInput) DecisionInput {
+	return ruleSecondChance(input, DiceRoll)
+}
+
+func ruleSecondChance(input DecisionInput, rollFn RollFn) DecisionInput {
+
+	aRoll := input.teamA.roll
+	bRoll := input.teamB.roll
+
+	if aRoll == bRoll {
+		return input
+	}
+
+	if aRoll < bRoll {
+		if canTriggerAugment(input.teamA.triggeredAugment, input.teamA.passivesAugments, augments.SecondChance) {
+			input.teamA.triggeredAugment = augments.SecondChance
+			input.teamA.roll = rollFn()
+		}
+	} else {
+		if canTriggerAugment(input.teamB.triggeredAugment, input.teamB.passivesAugments, augments.SecondChance) {
+			input.teamB.triggeredAugment = augments.SecondChance
+			input.teamB.roll = rollFn()
 		}
 	}
 

@@ -212,13 +212,13 @@ func TestRuleFortify(t *testing.T) {
 			lastRound: &DuelResult{Outcome: Draw},
 			teamA: TeamDecisionInput{
 				roll:             3,
-				passivesAugments: []augments.Effect{{Name: augments.Brace}},
+				passivesAugments: []augments.Effect{{Name: augments.Fortify}},
 			},
 		}
 		res := RuleFortify(input)
 		odize.AssertEqual(t, augments.Fortify, res.teamA.triggeredAugment)
-		// Brace effect Amount is 0, but current implementation adds 1
-		odize.AssertEqual(t, 4, res.teamA.roll)
+
+		odize.AssertEqual(t, 5, res.teamA.roll)
 	})
 
 	group.Test("should trigger if Team B has Brace and last round was Draw", func(t *testing.T) {
@@ -226,13 +226,86 @@ func TestRuleFortify(t *testing.T) {
 			lastRound: &DuelResult{Outcome: Draw},
 			teamB: TeamDecisionInput{
 				roll:             3,
-				passivesAugments: []augments.Effect{{Name: augments.Brace}},
+				passivesAugments: []augments.Effect{{Name: augments.Fortify}},
 			},
 		}
 		res := RuleFortify(input)
 		odize.AssertEqual(t, augments.Fortify, res.teamB.triggeredAugment)
 		// Brace effect Amount is 0, but current implementation adds 1
-		odize.AssertEqual(t, 4, res.teamB.roll)
+		odize.AssertEqual(t, 5, res.teamB.roll)
+	})
+
+	err := group.Run()
+	odize.AssertNoError(t, err)
+}
+
+func TestRuleSecondChance(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	group.Test("does nothing if rolls are equal", func(t *testing.T) {
+		input := DecisionInput{
+			teamA: TeamDecisionInput{roll: 5},
+			teamB: TeamDecisionInput{roll: 5},
+		}
+		result := ruleSecondChance(input, func() int { return 6 })
+		odize.AssertEqual(t, 5, result.teamA.roll)
+		odize.AssertEqual(t, 5, result.teamB.roll)
+	})
+
+	group.Test("triggers SecondChance for teamA when teamA loses and has augment", func(t *testing.T) {
+		input := DecisionInput{
+			teamA: TeamDecisionInput{
+				roll:             2,
+				passivesAugments: []augments.Effect{{Name: augments.SecondChance}},
+				triggeredAugment: augments.NoAugment,
+			},
+			teamB: TeamDecisionInput{roll: 5},
+		}
+		result := ruleSecondChance(input, func() int { return 6 })
+		odize.AssertEqual(t, 6, result.teamA.roll)
+		odize.AssertEqual(t, augments.SecondChance, result.teamA.triggeredAugment)
+	})
+
+	group.Test("does not trigger SecondChance for teamA when teamA loses but does not have augment", func(t *testing.T) {
+		input := DecisionInput{
+			teamA: TeamDecisionInput{
+				roll:             2,
+				passivesAugments: []augments.Effect{},
+				triggeredAugment: augments.NoAugment,
+			},
+			teamB: TeamDecisionInput{roll: 5},
+		}
+		result := ruleSecondChance(input, func() int { return 6 })
+		odize.AssertEqual(t, 2, result.teamA.roll)
+		odize.AssertEqual(t, augments.NoAugment, result.teamA.triggeredAugment)
+	})
+
+	group.Test("triggers SecondChance for teamB when teamB loses and has augment", func(t *testing.T) {
+		input := DecisionInput{
+			teamA: TeamDecisionInput{roll: 5},
+			teamB: TeamDecisionInput{
+				roll:             2,
+				passivesAugments: []augments.Effect{{Name: augments.SecondChance}},
+				triggeredAugment: augments.NoAugment,
+			},
+		}
+		result := ruleSecondChance(input, func() int { return 6 })
+		odize.AssertEqual(t, 6, result.teamB.roll)
+		odize.AssertEqual(t, augments.SecondChance, result.teamB.triggeredAugment)
+	})
+
+	group.Test("does not trigger SecondChance for teamB when teamB loses but does not have augment", func(t *testing.T) {
+		input := DecisionInput{
+			teamA: TeamDecisionInput{roll: 5},
+			teamB: TeamDecisionInput{
+				roll:             2,
+				passivesAugments: []augments.Effect{},
+				triggeredAugment: augments.NoAugment,
+			},
+		}
+		result := ruleSecondChance(input, func() int { return 6 })
+		odize.AssertEqual(t, 2, result.teamB.roll)
+		odize.AssertEqual(t, augments.NoAugment, result.teamB.triggeredAugment)
 	})
 
 	err := group.Run()

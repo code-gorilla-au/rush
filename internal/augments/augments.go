@@ -85,7 +85,7 @@ var (
 			Intent:   "Stabilize critical moments after a miss or tie.",
 			Action:   ActionReRoll,
 			Target:   TargetSelf,
-			Amount:   1,
+			Amount:   0,
 		},
 		LastStand: {
 			Name:     LastStand,

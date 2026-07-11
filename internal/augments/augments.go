@@ -57,7 +57,7 @@ var (
 		Brace: {
 			Name:     Brace,
 			Category: CategoryDefense,
-			Type:     TypeActive,
+			Type:     TypePassive,
 			Trigger:  TriggerConditionAfterAugments,
 			Effect:   "Losing roll by 2 or less, convert result to a tie.",
 			Intent:   "Stabilize critical moments after a close loss",
@@ -90,7 +90,7 @@ var (
 		LastStand: {
 			Name:     LastStand,
 			Category: CategoryDefense,
-			Type:     TypeActive,
+			Type:     TypePassive,
 			Trigger:  TriggerConditionAfterRoll,
 			Effect:   "If last duel was a loss, add +2 to roll",
 			Intent:   "Slow down snowball effects.",
@@ -104,7 +104,7 @@ var (
 		Hamstring: {
 			Name:     Hamstring,
 			Category: CategorySabotage,
-			Type:     TypeActive,
+			Type:     TypePassive,
 			Trigger:  TriggerConditionAfterRoll,
 			Effect:   "Opponent gets -2 to their roll total this duel.",
 			Intent:   "Defensive denial and tempo slowdown.",
@@ -115,7 +115,7 @@ var (
 		PocketSand: {
 			Name:     PocketSand,
 			Category: CategorySabotage,
-			Type:     TypeActive,
+			Type:     TypePassive,
 			Trigger:  TriggerConditionBeforeRoll,
 			Effect:   "Cancel the opponent's declared Pre-roll augment.",
 			Intent:   "Anti-pattern counterplay.",
@@ -126,7 +126,7 @@ var (
 		PoisonEdge: {
 			Name:     PoisonEdge,
 			Category: CategorySabotage,
-			Type:     TypeActive,
+			Type:     TypePassive,
 			Trigger:  TriggerConditionAfterRoll,
 			Effect:   "If last duel was a loss, opponent has -2 to roll",
 			Intent:   "Slow down snowball effects.",

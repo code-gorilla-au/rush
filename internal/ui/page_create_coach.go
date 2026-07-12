@@ -112,59 +112,90 @@ func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
-	switch {
-	case key.Matches(msg, m.keys.Quit):
+	if key.Matches(msg, m.keys.Quit) {
 		return tea.Quit, true
+	}
 
-	case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.ShiftTab):
+	if m.handleFocusNavigation(msg) {
+		return nil, false
+	}
+
+	if cmd, handled := m.handleEnter(msg); handled {
+		return cmd, true
+	}
+
+	if key.Matches(msg, m.keys.Back) {
+		return func() tea.Msg {
+			return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
+		}, true
+	}
+
+	if m.handlePersonaNavigation(msg) {
+		return nil, false
+	}
+
+	return nil, false
+}
+
+func (m *ModelCreateCoach) handleFocusNavigation(msg tea.KeyMsg) bool {
+	if key.Matches(msg, m.keys.Up) || key.Matches(msg, m.keys.ShiftTab) {
 		m.focusIndex--
 		if m.focusIndex < 0 {
 			m.focusIndex = 2
 		}
 		m.updateFocus()
-		return nil, false
+		return true
+	}
 
-	case key.Matches(msg, m.keys.Down), key.Matches(msg, m.keys.Tab):
+	if key.Matches(msg, m.keys.Down) || key.Matches(msg, m.keys.Tab) {
 		m.focusIndex++
 		if m.focusIndex > 2 {
 			m.focusIndex = 0
 		}
 		m.updateFocus()
-		return nil, false
-
-	case key.Matches(msg, m.keys.Enter):
-		if m.focusIndex == 2 {
-			return m.submit(), true
-		}
-		m.focusIndex++
-		m.updateFocus()
-		return nil, false
-
-	case key.Matches(msg, m.keys.Back):
-		return func() tea.Msg {
-			return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
-		}, true
-
-	case key.Matches(msg, m.keys.Left):
-		if m.focusIndex == 1 {
-			m.personaIndex--
-			if m.personaIndex < 0 {
-				m.personaIndex = len(m.personas) - 1
-			}
-			return nil, false
-		}
-
-	case key.Matches(msg, m.keys.Right):
-		if m.focusIndex == 1 {
-			m.personaIndex++
-			if m.personaIndex >= len(m.personas) {
-				m.personaIndex = 0
-			}
-			return nil, false
-		}
+		return true
 	}
 
-	return nil, false
+	return false
+}
+
+func (m *ModelCreateCoach) handleEnter(msg tea.KeyMsg) (tea.Cmd, bool) {
+	if !key.Matches(msg, m.keys.Enter) {
+		return nil, false
+	}
+
+	if m.focusIndex == 2 {
+		return m.submit(), true
+	}
+
+	m.focusIndex++
+	m.updateFocus()
+
+	return nil, true
+}
+
+func (m *ModelCreateCoach) handlePersonaNavigation(msg tea.KeyMsg) bool {
+	if m.focusIndex != 1 {
+		return false
+	}
+
+	if key.Matches(msg, m.keys.Left) {
+		m.personaIndex--
+		if m.personaIndex < 0 {
+			m.personaIndex = len(m.personas) - 1
+		}
+		return true
+	}
+
+	if key.Matches(msg, m.keys.Right) {
+		m.personaIndex++
+		if m.personaIndex >= len(m.personas) {
+			m.personaIndex = 0
+		}
+		return true
+	}
+
+	return false
 }
 
 func (m *ModelCreateCoach) handleStateUpdated(msg uistate.MsgStateUpdated) (tea.Model, tea.Cmd) {

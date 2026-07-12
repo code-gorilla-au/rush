@@ -50,14 +50,13 @@ type Round struct {
 }
 
 type DuelResult struct {
-	Player           int64         `json:"player"`
-	Outcome          Outcome       `json:"outcome"`
-	Roll             int           `json:"roll"`
-	RollDelta        int           `json:"roll_delta"`
-	TriggeredAugment augments.Name `json:"triggered_augment"`
-	Lane             int           `json:"lane"`
-	TeamA            PlayerRoll    `json:"team_a"`
-	TeamB            PlayerRoll    `json:"team_b"`
+	Player    int64      `json:"player"`
+	Outcome   Outcome    `json:"outcome"`
+	Roll      int        `json:"roll"`
+	RollDelta int        `json:"roll_delta"`
+	Lane      int        `json:"lane"`
+	TeamA     PlayerRoll `json:"team_a"`
+	TeamB     PlayerRoll `json:"team_b"`
 }
 
 type PlayerRoll struct {
@@ -67,16 +66,16 @@ type PlayerRoll struct {
 }
 
 type TeamStatistics struct {
-	GamesPlayed       int     `json:"games_played,omitempty"`
-	Wins              int     `json:"wins,omitempty"`
-	Draws             int     `json:"draws,omitempty"`
-	Losses            int     `json:"losses,omitempty"`
-	WinRate           float64 `json:"win_rate,omitempty"`
-	RoundsWon         int     `json:"rounds_won,omitempty"`
-	RoundsLost        int     `json:"rounds_lost,omitempty"`
-	RoundDifferential int     `json:"round_differential,omitempty"`
-	AverageRoundsWon  float64 `json:"average_rounds_won,omitempty"`
-	AverageRoundsLost float64 `json:"average_rounds_lost,omitempty"`
+	GamesPlayed       int     `json:"games_played"`
+	Wins              int     `json:"wins"`
+	Draws             int     `json:"draws"`
+	Losses            int     `json:"losses"`
+	WinRate           float64 `json:"win_rate"`
+	RoundsWon         int     `json:"rounds_won"`
+	RoundsLost        int     `json:"rounds_lost"`
+	RoundDifferential int     `json:"round_differential"`
+	AverageRoundsWon  float64 `json:"average_rounds_won"`
+	AverageRoundsLost float64 `json:"average_rounds_lost"`
 }
 
 type TeamConfig struct {
@@ -88,9 +87,9 @@ type TeamConfig struct {
 }
 
 type TeamFormation struct {
-	TeamID   int64             `json:"team_id,omitempty"`
+	TeamID   int64             `json:"team_id"`
 	Augments []augments.Effect `json:"augments"`
-	Lanes    [3][]int64        `json:"lanes,omitempty"`
+	Lanes    [3][]int64        `json:"lanes"`
 }
 
 type LanesConfig struct {

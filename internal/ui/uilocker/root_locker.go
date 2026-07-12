@@ -18,6 +18,7 @@ const (
 	SubPageLockerPlaybooksList
 	SubPageLockerPlaybooksCreate
 	SubPageLockerPlaybooksEdit
+	SubPageLockerCoachEdit
 )
 
 type MsgSwitchLockerPage struct {
@@ -35,6 +36,7 @@ type LockerModel struct {
 	subPageLockerPlaybooksList   tea.Model
 	subPageLockerPlaybooksCreate tea.Model
 	subPageLockerPlaybooksEdit   tea.Model
+	subPageLockerCoachEdit       tea.Model
 }
 
 // NewLockerModel returns a new LockerModel.
@@ -46,6 +48,7 @@ func NewLockerModel(state *uistate.GlobalState, teamsSvc *teams.Service, playboo
 		subPageLockerPlaybooksList:   NewModelLockerPlaybooksList(state, playbookSvc, theme),
 		subPageLockerPlaybooksCreate: NewModelLockerPlaybooksCreate(state, playbookSvc, theme),
 		subPageLockerPlaybooksEdit:   NewModelLockerPlaybooksEdit(state, playbookSvc, theme),
+		subPageLockerCoachEdit:       NewPageLockerCoachEdit(state, teamsSvc, theme),
 	}
 }
 
@@ -84,6 +87,9 @@ func (m *LockerModel) handleWindowSize(msg tea.WindowSizeMsg) tea.Cmd {
 	cmds = append(cmds, cmd)
 	m.subPageLockerPlaybooksEdit, cmd = m.subPageLockerPlaybooksEdit.Update(msg)
 	cmds = append(cmds, cmd)
+	m.subPageLockerCoachEdit, cmd = m.subPageLockerCoachEdit.Update(msg)
+	cmds = append(cmds, cmd)
+
 	return tea.Batch(cmds...)
 }
 
@@ -102,6 +108,8 @@ func (m *LockerModel) updateCurrentPage(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.subPageLockerPlaybooksCreate, cmd = m.subPageLockerPlaybooksCreate.Update(msg)
 	case SubPageLockerPlaybooksEdit:
 		m.subPageLockerPlaybooksEdit, cmd = m.subPageLockerPlaybooksEdit.Update(msg)
+	case SubPageLockerCoachEdit:
+		m.subPageLockerCoachEdit, cmd = m.subPageLockerCoachEdit.Update(msg)
 	}
 	return m, cmd
 }
@@ -120,6 +128,8 @@ func (m *LockerModel) View() tea.View {
 		return m.subPageLockerPlaybooksCreate.View()
 	case SubPageLockerPlaybooksEdit:
 		return m.subPageLockerPlaybooksEdit.View()
+	case SubPageLockerCoachEdit:
+		return m.subPageLockerCoachEdit.View()
 	}
 
 	return tea.NewView("unknown locker page")

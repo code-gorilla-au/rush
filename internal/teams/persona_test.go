@@ -15,10 +15,18 @@ func TestCoachPersona_AvailableTokens(t *testing.T) {
 		Test("returns expected tokens for known persona", func(t *testing.T) {
 			tokens := CoachPersonaBastion.Augments()
 
-			odize.AssertTrue(t, slices.Contains(tokens, augments.SecondChance))
-			odize.AssertTrue(t, slices.Contains(tokens, augments.LastStand))
-			odize.AssertTrue(t, slices.Contains(tokens, augments.Fortify))
-			odize.AssertTrue(t, slices.Contains(tokens, augments.Brace))
+			odize.AssertTrue(t, slices.ContainsFunc(tokens, func(effect augments.Effect) bool {
+				return effect.Name == augments.SecondChance
+			}))
+			odize.AssertTrue(t, slices.ContainsFunc(tokens, func(effect augments.Effect) bool {
+				return effect.Name == augments.LastStand
+			}))
+			odize.AssertTrue(t, slices.ContainsFunc(tokens, func(effect augments.Effect) bool {
+				return effect.Name == augments.Fortify
+			}))
+			odize.AssertTrue(t, slices.ContainsFunc(tokens, func(effect augments.Effect) bool {
+				return effect.Name == augments.Brace
+			}))
 
 		}).
 		Test("returns empty slice for unknown persona", func(t *testing.T) {

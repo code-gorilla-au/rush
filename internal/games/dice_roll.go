@@ -2,6 +2,7 @@ package games
 
 import (
 	"math/rand/v2"
+	"slices"
 
 	"github.com/code-gorilla-au/rush/internal/augments"
 )
@@ -12,7 +13,7 @@ func DiceRoll() int {
 }
 
 type TeamDecisionInput struct {
-	activeAugment    augments.Effect
+	triggeredAugment augments.Name
 	passivesAugments []augments.Effect
 	player           int64
 	roll             int
@@ -26,28 +27,6 @@ type DecisionInput struct {
 
 type DecisionEngineFunc func(input DecisionInput) DecisionInput
 
-func RuleTwistOfFate(input DecisionInput) DecisionInput {
-	return ruleTwistOfFate(input, DiceRoll)
-}
-
-func ruleTwistOfFate(input DecisionInput, roll RollFn) DecisionInput {
-	if input.teamB.activeAugment.Name == augments.TwistOfFate {
-		secondRoll := roll()
-		if input.teamB.roll < secondRoll {
-			input.teamB.roll = secondRoll
-		}
-	}
-
-	if input.teamA.activeAugment.Name == augments.TwistOfFate {
-		secondRoll := roll()
-		if input.teamA.roll < secondRoll {
-			input.teamA.roll = secondRoll
-		}
-	}
-
-	return input
-}
-
 type Engine struct {
 	beforeRoll    []DecisionEngineFunc
 	afterRoll     []DecisionEngineFunc
@@ -57,12 +36,25 @@ type Engine struct {
 
 func NewDecisionEngine() *Engine {
 	return &Engine{
-		beforeRoll: []DecisionEngineFunc{},
+		beforeRoll: []DecisionEngineFunc{
+			RulePocketSand,
+		},
 		afterRoll: []DecisionEngineFunc{
 			RuleTwistOfFate,
+			RuleMomentumSurge,
+			RulePrecisionStrike,
+			RuleOverPower,
+			RuleFortify,
+			RuleSecondChance,
+			RuleLastStand,
+			RuleHamstring,
+			RulePoisonEdge,
 		},
-		afterAugments: []DecisionEngineFunc{},
-		rollFn:        DiceRoll,
+		afterAugments: []DecisionEngineFunc{
+			RuleBrace,
+			RuleIceInVeins,
+		},
+		rollFn: DiceRoll,
 	}
 }
 
@@ -86,29 +78,60 @@ func (e *Engine) Run(input DecisionInput) DuelResult {
 }
 
 func makeDecision(input DecisionInput) DuelResult {
+	teamA := PlayerRoll{
+		Player:           input.teamA.player,
+		Roll:             input.teamA.roll,
+		TriggeredAugment: input.teamA.triggeredAugment,
+	}
+	teamB := PlayerRoll{
+		Player:           input.teamB.player,
+		Roll:             input.teamB.roll,
+		TriggeredAugment: input.teamB.triggeredAugment,
+	}
+
 	if input.teamA.roll == input.teamB.roll {
+
 		return DuelResult{
-			Player:    0,
-			Outcome:   Draw,
-			Roll:      0,
-			RollDelta: 0,
+			Player:           0,
+			Outcome:          Draw,
+			Roll:             0,
+			RollDelta:        0,
+			TriggeredAugment: augments.NoAugment,
+			TeamA:            teamA,
+			TeamB:            teamB,
 		}
 	}
 
 	if input.teamA.roll > input.teamB.roll {
 		return DuelResult{
-			Player:    input.teamA.player,
-			Outcome:   TeamA,
-			Roll:      input.teamA.roll,
-			RollDelta: input.teamA.roll - input.teamB.roll,
+			Player:           input.teamA.player,
+			Outcome:          TeamA,
+			Roll:             input.teamA.roll,
+			RollDelta:        input.teamA.roll - input.teamB.roll,
+			TriggeredAugment: input.teamA.triggeredAugment,
+			TeamA:            teamA,
+			TeamB:            teamB,
 		}
 	}
 
 	return DuelResult{
-		Player:    input.teamB.player,
-		Outcome:   TeamB,
-		Roll:      input.teamB.roll,
-		RollDelta: input.teamB.roll - input.teamA.roll,
+		Player:           input.teamB.player,
+		Outcome:          TeamB,
+		Roll:             input.teamB.roll,
+		RollDelta:        input.teamB.roll - input.teamA.roll,
+		TriggeredAugment: input.teamB.triggeredAugment,
+		TeamA:            teamA,
+		TeamB:            teamB,
 	}
 
+}
+
+func canTriggerAugment(activeAugment augments.Name, list []augments.Effect, name augments.Name) bool {
+	noActiveAugment := activeAugment == augments.NoAugment || activeAugment == ""
+
+	hasAugmentInList := slices.ContainsFunc(list, func(e augments.Effect) bool {
+		return e.Name == name
+	})
+
+	return noActiveAugment && hasAugmentInList
 }

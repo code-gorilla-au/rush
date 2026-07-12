@@ -1,6 +1,8 @@
 package components
 
 import (
+	"fmt"
+
 	tea "charm.land/bubbletea/v2"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
@@ -18,7 +20,7 @@ func NewAITeamList(items []teams.AITeam, theme styles.IceTheme) AITeamList {
 				return ListItem[teams.AITeam]{
 					Data:      item,
 					TitleVal:  item.Team.Name,
-					DescVal:   item.Coach.Name,
+					DescVal:   fmt.Sprintf("%s (%s)", item.Coach.Name, item.Coach.Persona.Name()),
 					FilterVal: item.Team.Name,
 				}
 			},

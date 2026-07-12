@@ -19,6 +19,7 @@ type CoachStore interface {
 	GetDefaultCoach(ctx context.Context) (database.Coach, error)
 	ClearDefaultCoach(ctx context.Context) error
 	CreateCoach(ctx context.Context, arg database.CreateCoachParams) (database.Coach, error)
+	UpdateCoach(ctx context.Context, arg database.UpdateCoachParams) error
 	GetCoaches(ctx context.Context) ([]database.Coach, error)
 	GetAICoaches(ctx context.Context) ([]database.Coach, error)
 	SetDefaultCoach(ctx context.Context, id int64) error

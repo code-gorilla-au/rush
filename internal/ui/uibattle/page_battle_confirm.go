@@ -91,12 +91,14 @@ func (m *PageBattleConfirmModel) createGame() tea.Msg {
 			TeamID:     m.globalState.Team.ID,
 			TeamName:   m.globalState.Team.Name,
 			Players:    teamAPlayers,
+			Augments:   m.globalState.Coach.AvailableAugments(),
 			Formations: m.selectedPlaybook.Formations,
 		},
 		TeamB: games.TeamConfig{
 			TeamID:     m.selectedAITeam.Team.ID,
 			TeamName:   m.selectedAITeam.Team.Name,
 			Players:    teamBPlayers,
+			Augments:   m.selectedAITeam.Coach.AvailableAugments(),
 			Formations: m.selectedAITeam.Playbook.Formations,
 		},
 	}
@@ -206,6 +208,7 @@ func newTeamTile(team *teams.Team, coach *teams.Coach, playbook *playbooks.Playb
 	teamName := ""
 	coachName := ""
 	playbookName := ""
+	persona := ""
 	var playerNames []string
 
 	if team != nil {
@@ -215,13 +218,14 @@ func newTeamTile(team *teams.Team, coach *teams.Coach, playbook *playbooks.Playb
 
 	if coach != nil {
 		coachName = coach.Name
+		persona = coach.Persona.Name()
 	}
 
 	if playbook != nil {
 		playbookName = playbook.Name
 	}
 
-	return components.NewTeamTile(teamName, coachName, playbookName, playerNames)
+	return components.NewTeamTile(teamName, coachName, persona, playbookName, playerNames)
 }
 
 func getPlayerNames(players []teams.Player) []string {

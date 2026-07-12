@@ -71,19 +71,9 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
 			}
 		case key.Matches(msg, m.keys.Select):
-			switch m.list.SelectedItem() {
-			case components.ItemPlayers:
-				return m, func() tea.Msg {
-					return MsgSwitchLockerPage{NewPage: SubPageLockerPlayers}
-				}
-			case components.ItemTeamStatistics:
-				return m, func() tea.Msg {
-					return MsgSwitchLockerPage{NewPage: SubPageLockerTeamStatistics}
-				}
-			case components.ItemPlaybooks:
-				return m, func() tea.Msg {
-					return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList}
-				}
+			model, cmd, done := m.handleListSelect()
+			if done {
+				return model, cmd
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -98,6 +88,29 @@ func (m *ModelLockerRoom) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, listCmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *ModelLockerRoom) handleListSelect() (tea.Model, tea.Cmd, bool) {
+	switch m.list.SelectedItem() {
+	case components.ItemPlayers:
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerPlayers}
+		}, true
+	case components.ItemTeamStatistics:
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerTeamStatistics}
+		}, true
+	case components.ItemPlaybooks:
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerPlaybooksList}
+		}, true
+	case components.ItemCoachEdit:
+		return m, func() tea.Msg {
+			return MsgSwitchLockerPage{NewPage: SubPageLockerCoachEdit}
+		}, true
+	}
+
+	return nil, nil, false
 }
 
 func (m *ModelLockerRoom) View() tea.View {

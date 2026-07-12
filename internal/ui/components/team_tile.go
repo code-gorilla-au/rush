@@ -11,14 +11,16 @@ import (
 type TeamTile struct {
 	TeamName     string
 	CoachName    string
+	Persona      string
 	PlaybookName string
 	PlayerNames  []string
 }
 
-func NewTeamTile(teamName, coachName, playbookName string, playerNames []string) TeamTile {
+func NewTeamTile(teamName, coachName, persona, playbookName string, playerNames []string) TeamTile {
 	return TeamTile{
 		TeamName:     teamName,
 		CoachName:    coachName,
+		Persona:      persona,
 		PlaybookName: playbookName,
 		PlayerNames:  slices.Clone(playerNames),
 	}
@@ -29,6 +31,7 @@ func (t TeamTile) View(theme styles.IceTheme, width int) string {
 		theme.SecondaryHeader.Render(valueOrDefault(t.TeamName, "Unknown Team")),
 		renderField(theme, "Coach", t.CoachName),
 		renderField(theme, "Playbook", t.PlaybookName),
+		renderField(theme, "Persona", t.Persona),
 		"",
 		theme.Muted.Render("Players"),
 		renderPlayers(theme, t.PlayerNames),

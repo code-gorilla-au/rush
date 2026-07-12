@@ -14,7 +14,7 @@ func TestLockerRoomList(t *testing.T) {
 
 	group.Test("NewLockerRoomList should have 3 items", func(t *testing.T) {
 		l := NewLockerRoomList(theme)
-		odize.AssertEqual(t, 3, len(l.Model.Items()))
+		odize.AssertEqual(t, 4, len(l.Model.Items()))
 		odize.AssertEqual(t, ItemPlayers, l.SelectedItem())
 	})
 
@@ -48,7 +48,7 @@ func TestLockerRoomList(t *testing.T) {
 
 		l.Model.Select(2)
 		l.Update(tea.KeyPressMsg{Text: "down"})
-		odize.AssertEqual(t, 2, l.Model.Index())
+		odize.AssertEqual(t, 3, l.Model.Index())
 	})
 
 	err := group.Run()

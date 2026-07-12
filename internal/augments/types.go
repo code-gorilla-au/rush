@@ -4,6 +4,7 @@ type Name string
 
 const (
 	NoAugment       Name = "No Augment"
+	CanceledAugment Name = "Canceled Augment"
 	TwistOfFate     Name = "Twist of Fate"
 	SecondChance    Name = "Second Chance"
 	Overpower       Name = "Overpower"
@@ -15,7 +16,7 @@ const (
 	IceInVeins      Name = "Ice in Veins"
 	Brace           Name = "Brace"
 	Fortify         Name = "Fortify"
-	PoisonEdge      Name = "Critical Hit"
+	PoisonEdge      Name = "Poison Edge"
 )
 
 type Action string

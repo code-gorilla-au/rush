@@ -19,6 +19,12 @@ SELECT * FROM coaches WHERE is_human = false;
 -- name: CreateCoach :one
 INSERT INTO coaches (name, persona, is_human, is_default) VALUES (?, ?, ?, ?) RETURNING *;
 
+-- name: UpdateCoach :exec
+UPDATE coaches
+SET name = ?,
+persona = ?
+WHERE id = ?;
+
 -- name: DeleteCoach :exec
 DELETE FROM coaches WHERE id = ?;
 

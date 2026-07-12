@@ -11,6 +11,7 @@ const (
 	ItemPlayers LockerRoomItem = iota
 	ItemTeamStatistics
 	ItemPlaybooks
+	ItemCoachEdit
 )
 
 func (i LockerRoomItem) String() string {
@@ -21,6 +22,8 @@ func (i LockerRoomItem) String() string {
 		return "Team Statistics"
 	case ItemPlaybooks:
 		return "Playbooks"
+	case ItemCoachEdit:
+		return "Coach Edit"
 	}
 	return ""
 }
@@ -32,7 +35,7 @@ type LockerRoomList struct {
 func NewLockerRoomList(theme styles.IceTheme) LockerRoomList {
 	return LockerRoomList{
 		List: NewList(ListConfig[LockerRoomItem]{
-			Items: []LockerRoomItem{ItemPlayers, ItemTeamStatistics, ItemPlaybooks},
+			Items: []LockerRoomItem{ItemPlayers, ItemTeamStatistics, ItemPlaybooks, ItemCoachEdit},
 			ItemMapper: func(i LockerRoomItem) ListItem[LockerRoomItem] {
 				return ListItem[LockerRoomItem]{
 					Data:     i,

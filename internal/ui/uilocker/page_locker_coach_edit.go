@@ -1,4 +1,4 @@
-package ui
+package uilocker
 
 import (
 	"charm.land/bubbles/v2/key"
@@ -11,15 +11,15 @@ import (
 	"github.com/code-gorilla-au/rush/internal/ui/uistate"
 )
 
-type createCoachKeyMap struct {
+type coachEditKeyMap struct {
 	uistate.KeyMap
 }
 
-func (k createCoachKeyMap) ShortHelp() []key.Binding {
+func (k coachEditKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{k.Enter, k.Back, k.Quit}
 }
 
-func (k createCoachKeyMap) FullHelp() [][]key.Binding {
+func (k coachEditKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Enter, k.Back},
 		{k.Up, k.Down, k.Tab, k.ShiftTab},
@@ -27,13 +27,13 @@ func (k createCoachKeyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-func newCreateCoachKeyMap() createCoachKeyMap {
-	return createCoachKeyMap{
+func newCoachEditKeyMap() coachEditKeyMap {
+	return coachEditKeyMap{
 		KeyMap: uistate.NewKeyMap(),
 	}
 }
 
-type ModelCreateCoach struct {
+type PageLockerCoachEdit struct {
 	width       int
 	height      int
 	theme       styles.IceTheme
@@ -41,56 +41,60 @@ type ModelCreateCoach struct {
 	teamsSvc    *teams.Service
 
 	coachInput   textinput.Model
-	teamInput    textinput.Model
 	personaIndex int
 	personas     []teams.CoachPersona
 	focusIndex   int
 	err          error
-	keys         createCoachKeyMap
+	keys         coachEditKeyMap
 	footer       components.Footer
 }
 
-func NewModelCreateCoach(state *uistate.GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *ModelCreateCoach {
+func NewPageLockerCoachEdit(state *uistate.GlobalState, teamsSvc *teams.Service, theme styles.IceTheme) *PageLockerCoachEdit {
 	c := textinput.New()
 	c.Placeholder = "Coach Name"
 	c.Focus()
 	c.CharLimit = 156
 	c.SetWidth(20)
+	if state.Coach != nil {
+		c.SetValue(state.Coach.Name)
+	}
 
-	t := textinput.New()
-	t.Placeholder = "Team Name"
-	t.CharLimit = 156
-	t.SetWidth(20)
+	keys := newCoachEditKeyMap()
 
-	keys := newCreateCoachKeyMap()
+	personaIndex := 0
+	personas := []teams.CoachPersona{
+		teams.CoachPersonaVanguard,
+		teams.CoachPersonaBastion,
+		teams.CoachPersonaTrickster,
+		teams.CoachPersonaWildcard,
+	}
+	if state.Coach != nil {
+		for i, p := range personas {
+			if p == state.Coach.Persona {
+				personaIndex = i
+				break
+			}
+		}
+	}
 
-	return &ModelCreateCoach{
-		globalState: state,
-		teamsSvc:    teamsSvc,
-		coachInput:  c,
-		teamInput:   t,
-		personas: []teams.CoachPersona{
-			teams.CoachPersonaVanguard,
-			teams.CoachPersonaBastion,
-			teams.CoachPersonaTrickster,
-			teams.CoachPersonaWildcard,
-		},
-		theme:  theme,
-		keys:   keys,
-		footer: components.NewFooter(keys),
+	return &PageLockerCoachEdit{
+		globalState:  state,
+		teamsSvc:     teamsSvc,
+		coachInput:   c,
+		personas:     personas,
+		personaIndex: personaIndex,
+		theme:        theme,
+		keys:         keys,
+		footer:       components.NewFooter(keys),
 	}
 }
 
-func (m *ModelCreateCoach) Init() tea.Cmd {
-	return func() tea.Msg { return textinput.Blink() }
+func (m *PageLockerCoachEdit) Init() tea.Cmd {
+	return textinput.Blink
 }
 
-func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *PageLockerCoachEdit) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case uistate.MsgSwitchPage:
-		if msg.NewPage == uistate.PageCreateCoach {
-			return m, m.Init()
-		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -101,17 +105,19 @@ func (m *ModelCreateCoach) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
+	case MsgSwitchLockerPage:
+		if msg.NewPage == SubPageLockerCoachEdit {
+			m.refresh()
+		}
+
 	case error:
 		m.err = msg
-
-	case uistate.MsgStateUpdated:
-		return m.handleStateUpdated(msg)
 	}
 
 	return m.updateInputs(msg)
 }
 
-func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
+func (m *PageLockerCoachEdit) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
 	if key.Matches(msg, m.keys.Quit) {
 		return tea.Quit, true
 	}
@@ -126,7 +132,7 @@ func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
 
 	if key.Matches(msg, m.keys.Back) {
 		return func() tea.Msg {
-			return uistate.MsgSwitchPage{NewPage: uistate.PageTitle}
+			return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
 		}, true
 	}
 
@@ -137,11 +143,11 @@ func (m *ModelCreateCoach) handleKeyMsg(msg tea.KeyMsg) (tea.Cmd, bool) {
 	return nil, false
 }
 
-func (m *ModelCreateCoach) handleFocusNavigation(msg tea.KeyMsg) bool {
+func (m *PageLockerCoachEdit) handleFocusNavigation(msg tea.KeyMsg) bool {
 	if key.Matches(msg, m.keys.Up) || key.Matches(msg, m.keys.ShiftTab) {
 		m.focusIndex--
 		if m.focusIndex < 0 {
-			m.focusIndex = 2
+			m.focusIndex = 1
 		}
 		m.updateFocus()
 		return true
@@ -149,7 +155,7 @@ func (m *ModelCreateCoach) handleFocusNavigation(msg tea.KeyMsg) bool {
 
 	if key.Matches(msg, m.keys.Down) || key.Matches(msg, m.keys.Tab) {
 		m.focusIndex++
-		if m.focusIndex > 2 {
+		if m.focusIndex > 1 {
 			m.focusIndex = 0
 		}
 		m.updateFocus()
@@ -159,12 +165,12 @@ func (m *ModelCreateCoach) handleFocusNavigation(msg tea.KeyMsg) bool {
 	return false
 }
 
-func (m *ModelCreateCoach) handleEnter(msg tea.KeyMsg) (tea.Cmd, bool) {
+func (m *PageLockerCoachEdit) handleEnter(msg tea.KeyMsg) (tea.Cmd, bool) {
 	if !key.Matches(msg, m.keys.Enter) {
 		return nil, false
 	}
 
-	if m.focusIndex == 2 {
+	if m.focusIndex == 1 {
 		return m.submit(), true
 	}
 
@@ -174,7 +180,7 @@ func (m *ModelCreateCoach) handleEnter(msg tea.KeyMsg) (tea.Cmd, bool) {
 	return nil, true
 }
 
-func (m *ModelCreateCoach) handlePersonaNavigation(msg tea.KeyMsg) bool {
+func (m *PageLockerCoachEdit) handlePersonaNavigation(msg tea.KeyMsg) bool {
 	if m.focusIndex != 1 {
 		return false
 	}
@@ -198,68 +204,41 @@ func (m *ModelCreateCoach) handlePersonaNavigation(msg tea.KeyMsg) bool {
 	return false
 }
 
-func (m *ModelCreateCoach) handleStateUpdated(msg uistate.MsgStateUpdated) (tea.Model, tea.Cmd) {
-	m.globalState.Coach = msg.Coach
-	m.globalState.Team = msg.Team
-
-	return m, func() tea.Msg {
-		return uistate.MsgSwitchPage{NewPage: uistate.PageLockerRoom}
-	}
-}
-
-func (m *ModelCreateCoach) updateInputs(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
+func (m *PageLockerCoachEdit) updateInputs(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-
 	m.coachInput, cmd = m.coachInput.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.teamInput, cmd = m.teamInput.Update(msg)
-	cmds = append(cmds, cmd)
-
-	return m, tea.Batch(cmds...)
+	return m, cmd
 }
 
-func (m *ModelCreateCoach) updateFocus() {
+func (m *PageLockerCoachEdit) updateFocus() {
 	switch m.focusIndex {
 	case 0:
 		m.coachInput.Focus()
-		m.teamInput.Blur()
 	case 1:
 		m.coachInput.Blur()
-		m.teamInput.Blur()
-	case 2:
-		m.coachInput.Blur()
-		m.teamInput.Focus()
 	}
 }
 
-func (m *ModelCreateCoach) submit() tea.Cmd {
+func (m *PageLockerCoachEdit) submit() tea.Cmd {
 	return func() tea.Msg {
+		if m.globalState.Coach == nil {
+			return nil
+		}
+
 		ctx := m.globalState.Context()
-		coach, err := m.teamsSvc.CreateCoach(ctx, teams.CreateCoachParams{
-			Name:      m.coachInput.Value(),
-			Persona:   m.personas[m.personaIndex],
-			IsHuman:   true,
-			IsDefault: true,
-		})
+		err := m.teamsSvc.UpdateCoach(ctx, m.globalState.Coach.ID, m.coachInput.Value(), m.personas[m.personaIndex])
 		if err != nil {
 			return err
 		}
 
-		team, err := m.teamsSvc.CreateTeam(ctx, m.teamInput.Value(), coach.ID, true)
-		if err != nil {
-			return err
-		}
+		m.globalState.Coach.Name = m.coachInput.Value()
+		m.globalState.Coach.Persona = m.personas[m.personaIndex]
 
-		return uistate.MsgStateUpdated{
-			Coach: &coach,
-			Team:  &team,
-		}
+		return MsgSwitchLockerPage{NewPage: SubPageLockerRoom}
 	}
 }
 
-func (m *ModelCreateCoach) formatPersona() string {
+func (m *PageLockerCoachEdit) formatPersona() string {
 	persona := m.personas[m.personaIndex]
 
 	style := m.theme.Muted
@@ -270,7 +249,26 @@ func (m *ModelCreateCoach) formatPersona() string {
 	return style.Render("< " + persona.Name() + " >")
 }
 
-func (m *ModelCreateCoach) View() tea.View {
+func (m *PageLockerCoachEdit) refresh() {
+	if m.globalState.Coach == nil {
+		return
+	}
+
+	if m.coachInput.Value() != m.globalState.Coach.Name {
+		m.coachInput.SetValue(m.globalState.Coach.Name)
+	}
+
+	for i, p := range m.personas {
+		if p == m.globalState.Coach.Persona {
+			if m.personaIndex != i {
+				m.personaIndex = i
+			}
+			break
+		}
+	}
+}
+
+func (m *PageLockerCoachEdit) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
 
@@ -281,16 +279,13 @@ func (m *ModelCreateCoach) View() tea.View {
 
 	form := lipgloss.JoinVertical(
 		lipgloss.Left,
-		m.theme.Logo.Render("RUSH - NEW CAREER"),
+		m.theme.Logo.Render("RUSH - EDIT COACH"),
 		"",
 		m.theme.SecondaryHeader.Render("Coach Details"),
 		m.coachInput.View(),
 		"",
 		m.theme.SecondaryHeader.Render("Persona"),
 		m.formatPersona(),
-		"",
-		m.theme.SecondaryHeader.Render("Team Details"),
-		m.teamInput.View(),
 		"",
 		errorView,
 		"",

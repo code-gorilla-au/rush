@@ -92,36 +92,33 @@ func makeDecision(input DecisionInput) DuelResult {
 	if input.teamA.roll == input.teamB.roll {
 
 		return DuelResult{
-			Player:           0,
-			Outcome:          Draw,
-			Roll:             0,
-			RollDelta:        0,
-			TriggeredAugment: augments.NoAugment,
-			TeamA:            teamA,
-			TeamB:            teamB,
+			Player:    0,
+			Outcome:   Draw,
+			Roll:      0,
+			RollDelta: 0,
+			TeamA:     teamA,
+			TeamB:     teamB,
 		}
 	}
 
 	if input.teamA.roll > input.teamB.roll {
 		return DuelResult{
-			Player:           input.teamA.player,
-			Outcome:          TeamA,
-			Roll:             input.teamA.roll,
-			RollDelta:        input.teamA.roll - input.teamB.roll,
-			TriggeredAugment: input.teamA.triggeredAugment,
-			TeamA:            teamA,
-			TeamB:            teamB,
+			Player:    input.teamA.player,
+			Outcome:   TeamA,
+			Roll:      input.teamA.roll,
+			RollDelta: input.teamA.roll - input.teamB.roll,
+			TeamA:     teamA,
+			TeamB:     teamB,
 		}
 	}
 
 	return DuelResult{
-		Player:           input.teamB.player,
-		Outcome:          TeamB,
-		Roll:             input.teamB.roll,
-		RollDelta:        input.teamB.roll - input.teamA.roll,
-		TriggeredAugment: input.teamB.triggeredAugment,
-		TeamA:            teamA,
-		TeamB:            teamB,
+		Player:    input.teamB.player,
+		Outcome:   TeamB,
+		Roll:      input.teamB.roll,
+		RollDelta: input.teamB.roll - input.teamA.roll,
+		TeamA:     teamA,
+		TeamB:     teamB,
 	}
 
 }

@@ -28,7 +28,6 @@ func (r *Round) ResolveLanes(rollFn RollStrategy) RoundResult {
 	}
 
 	return r.calculateWinner(result)
-
 }
 
 func (r *Round) calculateWinner(result []RoundResult) RoundResult {

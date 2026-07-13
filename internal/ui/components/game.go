@@ -19,10 +19,14 @@ type Game struct {
 	result     games.RoundResult
 	rollEngine games.RollStrategy
 	roundComp  Round
+	countdown  int
 }
 
 // MsgResolveRound is sent when the round should be resolved.
 type MsgResolveRound struct{}
+
+// MsgTick is sent when the timer ticks.
+type MsgTick struct{}
 
 // MsgNextRound is sent when the user wants to proceed to the next round.
 type MsgNextRound struct{}
@@ -60,7 +64,15 @@ func (g *Game) Init() tea.Cmd {
 func (g *Game) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case MsgResolveRound:
-		g.handleRound()
+		return g.handleRound()
+	case MsgTick:
+		g.countdown--
+		if g.countdown > 0 {
+			return tea.Tick(time.Second, func(t time.Time) tea.Msg { return MsgTick{} })
+		}
+		return func() tea.Msg {
+			return MsgNextRound{}
+		}
 	case tea.KeyMsg:
 		if g.resolved {
 			switch msg.String() {
@@ -74,9 +86,9 @@ func (g *Game) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (g *Game) handleRound() {
+func (g *Game) handleRound() tea.Cmd {
 	if g.resolved {
-		return
+		return nil
 	}
 
 	res, err := g.game.ResolveRound(g.rollEngine)
@@ -86,7 +98,11 @@ func (g *Game) handleRound() {
 		// Update the round component with the final state
 		currentRoundIdx := g.game.CurrentRound() - 1
 		g.roundComp = NewRound(g.game.Rounds()[currentRoundIdx], g.teamAName, g.teamBName)
+
+		g.countdown = 3
+		return tea.Tick(time.Second, func(t time.Time) tea.Msg { return MsgTick{} })
 	}
+	return nil
 }
 
 // View renders the Game component.
@@ -116,7 +132,7 @@ func (g *Game) View(theme styles.IceTheme) string {
 		winnerInfo := theme.Winner.Render(fmt.Sprintf("WINNER: %s! (%d players remaining)", winner, g.result.RemainingPlayers))
 		prompt := theme.Muted.
 			MarginTop(1).
-			Render("Press Enter for next round...")
+			Render(fmt.Sprintf("Next round starting in %d, press Enter to start ...", g.countdown))
 
 		footer = lipgloss.JoinVertical(lipgloss.Center, winnerInfo, prompt)
 	} else {

@@ -69,14 +69,14 @@ func TestGameComponent(t *testing.T) {
 
 		// Handle MsgResolveRound
 		cmd := gComp.Update(MsgResolveRound{})
-		odize.AssertNil(t, cmd)
+		odize.AssertTrue(t, cmd != nil)
 		odize.AssertTrue(t, gComp.resolved)
 
 		// Resolved state
 		view = gComp.View(theme)
 		odize.AssertTrue(t, strings.Contains(view, "Team A 1 - 0 Team B"))
 		odize.AssertTrue(t, strings.Contains(view, "WINNER: Team A"))
-		odize.AssertTrue(t, strings.Contains(view, "Press Enter for next round..."))
+		odize.AssertTrue(t, strings.Contains(view, "Next round starting in 3, press Enter to start ..."))
 
 		// Handle Enter key
 		cmd = gComp.Update(tea.KeyPressMsg{Text: "enter"})
@@ -84,6 +84,37 @@ func TestGameComponent(t *testing.T) {
 		msg := cmd()
 		_, ok := msg.(MsgNextRound)
 		odize.AssertTrue(t, ok)
+	})
+
+	group.Test("should trigger MsgNextRound after countdown", func(t *testing.T) {
+		svc := games.NewService(&mockStore{})
+		game, err := svc.NewGame(context.Background(), games.NewGameParams{
+			TeamA: teamA,
+			TeamB: teamB,
+		})
+		odize.AssertNoError(t, err)
+
+		gComp := NewGame(&game, "Team A", "Team B", &games.TestEngine{RollFn: rollFn})
+
+		// Handle MsgResolveRound
+		cmd := gComp.Update(MsgResolveRound{})
+		odize.AssertTrue(t, cmd != nil) // Should return a tick cmd
+		odize.AssertEqual(t, 3, gComp.countdown)
+
+		// Simulate ticks
+		for i := 0; i < 3; i++ {
+			cmd = gComp.Update(MsgTick{})
+			if i < 2 {
+				odize.AssertTrue(t, cmd != nil)
+				odize.AssertEqual(t, 2-i, gComp.countdown)
+			} else {
+				// Last tick, countdown reaches 0, command should be MsgNextRound
+				odize.AssertTrue(t, cmd != nil)
+				msg := cmd()
+				_, ok := msg.(MsgNextRound)
+				odize.AssertTrue(t, ok)
+			}
+		}
 	})
 
 	err := group.Run()

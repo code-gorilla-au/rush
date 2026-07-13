@@ -26,6 +26,7 @@ type RootModel struct {
 	pageNewTournament tea.Model
 	pageNewBattle     tea.Model
 	pageGame          tea.Model
+	pageRules         tea.Model
 	globalState       *uistate.GlobalState
 	teamsSvc          *teams.Service
 	playbookSvc       *playbooks.Service
@@ -53,6 +54,7 @@ func New(deps Dependencies) *RootModel {
 		pageNewTournament: NewModelNewTournament(state, theme),
 		pageNewBattle:     uibattle.NewBattleModel(state, deps.TeamsSvc, deps.PlaybookSvc, deps.GameSvc, theme),
 		pageGame:          iugame.NewGameModel(state, deps.TeamsSvc, deps.GameSvc, theme),
+		pageRules:         NewModelRules(state, theme),
 		globalState:       state,
 		teamsSvc:          deps.TeamsSvc,
 		playbookSvc:       deps.PlaybookSvc,
@@ -125,6 +127,8 @@ func (m *RootModel) handleWindowSize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd)
 	cmds = append(cmds, cmd)
 	m.pageGame, cmd = m.pageGame.Update(msg)
 	cmds = append(cmds, cmd)
+	m.pageRules, cmd = m.pageRules.Update(msg)
+	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
 }
 
@@ -143,6 +147,8 @@ func (m *RootModel) updateCurrentPage(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pageNewBattle, cmd = m.pageNewBattle.Update(msg)
 	case uistate.PageGame:
 		m.pageGame, cmd = m.pageGame.Update(msg)
+	case uistate.PageRules:
+		m.pageRules, cmd = m.pageRules.Update(msg)
 	}
 	return m, cmd
 }
@@ -165,6 +171,8 @@ func (m *RootModel) View() tea.View {
 		return m.pageNewBattle.View()
 	case uistate.PageGame:
 		return m.pageGame.View()
+	case uistate.PageRules:
+		return m.pageRules.View()
 	}
 
 	return tea.NewView("unknown page")

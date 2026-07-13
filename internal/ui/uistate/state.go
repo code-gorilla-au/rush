@@ -27,6 +27,7 @@ const (
 	PageNewTournament
 	PageNewBattle
 	PageGame
+	PageRules
 )
 
 type GlobalState struct {

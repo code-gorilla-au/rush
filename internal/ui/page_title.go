@@ -126,6 +126,10 @@ func (m *ModelTitle) handleMenuSelect() (tea.Model, tea.Cmd, bool) {
 		return m, func() tea.Msg {
 			return uistate.MsgSwitchPage{NewPage: uistate.PageNewBattle}
 		}, true
+	case components.TitleItemRules:
+		return m, func() tea.Msg {
+			return uistate.MsgSwitchPage{NewPage: uistate.PageRules}
+		}, true
 	}
 
 	return nil, nil, false

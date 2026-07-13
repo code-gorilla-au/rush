@@ -40,7 +40,7 @@ func NewTitleMenu(hasCoach bool) TitleMenu {
 	if !hasCoach {
 		items = []TitleItem{TitleItemCreateCoach}
 	} else {
-		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattleSelection, TitleItemRules}
+		items = []TitleItem{TitleItemLockerRoom, TitleItemNewBattleSelection, TitleItemRules}
 	}
 	return TitleMenu{
 		items: items,
@@ -86,7 +86,7 @@ func (m *TitleMenu) SetHasCoach(hasCoach bool) {
 	if !hasCoach {
 		items = []TitleItem{TitleItemCreateCoach}
 	} else {
-		items = []TitleItem{TitleItemLockerRoom, TitleItemNewTournament, TitleItemNewBattleSelection, TitleItemRules}
+		items = []TitleItem{TitleItemLockerRoom, TitleItemNewBattleSelection, TitleItemRules}
 	}
 	m.items = items
 	if m.cursor >= len(m.items) {

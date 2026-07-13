@@ -63,7 +63,7 @@ To keep the game simple but add meaningful decisions, playbooks and coaches shou
 ### 3) Tactical Tokens
 
 Coaches use tokens to influence the outcome of the match.
-- Each token is **single-use** per match.
+- Each token is **single-use** per round.
 - Max **3 augmentations per game**.
 - An augmentation is selected **before each round**.
 
@@ -71,15 +71,18 @@ Coaches use tokens to influence the outcome of the match.
 
 | Token | Timing | Effect |
 | :--- | :--- | :--- |
-| **Twist of Fate** | Pre-roll | Roll 2d6 and keep the highest. |
-| **Overpower** | Pre-roll | Gain +1 to your roll total this duel. |
-| **Hamstring** | Pre-roll | Opponent gets -1 to their roll total this duel. |
-| **Jamming Signal** | Pre-roll | Cancel the opponent's declared Pre-roll token. |
-| **Momentum Surge** | Pre-roll | If you won your previous duel, gain +2 this duel. |
-| **Second Chance** | Reaction | Re-roll your own die once; second result replaces the first. |
-| **Precision Strike** | Reaction | Add +1 to your revealed total (usually if losing by 1). |
-| **Last Stand** | Resolution | Prevent your elimination; lane remains unresolved for this duel. |
-| **Ice in Veins** | Resolution | Convert a tie into a win for your side. |
+| **Twist of Fate** | After Roll | If last round was a loss, roll 2d6 keep highest. |
+| **Overpower** | After Roll | Gain +1 to your roll total this duel. |
+| **Precision Strike** | After Roll | If you roll a 4 or higher, gain +1 to your total. |
+| **Momentum Surge** | After Roll | If last duel was a win, gain +1 this duel. |
+| **Brace** | After Augments | Losing roll by 2 or less, convert result to a tie. |
+| **Fortify** | After Roll | If last duel was a tie, gain +2 to roll |
+| **Second Chance** | After Roll | Re-roll your own die once; second result replaces the first. |
+| **Last Stand** | After Roll | If last duel was a loss, add +2 to roll |
+| **Hamstring** | After Roll | Opponent gets -2 to their roll total this duel. |
+| **Pocket Sand** | Before Roll | Cancel the opponent's declared Pre-roll augment. |
+| **Poison Edge** | After Roll | If last duel was a loss, opponent has -2 to roll |
+| **Ice in Veins** | After Augments | Convert tie into a win for your side. |
 
 ### 4) Coach Personas
 

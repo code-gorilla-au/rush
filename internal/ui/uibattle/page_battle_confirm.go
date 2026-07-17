@@ -108,6 +108,10 @@ func (m *PageBattleConfirmModel) createGame() tea.Msg {
 		return err
 	}
 
+	if err = m.gameSvc.StartGame(m.globalState.Context(), game.ID()); err != nil {
+		return fmt.Errorf("could not start game: %w", err)
+	}
+
 	return uistate.MsgSwitchPage{
 		NewPage: uistate.PageGame,
 		GameID:  game.ID(),

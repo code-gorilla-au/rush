@@ -139,7 +139,6 @@ func fromGameModel(m database.Game) (Game, error) {
 	return Game{
 		id:           m.ID,
 		name:         m.Name,
-		tournamentID: &m.TournamentID.Int64,
 		teamA:        m.TeamA.Int64,
 		teamB:        m.TeamB.Int64,
 		winner:       &m.Winner.Int64,
@@ -153,13 +152,6 @@ func fromGameModel(m database.Game) (Game, error) {
 }
 
 func toGameModel(g Game) (database.Game, error) {
-	resolvedTournamentID := sql.NullInt64{}
-	if g.tournamentID != nil {
-		resolvedTournamentID = sql.NullInt64{
-			Int64: *g.tournamentID,
-			Valid: true,
-		}
-	}
 
 	resolvedWinner := sql.NullInt64{}
 	if g.winner != nil {
@@ -180,9 +172,8 @@ func toGameModel(g Game) (database.Game, error) {
 	}
 
 	return database.Game{
-		ID:           g.id,
-		Name:         g.name,
-		TournamentID: resolvedTournamentID,
+		ID:   g.id,
+		Name: g.name,
 		TeamA: sql.NullInt64{
 			Int64: g.teamA,
 			Valid: true,

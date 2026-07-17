@@ -137,6 +137,17 @@ func (q *Queries) ListCompletedGamesByTeam(ctx context.Context, arg ListComplete
 	return items, nil
 }
 
+const startGame = `-- name: StartGame :exec
+update games
+set status = 'running'
+where id = ?
+`
+
+func (q *Queries) StartGame(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, startGame, id)
+	return err
+}
+
 const updateGame = `-- name: UpdateGame :one
 update games
 set name          = ?,

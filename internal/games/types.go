@@ -31,7 +31,6 @@ const (
 type Game struct {
 	id           int64
 	name         string
-	tournamentID *int64
 	teamA        int64
 	teamB        int64
 	winner       *int64

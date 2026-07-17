@@ -20,6 +20,11 @@ select *
 from games
 where id = ?;
 
+-- name: StartGame :exec
+update games
+set status = 'running'
+where id = ?;
+
 -- name: UpdateGame :one
 update games
 set name          = ?,

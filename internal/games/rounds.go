@@ -22,7 +22,7 @@ func (r *Round) FillSquad(a LanesConfig, b LanesConfig) {
 func (r *Round) ResolveLanes(rollFn RollStrategy) RoundResult {
 	var result []RoundResult
 
-	for lane := 0; lane < len(r.TeamA.Lanes); lane++ {
+	for lane := range len(r.TeamA.Lanes) {
 		laneResult := r.ResolveLane(lane, rollFn)
 		result = append(result, laneResult)
 	}

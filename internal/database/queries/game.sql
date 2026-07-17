@@ -2,13 +2,11 @@
 insert into games (name,
                    team_a,
                    team_b,
-                   tournament_id,
                    results_log,
                    status,
                    rounds,
                    current_round)
 values (?,
-        ?,
         ?,
         ?,
         ?,
@@ -31,8 +29,7 @@ set name          = ?,
     status        = ?,
     results_log   = ?,
     rounds        = ?,
-    current_round = ?,
-    tournament_id = ?
+    current_round = ?
 where id = ?
 returning *;
 

@@ -22,7 +22,6 @@ type Coach struct {
 type Game struct {
 	ID           int64
 	Name         string
-	TournamentID sql.NullInt64
 	TeamA        sql.NullInt64
 	TeamB        sql.NullInt64
 	Winner       sql.NullInt64
@@ -66,4 +65,13 @@ type Tournament struct {
 	Name      string
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
+}
+
+type TournamentGame struct {
+	ID           int64
+	TournamentID sql.NullInt64
+	GameID       sql.NullInt64
+	Stage        string
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
 }

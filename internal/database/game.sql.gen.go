@@ -15,7 +15,6 @@ const createGame = `-- name: CreateGame :one
 insert into games (name,
                    team_a,
                    team_b,
-                   tournament_id,
                    results_log,
                    status,
                    rounds,
@@ -24,18 +23,16 @@ values (?,
         ?,
         ?,
         ?,
-        ?,
         'pending',
         ?,
         ?)
-returning id, name, tournament_id, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
+returning id, name, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 `
 
 type CreateGameParams struct {
 	Name         string
 	TeamA        sql.NullInt64
 	TeamB        sql.NullInt64
-	TournamentID sql.NullInt64
 	ResultsLog   json.RawMessage
 	Rounds       json.RawMessage
 	CurrentRound int64
@@ -46,7 +43,6 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 		arg.Name,
 		arg.TeamA,
 		arg.TeamB,
-		arg.TournamentID,
 		arg.ResultsLog,
 		arg.Rounds,
 		arg.CurrentRound,
@@ -55,7 +51,6 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.TournamentID,
 		&i.TeamA,
 		&i.TeamB,
 		&i.Winner,
@@ -70,7 +65,7 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 }
 
 const getGameByID = `-- name: GetGameByID :one
-select id, name, tournament_id, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
+select id, name, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 from games
 where id = ?
 `
@@ -81,7 +76,6 @@ func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.TournamentID,
 		&i.TeamA,
 		&i.TeamB,
 		&i.Winner,
@@ -96,7 +90,7 @@ func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
 }
 
 const listCompletedGamesByTeam = `-- name: ListCompletedGamesByTeam :many
-select id, name, tournament_id, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
+select id, name, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 from games
 where status = 'complete'
   and (team_a = ? or team_b = ?)
@@ -120,7 +114,6 @@ func (q *Queries) ListCompletedGamesByTeam(ctx context.Context, arg ListComplete
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.TournamentID,
 			&i.TeamA,
 			&i.TeamB,
 			&i.Winner,
@@ -153,10 +146,9 @@ set name          = ?,
     status        = ?,
     results_log   = ?,
     rounds        = ?,
-    current_round = ?,
-    tournament_id = ?
+    current_round = ?
 where id = ?
-returning id, name, tournament_id, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
+returning id, name, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 `
 
 type UpdateGameParams struct {
@@ -168,7 +160,6 @@ type UpdateGameParams struct {
 	ResultsLog   json.RawMessage
 	Rounds       json.RawMessage
 	CurrentRound int64
-	TournamentID sql.NullInt64
 	ID           int64
 }
 
@@ -182,14 +173,12 @@ func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) (Game, e
 		arg.ResultsLog,
 		arg.Rounds,
 		arg.CurrentRound,
-		arg.TournamentID,
 		arg.ID,
 	)
 	var i Game
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.TournamentID,
 		&i.TeamA,
 		&i.TeamB,
 		&i.Winner,

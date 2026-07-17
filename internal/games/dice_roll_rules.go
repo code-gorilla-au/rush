@@ -114,9 +114,9 @@ func RuleBrace(input DecisionInput) DecisionInput {
 	}
 
 	rollDelta := math.Abs(float64(input.teamA.roll) - float64(input.teamB.roll))
-	lostByOne := rollDelta <= 2
+	withinBounds := rollDelta <= 2
 
-	if !lostByOne {
+	if !withinBounds {
 		return input
 	}
 

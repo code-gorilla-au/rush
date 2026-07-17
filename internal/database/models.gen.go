@@ -61,10 +61,11 @@ type Team struct {
 }
 
 type Tournament struct {
-	ID        int64
-	Name      string
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	ID            int64
+	Name          string
+	NumberOfTeams int64
+	CreatedAt     sql.NullTime
+	UpdatedAt     sql.NullTime
 }
 
 type TournamentGame struct {

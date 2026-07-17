@@ -2,6 +2,7 @@ create table if not exists tournaments
 (
     id         integer primary key autoincrement,
     name       text not null,
+    number_of_teams integer not null,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -248,7 +248,7 @@ func generateAITeams() ([]AIGenerationParams, error) {
 	nameGen := NewTeamNameGenerator()
 	teamNames := nameGen.GenerateUnique(totalTeams)
 
-	for i := 0; i < totalTeams; i++ {
+	for i := range totalTeams {
 		tmpTeam := AIGenerationParams{}
 
 		if err := faker.FakeData(&tmpTeam); err != nil {

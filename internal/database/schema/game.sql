@@ -1,20 +1,28 @@
 create table if not exists tournaments
 (
+    id              integer primary key autoincrement,
+    name            text    not null,
+    number_of_teams integer not null,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+create table if not exists stages
+(
     id         integer primary key autoincrement,
     name       text not null,
-    number_of_teams integer not null,
+    status     text not null,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-create table if not exists tournament_games
+create table if not exists stage_games
 (
-    id            integer primary key autoincrement,
-    tournament_id integer references tournaments (id),
-    game_id       integer references games (id),
-    stage         text not null,
-    created_at    timestamp default CURRENT_TIMESTAMP,
-    updated_at    timestamp default CURRENT_TIMESTAMP
+    id         integer primary key autoincrement,
+    stage_id   integer references stages (id),
+    game_id    integer references games (id),
+    created_at timestamp default CURRENT_TIMESTAMP,
+    updated_at timestamp default CURRENT_TIMESTAMP
 );
 
 create table if not exists games

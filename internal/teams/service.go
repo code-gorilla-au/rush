@@ -181,7 +181,7 @@ type createPlayerParams struct {
 func (s *Service) createPlayers(ctx context.Context, teamID int64) ([]database.Player, error) {
 	modelPlayers := make([]database.Player, 5)
 
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		playerName := createPlayerParams{}
 
 		if err := faker.FakeData(&playerName); err != nil {

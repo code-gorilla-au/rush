@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 	"os"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
+	"github.com/code-gorilla-au/rush/internal/tournaments"
 	"github.com/code-gorilla-au/rush/internal/ui"
 )
 
@@ -42,6 +44,14 @@ func main() {
 	playbooksSvc := playbooks.NewPlaybooksService(queries)
 	teamsSvc := teams.NewTeamsService(queries, playbooksSvc)
 	gameSvc := games.NewService(queries)
+	_ = tournaments.NewTournament(tournaments.ServiceDependencies{
+		GamesSvc: gameSvc,
+		TeamsSvc: teamsSvc,
+		Store:    queries,
+		TxnFunc: func(db *sql.Tx) tournaments.Store {
+			return database.New(db)
+		},
+	})
 
 	go func() {
 		hasAICoaches, tErr := teamsSvc.HasAICoaches(ctx)

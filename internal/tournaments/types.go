@@ -1,6 +1,11 @@
 package tournaments
 
-import "github.com/code-gorilla-au/rush/internal/games"
+import (
+	"database/sql"
+
+	"github.com/code-gorilla-au/rush/internal/games"
+	"github.com/code-gorilla-au/rush/internal/teams"
+)
 
 type NumberOfTeams int64
 
@@ -32,4 +37,9 @@ type Stages struct {
 }
 
 type Service struct {
+	teamsSvc *teams.Service
+	gamesSvc *games.Service
+	store    Store
+	DB       *sql.DB
+	txnFunc  func(db *sql.Tx) Store
 }

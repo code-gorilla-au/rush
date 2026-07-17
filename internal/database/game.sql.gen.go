@@ -11,6 +11,30 @@ import (
 	"encoding/json"
 )
 
+const allocateGameToStage = `-- name: AllocateGameToStage :one
+insert into stage_games (stage_id, game_id)
+values (?, ?)
+returning id, stage_id, game_id, created_at, updated_at
+`
+
+type AllocateGameToStageParams struct {
+	StageID sql.NullInt64
+	GameID  sql.NullInt64
+}
+
+func (q *Queries) AllocateGameToStage(ctx context.Context, arg AllocateGameToStageParams) (StageGame, error) {
+	row := q.db.QueryRowContext(ctx, allocateGameToStage, arg.StageID, arg.GameID)
+	var i StageGame
+	err := row.Scan(
+		&i.ID,
+		&i.StageID,
+		&i.GameID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createGame = `-- name: CreateGame :one
 insert into games (name,
                    team_a,
@@ -58,6 +82,56 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 		&i.Rounds,
 		&i.CurrentRound,
 		&i.ResultsLog,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createStage = `-- name: CreateStage :one
+insert into stages (name, status)
+values (?, ?)
+returning id, name, status, created_at, updated_at
+`
+
+type CreateStageParams struct {
+	Name   string
+	Status string
+}
+
+func (q *Queries) CreateStage(ctx context.Context, arg CreateStageParams) (Stage, error) {
+	row := q.db.QueryRowContext(ctx, createStage, arg.Name, arg.Status)
+	var i Stage
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createTournament = `-- name: CreateTournament :one
+insert into tournaments (name,
+                         number_of_teams)
+values (?,
+        ?)
+returning id, name, number_of_teams, created_at, updated_at
+`
+
+type CreateTournamentParams struct {
+	Name          string
+	NumberOfTeams int64
+}
+
+func (q *Queries) CreateTournament(ctx context.Context, arg CreateTournamentParams) (Tournament, error) {
+	row := q.db.QueryRowContext(ctx, createTournament, arg.Name, arg.NumberOfTeams)
+	var i Tournament
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.NumberOfTeams,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -197,6 +271,33 @@ func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) (Game, e
 		&i.Rounds,
 		&i.CurrentRound,
 		&i.ResultsLog,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateStage = `-- name: UpdateStage :one
+update stages
+set name   = ?,
+    status = ?
+where id = ?
+returning id, name, status, created_at, updated_at
+`
+
+type UpdateStageParams struct {
+	Name   string
+	Status string
+	ID     int64
+}
+
+func (q *Queries) UpdateStage(ctx context.Context, arg UpdateStageParams) (Stage, error) {
+	row := q.db.QueryRowContext(ctx, updateStage, arg.Name, arg.Status, arg.ID)
+	var i Stage
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

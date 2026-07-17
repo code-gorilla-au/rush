@@ -44,3 +44,27 @@ from games
 where status = 'complete'
   and (team_a = ? or team_b = ?)
 order by updated_at desc;
+
+-- name: CreateTournament :one
+insert into tournaments (name,
+                         number_of_teams)
+values (?,
+        ?)
+returning *;
+
+-- name: CreateStage :one
+insert into stages (name, status)
+values (?, ?)
+returning *;
+
+-- name: AllocateGameToStage :one
+insert into stage_games (stage_id, game_id)
+values (?, ?)
+returning *;
+
+-- name: UpdateStage :one
+update stages
+set name   = ?,
+    status = ?
+where id = ?
+returning *;

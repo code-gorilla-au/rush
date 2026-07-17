@@ -22,7 +22,7 @@ func TestModelRules(t *testing.T) {
 			// We need to trigger WindowSizeMsg first to initialize viewport
 			m.Update(tea.WindowSizeMsg{Width: 100, Height: 50})
 
-			_, cmd := m.Update(tea.KeyPressMsg{Text: "q"})
+			_, cmd := m.Update(tea.KeyPressMsg{Text: "esc"})
 			odize.AssertTrue(t, cmd != nil)
 
 			msg := cmd()

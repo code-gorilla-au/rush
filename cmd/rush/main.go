@@ -48,8 +48,8 @@ func main() {
 		GamesSvc: gameSvc,
 		TeamsSvc: teamsSvc,
 		Store:    queries,
-		TxnFunc: func(db *sql.Tx) tournaments.Store {
-			return database.New(db)
+		TxnFunc: func(txDB *sql.Tx) tournaments.Store {
+			return database.New(txDB)
 		},
 	})
 

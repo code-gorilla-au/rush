@@ -3,6 +3,8 @@ package tournaments
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/teams"
@@ -16,7 +18,7 @@ type ServiceDependencies struct {
 	TxnFunc  func(db *sql.Tx) Store
 }
 
-func NewTournament(deps ServiceDependencies) *Service {
+func NewService(deps ServiceDependencies) *Service {
 	return &Service{
 		gamesSvc: deps.GamesSvc,
 		teamsSvc: deps.TeamsSvc,
@@ -30,15 +32,19 @@ func (s *Service) CreateTournament(ctx context.Context, coachId int64, numberOfT
 	return nil
 }
 
-func (s *Service) getTeamsForTournament(ctx context.Context, coachId int64) ([]teams.Team, error) {
-	var totalTeams []teams.Team
+func (s *Service) getNonHumanTeams(ctx context.Context, aiTeams int) ([]teams.AITeam, error) {
+	var tournamentList []teams.AITeam
+	var err error
 
-	humanTeam, err := s.teamsSvc.GetTeamByCoachID(ctx, coachId)
+	tournamentList, err = s.teamsSvc.ListAITeams(ctx)
 	if err != nil {
-		return totalTeams, err
+		return tournamentList, fmt.Errorf("failed to list teams: %w", err)
 	}
 
-	totalTeams = append(totalTeams, humanTeam)
+	if len(tournamentList) < aiTeams {
+		return tournamentList, errors.New("not enough teams")
+	}
 
-	return totalTeams, nil
+	return tournamentList[0:aiTeams], nil
+
 }

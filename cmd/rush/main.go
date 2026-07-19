@@ -44,7 +44,7 @@ func main() {
 	playbooksSvc := playbooks.NewPlaybooksService(queries)
 	teamsSvc := teams.NewTeamsService(queries, playbooksSvc)
 	gameSvc := games.NewService(queries)
-	_ = tournaments.NewTournament(tournaments.ServiceDependencies{
+	_ = tournaments.NewService(tournaments.ServiceDependencies{
 		GamesSvc: gameSvc,
 		TeamsSvc: teamsSvc,
 		Store:    queries,

@@ -29,6 +29,10 @@ func NewService(deps ServiceDependencies) *Service {
 }
 
 func (s *Service) CreateTournament(ctx context.Context, coachId int64, numberOfTeams NumberOfTeams) error {
+	_, err := s.generateGames(ctx, coachId, int64(numberOfTeams))
+	if err != nil {
+		return fmt.Errorf("generating games for tournament: %w", err)
+	}
 	return nil
 }
 

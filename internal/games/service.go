@@ -16,19 +16,11 @@ func NewService(store Store) *Service {
 }
 
 type NewGameParams struct {
-	TeamA        TeamConfig
-	TeamB        TeamConfig
-	TournamentID *int64
+	TeamA TeamConfig
+	TeamB TeamConfig
 }
 
 func (s *Service) NewGame(ctx context.Context, params NewGameParams) (Game, error) {
-	resolvedTournamentID := sql.NullInt64{}
-	if params.TournamentID != nil {
-		resolvedTournamentID = sql.NullInt64{
-			Int64: *params.TournamentID,
-			Valid: true,
-		}
-	}
 
 	roundsJsonData, rErr := json.Marshal(generateRounds(params.TeamA, params.TeamB))
 	if rErr != nil {
@@ -45,7 +37,6 @@ func (s *Service) NewGame(ctx context.Context, params NewGameParams) (Game, erro
 			Int64: params.TeamB.TeamID,
 			Valid: true,
 		},
-		TournamentID: resolvedTournamentID,
 		ResultsLog:   []byte(`[]`),
 		Rounds:       roundsJsonData,
 		CurrentRound: 0,
@@ -72,7 +63,6 @@ func (s *Service) UpdateGame(ctx context.Context, game Game) (Game, error) {
 		ResultsLog:   model.ResultsLog,
 		Rounds:       model.Rounds,
 		CurrentRound: model.CurrentRound,
-		TournamentID: model.TournamentID,
 		ID:           model.ID,
 	})
 	if err != nil {
@@ -89,6 +79,10 @@ func (s *Service) GetGame(ctx context.Context, id int64) (Game, error) {
 	}
 
 	return fromGameModel(model)
+}
+
+func (s *Service) StartGame(ctx context.Context, id int64) error {
+	return s.Store.StartGame(ctx, id)
 }
 
 func (s *Service) CompleteGame(ctx context.Context, game Game) (Game, error) {

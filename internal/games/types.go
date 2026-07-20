@@ -31,7 +31,6 @@ const (
 type Game struct {
 	id           int64
 	name         string
-	tournamentID *int64
 	teamA        int64
 	teamB        int64
 	winner       *int64
@@ -113,3 +112,25 @@ var (
 	ErrNoRounds        = errors.New("no rounds left")
 	ErrGameNotComplete = errors.New("game not complete")
 )
+
+type TeamDecisionInput struct {
+	triggeredAugment augments.Name
+	passivesAugments []augments.Effect
+	player           int64
+	roll             int
+}
+
+type DecisionInput struct {
+	lastRound *DuelResult
+	teamA     TeamDecisionInput
+	teamB     TeamDecisionInput
+}
+
+type DecisionEngineFunc func(input DecisionInput) DecisionInput
+
+type DecisionEngine struct {
+	beforeRoll    []DecisionEngineFunc
+	afterRoll     []DecisionEngineFunc
+	afterAugments []DecisionEngineFunc
+	rollFn        RollFn
+}

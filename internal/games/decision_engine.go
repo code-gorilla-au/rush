@@ -12,30 +12,8 @@ func DiceRoll() int {
 	return rand.IntN(6) + 1
 }
 
-type TeamDecisionInput struct {
-	triggeredAugment augments.Name
-	passivesAugments []augments.Effect
-	player           int64
-	roll             int
-}
-
-type DecisionInput struct {
-	lastRound *DuelResult
-	teamA     TeamDecisionInput
-	teamB     TeamDecisionInput
-}
-
-type DecisionEngineFunc func(input DecisionInput) DecisionInput
-
-type Engine struct {
-	beforeRoll    []DecisionEngineFunc
-	afterRoll     []DecisionEngineFunc
-	afterAugments []DecisionEngineFunc
-	rollFn        RollFn
-}
-
-func NewDecisionEngine() *Engine {
-	return &Engine{
+func NewDecisionEngine() *DecisionEngine {
+	return &DecisionEngine{
 		beforeRoll: []DecisionEngineFunc{
 			RulePocketSand,
 		},
@@ -58,7 +36,7 @@ func NewDecisionEngine() *Engine {
 	}
 }
 
-func (e *Engine) Run(input DecisionInput) DuelResult {
+func (e *DecisionEngine) Run(input DecisionInput) DuelResult {
 	for _, ruleFn := range e.beforeRoll {
 		input = ruleFn(input)
 	}

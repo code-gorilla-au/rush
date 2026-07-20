@@ -16,7 +16,7 @@ func TestEngineRun(t *testing.T) {
 			afterCalled := false
 			afterAugmentsCalled := false
 
-			engine := &Engine{
+			engine := &DecisionEngine{
 				beforeRoll: []DecisionEngineFunc{
 					func(input DecisionInput) DecisionInput {
 						beforeCalled = true
@@ -54,7 +54,7 @@ func TestEngineRun(t *testing.T) {
 		Test("should trigger twist of fate effect when rule matches", func(t *testing.T) {
 			secondRolls := newSequentialRollFn([]int{6})
 
-			engine := &Engine{
+			engine := &DecisionEngine{
 				beforeRoll: []DecisionEngineFunc{},
 				afterRoll: []DecisionEngineFunc{
 					func(input DecisionInput) DecisionInput {
@@ -82,7 +82,7 @@ func TestEngineRun(t *testing.T) {
 		Test("should not trigger twist of fate effect when rule does not match", func(t *testing.T) {
 			secondRolls := newSequentialRollFn([]int{6})
 
-			engine := &Engine{
+			engine := &DecisionEngine{
 				beforeRoll: []DecisionEngineFunc{},
 				afterRoll: []DecisionEngineFunc{
 					func(input DecisionInput) DecisionInput {
@@ -108,7 +108,7 @@ func TestEngineRun(t *testing.T) {
 			odize.AssertEqual(t, 3, result.RollDelta)
 		}).
 		Test("should return draw when both final rolls are equal", func(t *testing.T) {
-			engine := &Engine{
+			engine := &DecisionEngine{
 				beforeRoll:    []DecisionEngineFunc{},
 				afterRoll:     []DecisionEngineFunc{},
 				afterAugments: []DecisionEngineFunc{},

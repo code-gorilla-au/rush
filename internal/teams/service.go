@@ -233,3 +233,12 @@ func (s *Service) SetDefaultCoach(ctx context.Context, id int64) error {
 func (s *Service) ClearDefaultCoach(ctx context.Context) error {
 	return s.store.ClearDefaultCoach(ctx)
 }
+
+func GetPlayerIDs(team Team) []int64 {
+	var playerIDs []int64
+	for _, player := range team.Players {
+		playerIDs = append(playerIDs, player.ID)
+	}
+
+	return playerIDs
+}

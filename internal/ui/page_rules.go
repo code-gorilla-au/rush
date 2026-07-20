@@ -2,7 +2,6 @@ package ui
 
 import (
 	_ "embed"
-	"fmt"
 
 	"github.com/code-gorilla-au/rush/internal/ui/styles"
 	"github.com/code-gorilla-au/rush/internal/ui/uistate"
@@ -77,16 +76,6 @@ func (m *ModelRules) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, tea.Batch(cmds...)
-}
-
-func (m *ModelRules) headerView() string {
-	title := m.theme.Title.Render("Rules")
-	return title
-}
-
-func (m *ModelRules) footerView() string {
-	info := m.theme.Muted.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
-	return info
 }
 
 func (m *ModelRules) View() tea.View {

@@ -16,9 +16,8 @@ func NewService(store Store) *Service {
 }
 
 type NewGameParams struct {
-	TeamA        TeamConfig
-	TeamB        TeamConfig
-	TournamentID *int64
+	TeamA TeamConfig
+	TeamB TeamConfig
 }
 
 func (s *Service) NewGame(ctx context.Context, params NewGameParams) (Game, error) {

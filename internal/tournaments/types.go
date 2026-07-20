@@ -17,7 +17,7 @@ type Tournament struct {
 	ID     int64         `json:"id"`
 	Name   string        `json:"name"`
 	Number NumberOfTeams `json:"number_of_teams"`
-	Stages []Stages      `json:"stages"`
+	Stages []Stage       `json:"stages"`
 }
 
 type StageStatus string
@@ -28,7 +28,7 @@ const (
 	StageStatusComplete StageStatus = "complete"
 )
 
-type Stages struct {
+type Stage struct {
 	ID     int64        `json:"id"`
 	Name   string       `json:"name"`
 	Status StageStatus  `json:"status"`

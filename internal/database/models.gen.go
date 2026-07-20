@@ -52,11 +52,12 @@ type Player struct {
 }
 
 type Stage struct {
-	ID        int64
-	Name      string
-	Status    string
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	ID           int64
+	TournamentID sql.NullInt64
+	Name         string
+	Status       string
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
 }
 
 type StageGame struct {

@@ -89,21 +89,23 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 }
 
 const createStage = `-- name: CreateStage :one
-insert into stages (name, status)
-values (?, ?)
-returning id, name, status, created_at, updated_at
+insert into stages (name, tournament_id, status)
+values (?, ?, ?)
+returning id, tournament_id, name, status, created_at, updated_at
 `
 
 type CreateStageParams struct {
-	Name   string
-	Status string
+	Name         string
+	TournamentID sql.NullInt64
+	Status       string
 }
 
 func (q *Queries) CreateStage(ctx context.Context, arg CreateStageParams) (Stage, error) {
-	row := q.db.QueryRowContext(ctx, createStage, arg.Name, arg.Status)
+	row := q.db.QueryRowContext(ctx, createStage, arg.Name, arg.TournamentID, arg.Status)
 	var i Stage
 	err := row.Scan(
 		&i.ID,
+		&i.TournamentID,
 		&i.Name,
 		&i.Status,
 		&i.CreatedAt,
@@ -282,7 +284,7 @@ update stages
 set name   = ?,
     status = ?
 where id = ?
-returning id, name, status, created_at, updated_at
+returning id, tournament_id, name, status, created_at, updated_at
 `
 
 type UpdateStageParams struct {
@@ -296,6 +298,7 @@ func (q *Queries) UpdateStage(ctx context.Context, arg UpdateStageParams) (Stage
 	var i Stage
 	err := row.Scan(
 		&i.ID,
+		&i.TournamentID,
 		&i.Name,
 		&i.Status,
 		&i.CreatedAt,

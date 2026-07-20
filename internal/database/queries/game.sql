@@ -53,8 +53,8 @@ values (?,
 returning *;
 
 -- name: CreateStage :one
-insert into stages (name, status)
-values (?, ?)
+insert into stages (name, tournament_id, status)
+values (?, ?, ?)
 returning *;
 
 -- name: AllocateGameToStage :one

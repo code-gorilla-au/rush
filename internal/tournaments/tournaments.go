@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/code-gorilla-au/rush/internal/database"
 	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/teams"
 )
@@ -28,12 +29,86 @@ func NewService(deps ServiceDependencies) *Service {
 	}
 }
 
-func (s *Service) CreateTournament(ctx context.Context, coachId int64, numberOfTeams NumberOfTeams) error {
-	_, err := s.generateGames(ctx, coachId, int64(numberOfTeams))
+type CreateTournamentParams struct {
+	Name          string
+	NumberOfTeams NumberOfTeams
+	CoachID       int64
+}
+
+func (s *Service) CreateTournament(ctx context.Context, params CreateTournamentParams) error {
+	t, err := s.insertNewTournament(ctx, params.Name, params.NumberOfTeams)
+	if err != nil {
+		return fmt.Errorf("inserting new tournament: %w", err)
+	}
+
+	gameConfigs, err := s.generateGames(ctx, params.CoachID, int64(params.NumberOfTeams))
 	if err != nil {
 		return fmt.Errorf("generating games for tournament: %w", err)
 	}
+
+	groupStage := t.Stages[0]
+
+	for _, gameConfig := range gameConfigs {
+		g, gErr := s.gamesSvc.NewGame(ctx, gameConfig)
+
+		if gErr != nil {
+			return fmt.Errorf("creating new game: %w", gErr)
+		}
+
+		if _, err = s.store.AllocateGameToStage(ctx, database.AllocateGameToStageParams{
+			StageID: sql.NullInt64{
+				Int64: groupStage.ID,
+				Valid: true,
+			},
+			GameID: sql.NullInt64{
+				Int64: g.ID(),
+				Valid: true,
+			},
+		}); err != nil {
+			return fmt.Errorf("allocating game to stage: %w", err)
+		}
+	}
+
 	return nil
+}
+
+func (s *Service) insertNewTournament(ctx context.Context, name string, numberOfTeams NumberOfTeams) (Tournament, error) {
+	var newTournament database.Tournament
+	var stage database.Stage
+
+	err := database.WithTxnCtx(s.DB, func(tx *sql.Tx) error {
+		txDb := s.txnFunc(tx)
+
+		var err error
+
+		newTournament, err = txDb.CreateTournament(ctx, database.CreateTournamentParams{
+			Name:          name,
+			NumberOfTeams: int64(numberOfTeams),
+		})
+		if err != nil {
+			return err
+		}
+
+		stage, err = txDb.CreateStage(ctx, database.CreateStageParams{
+			Name: "Group stage",
+			TournamentID: sql.NullInt64{
+				Int64: newTournament.ID,
+				Valid: true,
+			},
+			Status: string(games.StatusPending),
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return Tournament{}, fmt.Errorf("failed to create tournament: %w", err)
+	}
+
+	return toTournament(newTournament, []database.Stage{stage}), nil
+
 }
 
 func (s *Service) generateGames(ctx context.Context, coachId int64, numberOfTeams int64) ([]games.NewGameParams, error) {

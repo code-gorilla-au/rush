@@ -12,7 +12,7 @@ import (
 
 type ServiceDependencies struct {
 	GamesSvc *games.Service
-	TeamsSvc *teams.Service
+	TeamsSvc TeamsService
 	Store    Store
 	DB       *sql.DB
 	TxnFunc  func(db *sql.Tx) Store
@@ -87,6 +87,10 @@ func (s *Service) getHumanTeam(ctx context.Context, coachID int64) (teams.AITeam
 		return teams.AITeam{}, fmt.Errorf("failed to get team: %w", err)
 	}
 
+	if len(team.Playbooks) == 0 {
+		return teams.AITeam{}, errors.New("no playbooks found for team")
+	}
+
 	return teams.AITeam{
 		Coach:    coach,
 		Team:     team.Team,
@@ -108,14 +112,14 @@ func generateGameParamsFromTeams(totalTeams []teams.AITeam, tournamentGames []ga
 					TeamName:   first.Team.Name,
 					Players:    teams.GetPlayerIDs(first.Team),
 					Augments:   first.Coach.AvailableAugments(),
-					Formations: nil,
+					Formations: first.Playbook.Formations,
 				},
 				TeamB: games.TeamConfig{
 					TeamID:     second.Team.ID,
 					TeamName:   second.Team.Name,
 					Players:    teams.GetPlayerIDs(second.Team),
 					Augments:   second.Coach.AvailableAugments(),
-					Formations: nil,
+					Formations: second.Playbook.Formations,
 				},
 			})
 		}

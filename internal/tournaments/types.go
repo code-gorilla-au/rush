@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/code-gorilla-au/rush/internal/games"
-	"github.com/code-gorilla-au/rush/internal/teams"
 )
 
 type NumberOfTeams int64
@@ -37,7 +36,7 @@ type Stages struct {
 }
 
 type Service struct {
-	teamsSvc *teams.Service
+	teamsSvc TeamsService
 	gamesSvc *games.Service
 	store    Store
 	DB       *sql.DB

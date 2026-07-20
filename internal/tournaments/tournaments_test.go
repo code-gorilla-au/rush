@@ -8,6 +8,7 @@ import (
 
 	"github.com/code-gorilla-au/odize"
 	"github.com/code-gorilla-au/rush/internal/database"
+	"github.com/code-gorilla-au/rush/internal/games"
 	"github.com/code-gorilla-au/rush/internal/playbooks"
 	"github.com/code-gorilla-au/rush/internal/teams"
 	_ "modernc.org/sqlite"
@@ -20,6 +21,51 @@ func setupTestDB(t *testing.T) *sql.DB {
 	err = migrator.Migrate(context.Background())
 	odize.AssertNoError(t, err)
 	return db
+}
+
+func newTestTournamentService(db *sql.DB) *Service {
+	queries := database.New(db)
+	teamsSvc := teams.NewTeamsService(queries, playbooks.NewPlaybooksService(queries))
+	gamesSvc := games.NewService(queries)
+	return NewService(ServiceDependencies{
+		GamesSvc: gamesSvc,
+		TeamsSvc: teamsSvc,
+		Store:    queries,
+		DB:       db,
+		TxnFunc:  func(tx *sql.Tx) Store { return database.New(tx) },
+	})
+}
+
+func createTestCoach(ctx context.Context, t *testing.T, db *sql.DB, name string, isHuman bool) database.Coach {
+	queries := database.New(db)
+	coach, err := queries.CreateCoach(ctx, database.CreateCoachParams{
+		Name:    name,
+		IsHuman: sql.NullBool{Bool: isHuman, Valid: true},
+	})
+	odize.AssertNoError(t, err)
+	return coach
+}
+
+func createTestTeam(ctx context.Context, t *testing.T, db *sql.DB, name string, coachID int64) database.Team {
+	queries := database.New(db)
+	team, err := queries.CreateTeam(ctx, database.CreateTeamParams{
+		Name:    name,
+		CoachID: sql.NullInt64{Int64: coachID, Valid: true},
+	})
+	odize.AssertNoError(t, err)
+	return team
+}
+
+func createTestPlaybook(ctx context.Context, t *testing.T, db *sql.DB, name string, teamID int64) playbooks.Playbook {
+	queries := database.New(db)
+	playbooksSvc := playbooks.NewPlaybooksService(queries)
+	pb, err := playbooksSvc.CreatePlaybook(ctx, playbooks.PlaybookParams{
+		Name:       name,
+		TeamID:     teamID,
+		Formations: playbooks.Formations(),
+	})
+	odize.AssertNoError(t, err)
+	return pb
 }
 
 func TestGenerateGameParamsFromTeams(t *testing.T) {
@@ -85,11 +131,7 @@ func TestService_CreateTournament_EdgeCases(t *testing.T) {
 
 	group.BeforeEach(func() {
 		db = setupTestDB(t)
-		queries := database.New(db)
-		teamsSvc := teams.NewTeamsService(queries, playbooks.NewPlaybooksService(queries))
-		s = &Service{
-			teamsSvc: teamsSvc,
-		}
+		s = newTestTournamentService(db)
 	})
 
 	group.AfterEach(func() {
@@ -101,23 +143,79 @@ func TestService_CreateTournament_EdgeCases(t *testing.T) {
 	err := group.
 		Test("returns error when not enough AI teams", func(t *testing.T) {
 			ctx := context.Background()
-			queries := database.New(db)
 
 			// Create a coach
-			coach, err := queries.CreateCoach(ctx, database.CreateCoachParams{Name: "Coach"})
-			odize.AssertNoError(t, err)
+			coach := createTestCoach(ctx, t, db, "Coach", true)
 
 			// Create a team for the coach
-			_, err = queries.CreateTeam(ctx, database.CreateTeamParams{Name: "Team", CoachID: sql.NullInt64{Int64: coach.ID, Valid: true}})
-			odize.AssertNoError(t, err)
+			createTestTeam(ctx, t, db, "Team", coach.ID)
 
 			// Not enough AI teams (trying to request 2 teams, but only 1 AI team exists)
-			err = s.CreateTournament(ctx, coach.ID, 2)
+			err := s.CreateTournament(ctx, CreateTournamentParams{
+				Name:          "Tournament",
+				NumberOfTeams: NumberOfTeams(2),
+				CoachID:       coach.ID,
+			})
 			odize.AssertTrue(t, err != nil)
 		}).
 		Test("returns error when coach does not exist", func(t *testing.T) {
-			err := s.CreateTournament(context.Background(), 999, 2)
+			err := s.CreateTournament(context.Background(), CreateTournamentParams{
+				Name:          "Tournament",
+				NumberOfTeams: NumberOfTeams(2),
+				CoachID:       999,
+			})
 			odize.AssertTrue(t, err != nil)
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}
+
+func TestService_CreateTournament_Success(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	var db *sql.DB
+	var s *Service
+
+	group.BeforeEach(func() {
+		db = setupTestDB(t)
+		s = newTestTournamentService(db)
+	})
+
+	group.AfterEach(func() {
+		if db != nil {
+			_ = db.Close()
+		}
+	})
+
+	err := group.
+		Test("successfully creates a tournament", func(t *testing.T) {
+			ctx := context.Background()
+
+			// Create a coach
+			coach := createTestCoach(ctx, t, db, "Coach", true)
+
+			// Create a team for the coach
+			team := createTestTeam(ctx, t, db, "HumanTeam", coach.ID)
+
+			// Create a playbook for the team
+			createTestPlaybook(ctx, t, db, "PB", team.ID)
+
+			// Create AI teams
+			for i := 0; i < 2; i++ {
+				aiCoach := createTestCoach(ctx, t, db, fmt.Sprintf("AICoach%d", i), false)
+				aiTeam := createTestTeam(ctx, t, db, fmt.Sprintf("Team%d", i), aiCoach.ID)
+
+				createTestPlaybook(ctx, t, db, "PB", aiTeam.ID)
+			}
+
+			// Create Tournament
+			err := s.CreateTournament(ctx, CreateTournamentParams{
+				Name:          "TestTournament",
+				NumberOfTeams: NumberOfTeams(3),
+				CoachID:       coach.ID,
+			})
+			odize.AssertNoError(t, err)
 		}).
 		Run()
 
@@ -132,11 +230,7 @@ func TestService_GetHumanTeam_NoPlaybooks(t *testing.T) {
 
 	group.BeforeEach(func() {
 		db = setupTestDB(t)
-		queries := database.New(db)
-		teamsSvc := teams.NewTeamsService(queries, playbooks.NewPlaybooksService(queries))
-		s = &Service{
-			teamsSvc: teamsSvc,
-		}
+		s = newTestTournamentService(db)
 	})
 
 	group.AfterEach(func() {
@@ -147,22 +241,14 @@ func TestService_GetHumanTeam_NoPlaybooks(t *testing.T) {
 
 	err := group.Test("returns error when no playbooks found", func(t *testing.T) {
 		ctx := context.Background()
-		queries := database.New(db)
 		// Create a coach
-		coach, err := queries.CreateCoach(ctx, database.CreateCoachParams{
-			Name: "Coach",
-		})
-		odize.AssertNoError(t, err)
+		coach := createTestCoach(ctx, t, db, "Coach", true)
 
 		// Create a team for the coach
-		_, err = queries.CreateTeam(ctx, database.CreateTeamParams{
-			Name:    "Team",
-			CoachID: sql.NullInt64{Int64: coach.ID, Valid: true},
-		})
-		odize.AssertNoError(t, err)
+		createTestTeam(ctx, t, db, "Team", coach.ID)
 
 		// getHumanTeam should return error
-		_, err = s.getHumanTeam(ctx, coach.ID)
+		_, err := s.getHumanTeam(ctx, coach.ID)
 		odize.AssertTrue(t, err != nil)
 		odize.AssertEqual(t, "no playbooks found for team", err.Error())
 	}).Run()

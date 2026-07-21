@@ -19,7 +19,7 @@ func TeamStatisticsForGames(teamID int64, ga []Game) TeamStatistics {
 		return ts
 	}
 
-	ts.WinRate = float64(ts.Wins) / float64(ts.GamesPlayed)
+	ts.WinRate = float64(ts.Wins) / float64(ts.GamesPlayed) * 100
 	ts.RoundDifferential = ts.RoundsWon - ts.RoundsLost
 	ts.AverageRoundsWon = float64(ts.RoundsWon) / float64(ts.GamesPlayed)
 	ts.AverageRoundsLost = float64(ts.RoundsLost) / float64(ts.GamesPlayed)

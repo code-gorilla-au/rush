@@ -151,6 +151,21 @@ func fromGameModel(m database.Game) (Game, error) {
 	}, nil
 }
 
+func fromGameModels(models []database.Game) ([]Game, error) {
+	var results []Game
+
+	for _, model := range models {
+		game, err := fromGameModel(model)
+		if err != nil {
+			return []Game{}, fmt.Errorf("failed to convert game model: %w", err)
+		}
+
+		results = append(results, game)
+	}
+
+	return results, nil
+}
+
 func toGameModel(g Game) (database.Game, error) {
 
 	resolvedWinner := sql.NullInt64{}

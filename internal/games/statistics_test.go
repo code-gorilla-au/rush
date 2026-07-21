@@ -40,7 +40,7 @@ func TestTeamStatisticsForGames(t *testing.T) {
 			odize.AssertEqual(t, 1, stats.Wins)
 			odize.AssertEqual(t, 0, stats.Losses)
 			odize.AssertEqual(t, 0, stats.Draws)
-			odize.AssertEqual(t, 1.0, stats.WinRate)
+			odize.AssertEqual(t, 100.00, stats.WinRate)
 			odize.AssertEqual(t, 1, stats.RoundsWon)
 			odize.AssertEqual(t, 0, stats.RoundsLost)
 			odize.AssertEqual(t, 1, stats.RoundDifferential)

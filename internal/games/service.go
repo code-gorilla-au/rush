@@ -114,49 +114,10 @@ func (s *Service) GetTeamStatistics(ctx context.Context, teamID int64) (TeamStat
 		return TeamStatistics{}, fmt.Errorf("listing completed games: %w", err)
 	}
 
-	stats := TeamStatistics{}
-	for _, model := range models {
-		if err = s.processGameForStats(&stats, model, teamID); err != nil {
-			return TeamStatistics{}, err
-		}
+	playedGames, err := fromGameModels(models)
+	if err != nil {
+		return TeamStatistics{}, fmt.Errorf("failed to convert game models: %w", err)
 	}
 
-	if stats.GamesPlayed == 0 {
-		return stats, nil
-	}
-
-	stats.WinRate = (float64(stats.Wins) / float64(stats.GamesPlayed)) * 100
-	stats.RoundDifferential = stats.RoundsWon - stats.RoundsLost
-	stats.AverageRoundsWon = float64(stats.RoundsWon) / float64(stats.GamesPlayed)
-	stats.AverageRoundsLost = float64(stats.RoundsLost) / float64(stats.GamesPlayed)
-
-	return stats, nil
-}
-
-func (s *Service) processGameForStats(stats *TeamStatistics, model database.Game, teamID int64) error {
-	stats.GamesPlayed++
-
-	switch {
-	case !model.Winner.Valid || model.Winner.Int64 == 0:
-		stats.Draws++
-	case model.Winner.Int64 == teamID:
-		stats.Wins++
-	default:
-		stats.Losses++
-	}
-
-	var results []RoundResult
-	if err := json.Unmarshal(model.ResultsLog, &results); err != nil {
-		return fmt.Errorf("parsing game %d results: %w", model.ID, err)
-	}
-
-	teamRoundsWon := len(filterResultsByTeam(TeamA, results))
-	teamRoundsLost := len(filterResultsByTeam(TeamB, results))
-	if model.TeamB.Valid && model.TeamB.Int64 == teamID {
-		teamRoundsWon, teamRoundsLost = teamRoundsLost, teamRoundsWon
-	}
-
-	stats.RoundsWon += teamRoundsWon
-	stats.RoundsLost += teamRoundsLost
-	return nil
+	return TeamStatisticsForGames(teamID, playedGames), nil
 }

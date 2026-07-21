@@ -62,6 +62,12 @@ insert into stage_games (stage_id, game_id)
 values (?, ?)
 returning *;
 
+-- name: SetStageStatus :exec
+update stages
+set status = ?
+where id = ?
+and tournament_id = ?;
+
 -- name: UpdateStage :one
 update stages
 set name   = ?,

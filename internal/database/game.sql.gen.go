@@ -213,6 +213,24 @@ func (q *Queries) ListCompletedGamesByTeam(ctx context.Context, arg ListComplete
 	return items, nil
 }
 
+const setStageStatus = `-- name: SetStageStatus :exec
+update stages
+set status = ?
+where id = ?
+and tournament_id = ?
+`
+
+type SetStageStatusParams struct {
+	Status       string
+	ID           int64
+	TournamentID sql.NullInt64
+}
+
+func (q *Queries) SetStageStatus(ctx context.Context, arg SetStageStatusParams) error {
+	_, err := q.db.ExecContext(ctx, setStageStatus, arg.Status, arg.ID, arg.TournamentID)
+	return err
+}
+
 const startGame = `-- name: StartGame :exec
 update games
 set status = 'running'

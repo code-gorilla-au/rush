@@ -55,6 +55,23 @@ func (s *Service) CreateTournament(ctx context.Context, params CreateTournamentP
 	return nil
 }
 
+func (s *Service) GetByID(ctx context.Context, tournamentID int64) (Tournament, error) {
+	tournamentModel, err := s.store.GetTournamentByID(ctx, tournamentID)
+	if err != nil {
+		return Tournament{}, err
+	}
+
+	stageModel, err := s.store.GetStages(ctx, sql.NullInt64{
+		Int64: tournamentID,
+		Valid: true,
+	})
+	if err != nil {
+		return Tournament{}, err
+	}
+
+	return toTournament(tournamentModel, stageModel), nil
+}
+
 func (s *Service) allocateGamesToStage(ctx context.Context, gameConfigs []games.NewGameParams, stage Stage) error {
 	for _, gameConfig := range gameConfigs {
 		g, gErr := s.gamesSvc.NewGame(ctx, gameConfig)

@@ -21,7 +21,8 @@ func toStages(stages []database.Stage) []Stage {
 
 func toStage(stage database.Stage) Stage {
 	return Stage{
-		ID:   stage.ID,
-		Name: stage.Name,
+		ID:     stage.ID,
+		Name:   stage.Name,
+		Status: StageStatus(stage.Status),
 	}
 }

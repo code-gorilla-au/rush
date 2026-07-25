@@ -52,10 +52,19 @@ values (?,
         ?)
 returning *;
 
+-- name: GetTournamentByID :one
+select *
+from tournaments
+where id = ?;
+
 -- name: CreateStage :one
 insert into stages (name, tournament_id, status)
 values (?, ?, ?)
 returning *;
+
+-- name: GetStages :many
+select * from stages
+where tournament_id = ?;
 
 -- name: AllocateGameToStage :one
 insert into stage_games (stage_id, game_id)

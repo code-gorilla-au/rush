@@ -185,6 +185,60 @@ func (q *Queries) GetStageByID(ctx context.Context, id int64) (Stage, error) {
 	return i, err
 }
 
+const getStages = `-- name: GetStages :many
+select id, tournament_id, name, status, created_at, updated_at from stages
+where tournament_id = ?
+`
+
+func (q *Queries) GetStages(ctx context.Context, tournamentID sql.NullInt64) ([]Stage, error) {
+	rows, err := q.db.QueryContext(ctx, getStages, tournamentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Stage
+	for rows.Next() {
+		var i Stage
+		if err := rows.Scan(
+			&i.ID,
+			&i.TournamentID,
+			&i.Name,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTournamentByID = `-- name: GetTournamentByID :one
+select id, name, number_of_teams, created_at, updated_at
+from tournaments
+where id = ?
+`
+
+func (q *Queries) GetTournamentByID(ctx context.Context, id int64) (Tournament, error) {
+	row := q.db.QueryRowContext(ctx, getTournamentByID, id)
+	var i Tournament
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.NumberOfTeams,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listCompletedGamesByTeam = `-- name: ListCompletedGamesByTeam :many
 select id, name, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 from games

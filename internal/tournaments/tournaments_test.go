@@ -318,3 +318,96 @@ func TestService_UpdateStageStatus(t *testing.T) {
 
 	odize.AssertNoError(t, err)
 }
+
+func TestService_GetByID(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	var db *sql.DB
+	var s *Service
+
+	group.BeforeEach(func() {
+		db = setupTestDB(t)
+		s = newTestTournamentService(db)
+	})
+
+	group.AfterEach(func() {
+		if db != nil {
+			_ = db.Close()
+		}
+	})
+
+	err := group.
+		Test("successfully gets a tournament by ID", func(t *testing.T) {
+			ctx := context.Background()
+			queries := database.New(db)
+
+			// Create a tournament
+			tournamentName := "Tournament 1"
+			numTeams := int64(4)
+			createdTournament, err := queries.CreateTournament(ctx, database.CreateTournamentParams{
+				Name:          tournamentName,
+				NumberOfTeams: numTeams,
+			})
+			odize.AssertNoError(t, err)
+
+			// Create stages
+			stage1, err := queries.CreateStage(ctx, database.CreateStageParams{
+				Name: "Stage 1",
+				TournamentID: sql.NullInt64{
+					Int64: createdTournament.ID,
+					Valid: true,
+				},
+				Status: string(StageStatusPending),
+			})
+			odize.AssertNoError(t, err)
+
+			stage2, err := queries.CreateStage(ctx, database.CreateStageParams{
+				Name: "Stage 2",
+				TournamentID: sql.NullInt64{
+					Int64: createdTournament.ID,
+					Valid: true,
+				},
+				Status: string(StageStatusActive),
+			})
+			odize.AssertNoError(t, err)
+
+			// Get the tournament
+			tournament, err := s.GetByID(ctx, createdTournament.ID)
+			odize.AssertNoError(t, err)
+
+			// Verify tournament details
+			odize.AssertEqual(t, createdTournament.ID, tournament.ID)
+			odize.AssertEqual(t, tournamentName, tournament.Name)
+			odize.AssertEqual(t, NumberOfTeams(numTeams), tournament.Number)
+
+			// Verify stages
+			odize.AssertEqual(t, 2, len(tournament.Stages))
+
+			// Check if both stages are present
+			foundStage1 := false
+			foundStage2 := false
+			for _, stage := range tournament.Stages {
+				if stage.ID == stage1.ID {
+					foundStage1 = true
+					odize.AssertEqual(t, "Stage 1", stage.Name)
+					odize.AssertEqual(t, StageStatusPending, stage.Status)
+				}
+				if stage.ID == stage2.ID {
+					foundStage2 = true
+					odize.AssertEqual(t, "Stage 2", stage.Name)
+					odize.AssertEqual(t, StageStatusActive, stage.Status)
+				}
+			}
+			odize.AssertTrue(t, foundStage1)
+			odize.AssertTrue(t, foundStage2)
+		}).
+		Test("returns error when tournament ID does not exist", func(t *testing.T) {
+			ctx := context.Background()
+			_, err := s.GetByID(ctx, 9999)
+			odize.AssertTrue(t, err != nil)
+			odize.AssertEqual(t, sql.ErrNoRows, err)
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}

@@ -28,6 +28,12 @@ const (
 	StageStatusComplete StageStatus = "complete"
 )
 
+const (
+	StageNameGroup  = "Group"
+	StageNameKnock  = "Knockout"
+	StageNameFinals = "finals"
+)
+
 type Stage struct {
 	ID     int64        `json:"id"`
 	Name   string       `json:"name"`

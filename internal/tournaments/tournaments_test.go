@@ -81,7 +81,7 @@ func TestGenerateGameParamsFromTeams(t *testing.T) {
 			})
 		}
 
-		tournamentGames := generateGameParamsFromTeams(totalTeams, nil)
+		tournamentGames := generateGameParamsFromTeams(totalTeams)
 
 		expectedGames := (n * (n - 1)) / 2
 		odize.AssertEqual(t, expectedGames, len(tournamentGames))
@@ -98,14 +98,14 @@ func TestGenerateGameParamsFromTeams(t *testing.T) {
 		}
 	}).
 		Test("handles 0 teams", func(t *testing.T) {
-			tournamentGames := generateGameParamsFromTeams([]teams.AITeam{}, nil)
+			tournamentGames := generateGameParamsFromTeams([]teams.AITeam{})
 			odize.AssertEqual(t, 0, len(tournamentGames))
 		}).
 		Test("handles 1 team", func(t *testing.T) {
 			totalTeams := []teams.AITeam{
 				{Team: teams.Team{ID: 1, Name: "Team1"}, Coach: teams.Coach{}},
 			}
-			tournamentGames := generateGameParamsFromTeams(totalTeams, nil)
+			tournamentGames := generateGameParamsFromTeams(totalTeams)
 			odize.AssertEqual(t, 0, len(tournamentGames))
 		}).
 		Test("handles 2 teams", func(t *testing.T) {
@@ -113,7 +113,7 @@ func TestGenerateGameParamsFromTeams(t *testing.T) {
 				{Team: teams.Team{ID: 1, Name: "Team1"}, Coach: teams.Coach{}, Playbook: playbooks.Playbook{Formations: []playbooks.Formation{{Name: "F1"}}}},
 				{Team: teams.Team{ID: 2, Name: "Team2"}, Coach: teams.Coach{}, Playbook: playbooks.Playbook{Formations: []playbooks.Formation{{Name: "F2"}}}},
 			}
-			tournamentGames := generateGameParamsFromTeams(totalTeams, nil)
+			tournamentGames := generateGameParamsFromTeams(totalTeams)
 			odize.AssertEqual(t, 1, len(tournamentGames))
 			odize.AssertEqual(t, []playbooks.Formation{{Name: "F1"}}, tournamentGames[0].TeamA.Formations)
 			odize.AssertEqual(t, []playbooks.Formation{{Name: "F2"}}, tournamentGames[0].TeamB.Formations)

@@ -41,7 +41,7 @@ func (s *Service) CreateTournament(ctx context.Context, params CreateTournamentP
 		return fmt.Errorf("inserting new tournament: %w", err)
 	}
 
-	gameConfigs, err := s.generateGames(ctx, params.CoachID, int64(params.NumberOfTeams))
+	gameConfigs, err := s.generateGroupStageGames(ctx, params.CoachID, int64(params.NumberOfTeams))
 	if err != nil {
 		return fmt.Errorf("generating games for tournament: %w", err)
 	}
@@ -101,7 +101,7 @@ func (s *Service) insertNewTournament(ctx context.Context, name string, numberOf
 		}
 
 		stage, err = txDb.CreateStage(ctx, database.CreateStageParams{
-			Name: "Group stage",
+			Name: StageNameGroup,
 			TournamentID: sql.NullInt64{
 				Int64: newTournament.ID,
 				Valid: true,
@@ -122,7 +122,7 @@ func (s *Service) insertNewTournament(ctx context.Context, name string, numberOf
 
 }
 
-func (s *Service) generateGames(ctx context.Context, coachId int64, numberOfTeams int64) ([]games.NewGameParams, error) {
+func (s *Service) generateGroupStageGames(ctx context.Context, coachId int64, numberOfTeams int64) ([]games.NewGameParams, error) {
 	var tournamentGames []games.NewGameParams
 
 	var totalTeams []teams.AITeam
@@ -140,7 +140,7 @@ func (s *Service) generateGames(ctx context.Context, coachId int64, numberOfTeam
 
 	totalTeams = append(totalTeams, aiTeams...)
 
-	tournamentGames = generateGameParamsFromTeams(totalTeams, tournamentGames)
+	tournamentGames = generateGameParamsFromTeams(totalTeams)
 
 	return tournamentGames, nil
 }
@@ -184,7 +184,9 @@ func (s *Service) getHumanTeam(ctx context.Context, coachID int64) (teams.AITeam
 	}, nil
 }
 
-func generateGameParamsFromTeams(totalTeams []teams.AITeam, tournamentGames []games.NewGameParams) []games.NewGameParams {
+func generateGameParamsFromTeams(totalTeams []teams.AITeam) []games.NewGameParams {
+
+	var tournamentGames []games.NewGameParams
 
 	for i := 0; i < len(totalTeams); i++ {
 

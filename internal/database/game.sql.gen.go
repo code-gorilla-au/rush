@@ -165,6 +165,26 @@ func (q *Queries) GetGameByID(ctx context.Context, id int64) (Game, error) {
 	return i, err
 }
 
+const getStageByID = `-- name: GetStageByID :one
+select id, tournament_id, name, status, created_at, updated_at
+from stages
+where id = ?
+`
+
+func (q *Queries) GetStageByID(ctx context.Context, id int64) (Stage, error) {
+	row := q.db.QueryRowContext(ctx, getStageByID, id)
+	var i Stage
+	err := row.Scan(
+		&i.ID,
+		&i.TournamentID,
+		&i.Name,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listCompletedGamesByTeam = `-- name: ListCompletedGamesByTeam :many
 select id, name, team_a, team_b, winner, status, rounds, current_round, results_log, created_at, updated_at
 from games

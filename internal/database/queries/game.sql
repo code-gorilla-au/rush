@@ -68,6 +68,11 @@ set status = ?
 where id = ?
 and tournament_id = ?;
 
+-- name: GetStageByID :one
+select *
+from stages
+where id = ?;
+
 -- name: UpdateStage :one
 update stages
 set name   = ?,

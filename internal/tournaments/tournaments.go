@@ -72,6 +72,17 @@ func (s *Service) CreateTournament(ctx context.Context, params CreateTournamentP
 	return nil
 }
 
+func (s *Service) UpdateStageStatus(ctx context.Context, tournamentID int64, stageID int64, status StageStatus) error {
+	if err := s.store.SetStageStatus(ctx, database.SetStageStatusParams{
+		ID:           stageID,
+		TournamentID: sql.NullInt64{Int64: tournamentID, Valid: true},
+		Status:       string(status),
+	}); err != nil {
+		return fmt.Errorf("setting stage status: %w", err)
+	}
+	return nil
+}
+
 func (s *Service) insertNewTournament(ctx context.Context, name string, numberOfTeams NumberOfTeams) (Tournament, error) {
 	var newTournament database.Tournament
 	var stage database.Stage

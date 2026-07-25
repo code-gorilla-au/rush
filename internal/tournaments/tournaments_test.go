@@ -255,3 +255,66 @@ func TestService_GetHumanTeam_NoPlaybooks(t *testing.T) {
 
 	odize.AssertNoError(t, err)
 }
+
+func TestService_UpdateStageStatus(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	var db *sql.DB
+	var s *Service
+
+	group.BeforeEach(func() {
+		db = setupTestDB(t)
+		s = newTestTournamentService(db)
+	})
+
+	group.AfterEach(func() {
+		if db != nil {
+			_ = db.Close()
+		}
+	})
+
+	err := group.
+		Test("successfully updates stage status", func(t *testing.T) {
+			ctx := context.Background()
+			queries := database.New(db)
+
+			// Create a tournament
+			tournament, err := queries.CreateTournament(ctx, database.CreateTournamentParams{
+				Name:          "TestTournament",
+				NumberOfTeams: 4,
+			})
+			odize.AssertNoError(t, err)
+
+			// Create a stage
+			stage, err := queries.CreateStage(ctx, database.CreateStageParams{
+				Name: "TestStage",
+				TournamentID: sql.NullInt64{
+					Int64: tournament.ID,
+					Valid: true,
+				},
+				Status: string(StageStatusPending),
+			})
+			odize.AssertNoError(t, err)
+
+			// Update stage status to active
+			err = s.UpdateStageStatus(ctx, tournament.ID, stage.ID, StageStatusActive)
+			odize.AssertNoError(t, err)
+
+			// Verify status
+			updatedStage, err := queries.GetStageByID(ctx, stage.ID)
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, string(StageStatusActive), updatedStage.Status)
+
+			// Update stage status to complete
+			err = s.UpdateStageStatus(ctx, tournament.ID, stage.ID, StageStatusComplete)
+			odize.AssertNoError(t, err)
+
+			// Verify status
+			updatedStage, err = queries.GetStageByID(ctx, stage.ID)
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, string(StageStatusComplete), updatedStage.Status)
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}

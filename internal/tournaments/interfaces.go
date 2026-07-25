@@ -13,6 +13,7 @@ type Store interface {
 	CreateTournament(ctx context.Context, arg database.CreateTournamentParams) (database.Tournament, error)
 	UpdateStage(ctx context.Context, arg database.UpdateStageParams) (database.Stage, error)
 	SetStageStatus(ctx context.Context, arg database.SetStageStatusParams) error
+	GetStageByID(ctx context.Context, id int64) (database.Stage, error)
 }
 
 type TeamsService interface {

@@ -93,6 +93,7 @@ func (s *Service) allocateGamesToStage(ctx context.Context, gameConfigs []games.
 			return fmt.Errorf("allocating game to stage: %w", err)
 		}
 	}
+
 	return nil
 }
 
@@ -104,6 +105,7 @@ func (s *Service) UpdateStageStatus(ctx context.Context, tournamentID int64, sta
 	}); err != nil {
 		return fmt.Errorf("setting stage status: %w", err)
 	}
+
 	return nil
 }
 

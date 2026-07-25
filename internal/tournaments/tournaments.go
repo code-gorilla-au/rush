@@ -48,6 +48,14 @@ func (s *Service) CreateTournament(ctx context.Context, params CreateTournamentP
 
 	groupStage := t.Stages[0]
 
+	if err = s.allocateGamesToStage(ctx, gameConfigs, groupStage); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) allocateGamesToStage(ctx context.Context, gameConfigs []games.NewGameParams, stage Stage) error {
 	for _, gameConfig := range gameConfigs {
 		g, gErr := s.gamesSvc.NewGame(ctx, gameConfig)
 
@@ -55,9 +63,9 @@ func (s *Service) CreateTournament(ctx context.Context, params CreateTournamentP
 			return fmt.Errorf("creating new game: %w", gErr)
 		}
 
-		if _, err = s.store.AllocateGameToStage(ctx, database.AllocateGameToStageParams{
+		if _, err := s.store.AllocateGameToStage(ctx, database.AllocateGameToStageParams{
 			StageID: sql.NullInt64{
-				Int64: groupStage.ID,
+				Int64: stage.ID,
 				Valid: true,
 			},
 			GameID: sql.NullInt64{
@@ -68,7 +76,6 @@ func (s *Service) CreateTournament(ctx context.Context, params CreateTournamentP
 			return fmt.Errorf("allocating game to stage: %w", err)
 		}
 	}
-
 	return nil
 }
 

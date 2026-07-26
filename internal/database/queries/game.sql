@@ -63,7 +63,8 @@ values (?, ?, ?)
 returning *;
 
 -- name: GetStages :many
-select * from stages
+select *
+from stages
 where tournament_id = ?;
 
 -- name: AllocateGameToStage :one
@@ -75,7 +76,7 @@ returning *;
 update stages
 set status = ?
 where id = ?
-and tournament_id = ?;
+  and tournament_id = ?;
 
 -- name: GetStageByID :one
 select *

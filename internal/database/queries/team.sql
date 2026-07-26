@@ -1,62 +1,100 @@
 -- name: GetCoach :one
-SELECT * FROM coaches WHERE id = ?;
+SELECT *
+FROM coaches
+WHERE id = ?;
 
 -- name: GetDefaultCoach :one
-SELECT * FROM coaches WHERE is_default = true LIMIT 1;
+SELECT *
+FROM coaches
+WHERE is_default = true
+LIMIT 1;
 
 -- name: SetDefaultCoach :exec
-UPDATE coaches SET is_default = true WHERE id = ?;
+UPDATE coaches
+SET is_default = true
+WHERE id = ?;
 
 -- name: ClearDefaultCoach :exec
-UPDATE coaches SET is_default = false WHERE is_default = true;
+UPDATE coaches
+SET is_default = false
+WHERE is_default = true;
 
 -- name: GetCoaches :many
-SELECT * FROM coaches;
+SELECT *
+FROM coaches;
 
 -- name: GetAICoaches :many
-SELECT * FROM coaches WHERE is_human = false;
+SELECT *
+FROM coaches
+WHERE is_human = false;
 
 -- name: CreateCoach :one
-INSERT INTO coaches (name, persona, is_human, is_default) VALUES (?, ?, ?, ?) RETURNING *;
+INSERT INTO coaches (name, persona, is_human, is_default)
+VALUES (?, ?, ?, ?)
+RETURNING *;
 
 -- name: UpdateCoach :exec
 UPDATE coaches
-SET name = ?,
-persona = ?
+SET name    = ?,
+    persona = ?
 WHERE id = ?;
 
 -- name: DeleteCoach :exec
-DELETE FROM coaches WHERE id = ?;
+DELETE
+FROM coaches
+WHERE id = ?;
 
 -- name: GetTeams :many
-SELECT * FROM teams;
+SELECT *
+FROM teams;
 
 -- name: GetTeam :one
-SELECT * FROM teams WHERE id = ?;
+SELECT *
+FROM teams
+WHERE id = ?;
 
 -- name: GetTeamByCoachID :one
-SELECT * FROM teams WHERE coach_id = ? LIMIT 1;
+SELECT *
+FROM teams
+WHERE coach_id = ?
+LIMIT 1;
 
 -- name: CreateTeam :one
-INSERT INTO teams (name, is_default, coach_id) VALUES (?, ?, ?) RETURNING *;
+INSERT INTO teams (name, is_default, coach_id)
+VALUES (?, ?, ?)
+RETURNING *;
 
 -- name: SetDefaultTeam :exec
-UPDATE teams SET is_default = true WHERE id = ?;
+UPDATE teams
+SET is_default = true
+WHERE id = ?;
 
 -- name: ClearDefaultTeam :exec
-UPDATE teams SET is_default = false WHERE is_default = true;
+UPDATE teams
+SET is_default = false
+WHERE is_default = true;
 
 -- name: DeleteTeam :exec
-DELETE FROM teams WHERE id = ?;
+DELETE
+FROM teams
+WHERE id = ?;
 
 -- name: GetTeamMembers :many
-SELECT * FROM players WHERE team_id = ?;
+SELECT *
+FROM players
+WHERE team_id = ?;
 
 -- name: CreatePlayer :one
-INSERT INTO players (name, team_id) VALUES (?,?) RETURNING *;
+INSERT INTO players (name, team_id)
+VALUES (?, ?)
+RETURNING *;
 
 -- name: UpdatePlayer :exec
-UPDATE players SET name = ? WHERE id = ?;
+UPDATE players
+SET name = ?
+WHERE id = ?;
 
 -- name: DeletePlayer :exec
-DELETE FROM players WHERE id = ?;
+DELETE
+FROM players
+WHERE id = ?;

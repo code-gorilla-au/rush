@@ -11,14 +11,18 @@ RETURNING *;
 
 -- name: UpdatePlaybook :one
 update playbooks
-set name = ?,
+set name        = ?,
     description = ?,
-    formations = ?
+    formations  = ?
 where id = ?
 returning *;
 
 -- name: DeletePlaybook :exec
-delete from playbooks where id = ?;
+delete
+from playbooks
+where id = ?;
 
 -- name: GetPlaybooksByTeam :many
-select * from playbooks where team_id = ?;
+select *
+from playbooks
+where team_id = ?;

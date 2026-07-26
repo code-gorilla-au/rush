@@ -12,8 +12,8 @@ func TestGame_ToGameModel(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	group.Test("should marshal rounds correctly", func(t *testing.T) {
-		teamA := TeamConfig{TeamID: 1, TeamName: "A", Players: []int64{101, 102, 103}, Formations: make([]playbooks.Formation, 10)}
-		teamB := TeamConfig{TeamID: 2, TeamName: "B", Players: []int64{201, 202, 203}, Formations: make([]playbooks.Formation, 10)}
+		teamA := NewTestTeamConfig(1, "A")
+		teamB := NewTestTeamConfig(2, "B")
 		game := Game{
 			rounds: generateRounds(teamA, teamB),
 		}
@@ -36,8 +36,8 @@ func TestGame_ResolveRound(t *testing.T) {
 	group := odize.NewGroup(t, nil)
 
 	group.Test("should resolve the first round (index 0)", func(t *testing.T) {
-		teamA := TeamConfig{TeamID: 1, TeamName: "A", Players: []int64{101, 102, 103}, Formations: make([]playbooks.Formation, 10)}
-		teamB := TeamConfig{TeamID: 2, TeamName: "B", Players: []int64{201, 202, 203}, Formations: make([]playbooks.Formation, 10)}
+		teamA := NewTestTeamConfig(1, "A")
+		teamB := NewTestTeamConfig(2, "B")
 
 		// Fill some players in round 0
 		teamA.Formations[0] = playbooks.Formation{Lane1: 1, Lane2: 1, Lane3: 1}

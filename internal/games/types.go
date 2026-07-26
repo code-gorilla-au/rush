@@ -75,6 +75,7 @@ type TeamStatistics struct {
 	RoundDifferential int     `json:"round_differential"`
 	AverageRoundsWon  float64 `json:"average_rounds_won"`
 	AverageRoundsLost float64 `json:"average_rounds_lost"`
+	Points            int     `json:"points"`
 }
 
 type TeamConfig struct {

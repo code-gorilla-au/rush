@@ -11,6 +11,7 @@ func TeamStatisticsForGames(teamID int64, ga []Game) TeamStatistics {
 		ts.Draws += tmp.Draws
 		ts.RoundsWon += tmp.RoundsWon
 		ts.RoundsLost += tmp.RoundsLost
+		ts.Points += tmp.Points
 	}
 
 	ts.GamesPlayed = len(ga)
@@ -40,8 +41,10 @@ func TeamStatisticsForGame(teamID int64, ga Game) TeamStatistics {
 	switch *ga.winner {
 	case 0:
 		ts.Draws += 1
+		ts.Points += 1
 	case teamID:
 		ts.Wins += 1
+		ts.Points += 3
 	default:
 		ts.Losses += 1
 	}

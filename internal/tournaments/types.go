@@ -41,6 +41,12 @@ type Stage struct {
 	Games  []games.Game `json:"games"`
 }
 
+type RankedTeam struct {
+	TeamID   int64                `json:"team_id"`
+	TeamName string               `json:"team_name"`
+	Stats    games.TeamStatistics `json:"stats"`
+}
+
 type Service struct {
 	teamsSvc TeamsService
 	gamesSvc *games.Service

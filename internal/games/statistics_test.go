@@ -25,6 +25,7 @@ func TestTeamStatisticsForGames(t *testing.T) {
 			odize.AssertEqual(t, 0, stats.RoundDifferential)
 			odize.AssertEqual(t, 0.0, stats.AverageRoundsWon)
 			odize.AssertEqual(t, 0.0, stats.AverageRoundsLost)
+			odize.AssertEqual(t, 0, stats.Points)
 		}).
 		Test("should calculate statistics correctly for a win", func(t *testing.T) {
 			game := Game{
@@ -46,6 +47,7 @@ func TestTeamStatisticsForGames(t *testing.T) {
 			odize.AssertEqual(t, 1, stats.RoundDifferential)
 			odize.AssertEqual(t, 1.0, stats.AverageRoundsWon)
 			odize.AssertEqual(t, 0.0, stats.AverageRoundsLost)
+			odize.AssertEqual(t, 3, stats.Points)
 		}).
 		Test("should calculate statistics correctly for a loss", func(t *testing.T) {
 			game := Game{
@@ -67,6 +69,7 @@ func TestTeamStatisticsForGames(t *testing.T) {
 			odize.AssertEqual(t, -1, stats.RoundDifferential)
 			odize.AssertEqual(t, 0.0, stats.AverageRoundsWon)
 			odize.AssertEqual(t, 1.0, stats.AverageRoundsLost)
+			odize.AssertEqual(t, 0, stats.Points)
 		}).
 		Test("should calculate statistics correctly for a draw", func(t *testing.T) {
 			winner := int64(0)
@@ -89,6 +92,7 @@ func TestTeamStatisticsForGames(t *testing.T) {
 			odize.AssertEqual(t, 1, stats.RoundDifferential)
 			odize.AssertEqual(t, 1.0, stats.AverageRoundsWon)
 			odize.AssertEqual(t, 0.0, stats.AverageRoundsLost)
+			odize.AssertEqual(t, 1, stats.Points)
 		}).
 		Test("should handle nil winner as draw", func(t *testing.T) {
 			game := Game{
@@ -110,6 +114,7 @@ func TestTeamStatisticsForGames(t *testing.T) {
 			odize.AssertEqual(t, 1, stats.RoundDifferential)
 			odize.AssertEqual(t, 1.0, stats.AverageRoundsWon)
 			odize.AssertEqual(t, 0.0, stats.AverageRoundsLost)
+			odize.AssertEqual(t, 1, stats.Points)
 		}).
 		Run()
 

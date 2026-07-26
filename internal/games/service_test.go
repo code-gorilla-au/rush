@@ -54,8 +54,8 @@ func TestService_GetTeamStatistics(t *testing.T) {
 		opponentTeam, err := teamSvc.CreateTeam(ctx, "Opponent Team", opponentCoach.ID, false)
 		odize.AssertNoError(t, err)
 
-		targetCfg := TeamConfig{TeamID: targetTeam.ID, TeamName: targetTeam.Name, Formations: make([]playbooks.Formation, 10)}
-		opponentCfg := TeamConfig{TeamID: opponentTeam.ID, TeamName: opponentTeam.Name, Formations: make([]playbooks.Formation, 10)}
+		targetCfg := NewTestTeamConfig(targetTeam.ID, targetTeam.Name)
+		opponentCfg := NewTestTeamConfig(opponentTeam.ID, opponentTeam.Name)
 
 		persistCompletedGame(t, gameSvc, ctx, targetCfg, opponentCfg, targetTeam.ID, []RoundResult{
 			{Outcome: TeamA},

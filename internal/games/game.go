@@ -90,6 +90,18 @@ func (g *Game) ID() int64 {
 	return g.id
 }
 
+func (g *Game) TeamA() int64 {
+	return g.teamA
+}
+
+func (g *Game) TeamB() int64 {
+	return g.teamB
+}
+
+func (g *Game) Status() GameStatus {
+	return g.status
+}
+
 func (g *Game) Rounds() [10]Round {
 	return g.rounds
 }

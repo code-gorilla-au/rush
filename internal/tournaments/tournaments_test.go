@@ -3,6 +3,7 @@ package tournaments
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -406,6 +407,115 @@ func TestService_GetByID(t *testing.T) {
 			_, err := s.GetByID(ctx, 9999)
 			odize.AssertTrue(t, err != nil)
 			odize.AssertEqual(t, sql.ErrNoRows, err)
+		}).
+		Run()
+
+	odize.AssertNoError(t, err)
+}
+
+func createTestGame(t *testing.T, teamA, teamB int64, winner int64, rounds [10]games.Round, results []games.RoundResult) games.Game {
+	game, err := games.CreateTestGame(teamA, teamB, winner, rounds, results, games.StatusComplete)
+	odize.AssertNoError(t, err)
+	return game
+}
+
+func TestService_GetStageWinners(t *testing.T) {
+	group := odize.NewGroup(t, nil)
+
+	var db *sql.DB
+	var s *Service
+
+	group.BeforeEach(func() {
+		db = setupTestDB(t)
+		s = newTestTournamentService(db)
+	})
+
+	group.AfterEach(func() {
+		if db != nil {
+			_ = db.Close()
+		}
+	})
+
+	err := group.
+		Test("should rank teams correctly with tie-breakers", func(t *testing.T) {
+			ctx := context.Background()
+
+			// Setup teams
+			team1 := createTestTeam(ctx, t, db, "Team 1", createTestCoach(ctx, t, db, "C1", false).ID)
+			team2 := createTestTeam(ctx, t, db, "Team 2", createTestCoach(ctx, t, db, "C2", false).ID)
+			team3 := createTestTeam(ctx, t, db, "Team 3", createTestCoach(ctx, t, db, "C3", false).ID)
+
+			g1 := createTestGame(t, team1.ID, team2.ID, team1.ID, [10]games.Round{}, []games.RoundResult{{Outcome: games.TeamA}})
+			g2 := createTestGame(t, team1.ID, team3.ID, 0, [10]games.Round{}, []games.RoundResult{{Outcome: games.TeamA}, {Outcome: games.TeamB}})
+			g3 := createTestGame(t, team2.ID, team3.ID, team3.ID, [10]games.Round{}, []games.RoundResult{{Outcome: games.TeamB}, {Outcome: games.TeamB}})
+
+			stage := Stage{
+				ID:    1,
+				Name:  "Test Stage",
+				Games: []games.Game{g1, g2, g3},
+			}
+
+			winners, err := s.GetStageWinners(ctx, stage)
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, 3, len(winners))
+
+			odize.AssertEqual(t, team3.ID, winners[0].TeamID)
+			odize.AssertEqual(t, team1.ID, winners[1].TeamID)
+			odize.AssertEqual(t, team2.ID, winners[2].TeamID)
+
+			odize.AssertEqual(t, 4, winners[0].Stats.Points)
+			odize.AssertEqual(t, 4, winners[1].Stats.Points)
+			odize.AssertEqual(t, 0, winners[2].Stats.Points)
+		}).
+		Test("should tie-break by Rounds Won when Points and Differential are equal", func(t *testing.T) {
+			ctx := context.Background()
+
+			t1 := createTestTeam(ctx, t, db, "T1", createTestCoach(ctx, t, db, "C1", false).ID)
+			t2 := createTestTeam(ctx, t, db, "T2", createTestCoach(ctx, t, db, "C2", false).ID)
+			t3 := createTestTeam(ctx, t, db, "T3", createTestCoach(ctx, t, db, "C3", false).ID)
+			t4 := createTestTeam(ctx, t, db, "T4", createTestCoach(ctx, t, db, "C4", false).ID)
+
+			// T1 vs T2: Draw 1-1. T1: 1pt, Diff 0, Won 1
+			g1 := createTestGame(t, t1.ID, t2.ID, 0, [10]games.Round{}, []games.RoundResult{{Outcome: games.TeamA}, {Outcome: games.TeamB}})
+			// T3 vs T4: Draw 2-2. T3: 1pt, Diff 0, Won 2
+			g2 := createTestGame(t, t3.ID, t4.ID, 0, [10]games.Round{}, []games.RoundResult{{Outcome: games.TeamA}, {Outcome: games.TeamA}, {Outcome: games.TeamB}, {Outcome: games.TeamB}})
+
+			stage := Stage{
+				Games: []games.Game{g1, g2},
+			}
+
+			winners, err := s.GetStageWinners(ctx, stage)
+			odize.AssertNoError(t, err)
+
+			// T3 or T4 should be 1st/2nd
+			odize.AssertTrue(t, winners[0].TeamID == t3.ID || winners[0].TeamID == t4.ID)
+			odize.AssertTrue(t, winners[1].TeamID == t3.ID || winners[1].TeamID == t4.ID)
+			// T1 or T2 should be 3rd/4th
+			odize.AssertTrue(t, winners[2].TeamID == t1.ID || winners[2].TeamID == t2.ID)
+			odize.AssertTrue(t, winners[3].TeamID == t1.ID || winners[3].TeamID == t2.ID)
+
+			odize.AssertEqual(t, 2, winners[0].Stats.RoundsWon)
+			odize.AssertEqual(t, 1, winners[2].Stats.RoundsWon)
+		}).
+		Test("should return error if games are not complete", func(t *testing.T) {
+			ctx := context.Background()
+			team1 := createTestTeam(ctx, t, db, "T1", 1)
+			team2 := createTestTeam(ctx, t, db, "T2", 2)
+
+			game, err := games.CreateTestGame(team1.ID, team2.ID, 0, [10]games.Round{}, []games.RoundResult{}, games.StatusPending)
+			odize.AssertNoError(t, err)
+
+			stage := Stage{
+				Games: []games.Game{game},
+			}
+
+			_, err = s.GetStageWinners(ctx, stage)
+			odize.AssertTrue(t, errors.Is(err, games.ErrGameNotComplete))
+		}).
+		Test("should return empty list for empty stage", func(t *testing.T) {
+			winners, err := s.GetStageWinners(context.Background(), Stage{})
+			odize.AssertNoError(t, err)
+			odize.AssertEqual(t, 0, len(winners))
 		}).
 		Run()
 

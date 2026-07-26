@@ -22,5 +22,6 @@ type Store interface {
 type TeamsService interface {
 	ListAITeams(ctx context.Context) ([]teams.AITeam, error)
 	GetCoachByID(ctx context.Context, coachID int64) (teams.Coach, error)
+	GetTeamByID(ctx context.Context, id int64) (teams.Team, error)
 	GetTeamAndPlaybooksByCoachID(ctx context.Context, coachID int64) (teams.TeamWithPlaybooks, error)
 }

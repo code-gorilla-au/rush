@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"sort"
 
 	"github.com/code-gorilla-au/rush/internal/database"
 	"github.com/code-gorilla-au/rush/internal/games"
@@ -241,4 +242,46 @@ func generateGameParamsFromTeams(totalTeams []teams.AITeam) []games.NewGameParam
 	}
 
 	return tournamentGames
+}
+
+func (s *Service) GetStageWinners(ctx context.Context, stage Stage) ([]RankedTeam, error) {
+	if len(stage.Games) == 0 {
+		return []RankedTeam{}, nil
+	}
+
+	teamGames := make(map[int64][]games.Game)
+	for _, g := range stage.Games {
+		if g.Status() != games.StatusComplete {
+			return nil, games.ErrGameNotComplete
+		}
+		teamGames[g.TeamA()] = append(teamGames[g.TeamA()], g)
+		teamGames[g.TeamB()] = append(teamGames[g.TeamB()], g)
+	}
+
+	rankedTeams := make([]RankedTeam, 0, len(teamGames))
+	for teamID, ga := range teamGames {
+		t, err := s.teamsSvc.GetTeamByID(ctx, teamID)
+		if err != nil {
+			return nil, fmt.Errorf("getting team %d: %w", teamID, err)
+		}
+
+		stats := games.TeamStatisticsForGames(teamID, ga)
+		rankedTeams = append(rankedTeams, RankedTeam{
+			TeamID:   teamID,
+			TeamName: t.Name,
+			Stats:    stats,
+		})
+	}
+
+	sort.SliceStable(rankedTeams, func(i, j int) bool {
+		if rankedTeams[i].Stats.Points != rankedTeams[j].Stats.Points {
+			return rankedTeams[i].Stats.Points > rankedTeams[j].Stats.Points
+		}
+		if rankedTeams[i].Stats.RoundDifferential != rankedTeams[j].Stats.RoundDifferential {
+			return rankedTeams[i].Stats.RoundDifferential > rankedTeams[j].Stats.RoundDifferential
+		}
+		return rankedTeams[i].Stats.RoundsWon > rankedTeams[j].Stats.RoundsWon
+	})
+
+	return rankedTeams, nil
 }

@@ -31,7 +31,7 @@ const (
 const (
 	StageNameGroup  = "Group"
 	StageNameKnock  = "Knockout"
-	StageNameFinals = "finals"
+	StageNameFinals = "Finals"
 )
 
 type Stage struct {

@@ -25,8 +25,14 @@ func CreateTestGame(teamA, teamB int64, winner int64, rounds [10]Round, results 
 		winnerID = sql.NullInt64{Int64: 0, Valid: true}
 	}
 
-	roundsData, _ := json.Marshal(rounds)
-	resultsData, _ := json.Marshal(results)
+	roundsData, err := json.Marshal(rounds)
+	if err != nil {
+		return Game{}, err
+	}
+	resultsData, err := json.Marshal(results)
+	if err != nil {
+		return Game{}, err
+	}
 
 	model := database.Game{
 		ID:           1,

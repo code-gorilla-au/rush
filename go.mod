@@ -9,8 +9,8 @@ require (
 	charm.land/lipgloss/v2 v2.0.5
 	github.com/code-gorilla-au/env v1.1.1
 	github.com/code-gorilla-au/odize v1.3.5
-	github.com/go-faker/faker/v4 v4.10.0
-	modernc.org/sqlite v1.54.0
+	github.com/go-faker/faker/v4 v4.10.1
+	modernc.org/sqlite v1.55.0
 )
 
 require (

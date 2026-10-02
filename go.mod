@@ -1,16 +1,16 @@
 module github.com/code-gorilla-au/rush
 
-go 1.26.3
+go 1.27.1
 
 require (
 	charm.land/bubbles/v2 v2.2.1
-	charm.land/bubbletea/v2 v2.0.9
+	charm.land/bubbletea/v2 v2.0.10
 	charm.land/glamour/v2 v2.0.1
 	charm.land/lipgloss/v2 v2.0.6
-	github.com/code-gorilla-au/env v1.1.1
-	github.com/code-gorilla-au/odize v1.3.5
-	github.com/go-faker/faker/v4 v4.11.0
-	modernc.org/sqlite v1.57.0
+	github.com/code-gorilla-au/env v1.1.2
+	github.com/code-gorilla-au/odize v1.3.6
+	github.com/go-faker/faker/v4 v4.12.0
+	modernc.org/sqlite v1.59.0
 )
 
 require (
@@ -47,7 +47,7 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
-	modernc.org/libc v1.74.4 // indirect
+	modernc.org/libc v1.75.7 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.11.0 // indirect
+	modernc.org/memory v1.12.1 // indirect
 )
